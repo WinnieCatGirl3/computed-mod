@@ -21,6 +21,7 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -156,6 +157,8 @@ class ShowcaseGraphPackageTest {
 
     private static ComputedProgramV3 importPackage(String name, int nodes, int connections)
             throws IOException {
+        Assumptions.assumeTrue(Files.isDirectory(SHOWCASE),
+                "showcase sibling checkout not present — skipping showcase import tests");
         Path file = SHOWCASE.resolve(name + ".computed");
         assertTrue(Files.isRegularFile(file), "missing showcase package " + file.toAbsolutePath());
         ComputedProgramV3 program = ComputedProgramPackage.importArchive(Files.readAllBytes(file));
