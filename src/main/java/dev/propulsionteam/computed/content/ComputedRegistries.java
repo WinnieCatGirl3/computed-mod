@@ -131,8 +131,8 @@ public final class ComputedRegistries {
                     "speaker",
                     () -> BlockEntityType.Builder.of(SpeakerBlockEntity::new, SPEAKER_BLOCK.get()).build(null));
 
-    public static final DeferredItem<ProgramDiskItem> PROGRAM_DISK_ITEM =
-            ITEMS.register("program_disk", () -> new ProgramDiskItem(new Item.Properties()));
+    public static final DeferredItem<ProgramDiskItem> PROGRAM_DISK_ITEM = ITEMS.register(
+            "program_disk", () -> new ProgramDiskItem(new Item.Properties().stacksTo(16)));
 
     public static final DeferredItem<LinkCardItem> LINK_CARD_ITEM =
             ITEMS.register("link_card", () -> new LinkCardItem(new Item.Properties().stacksTo(1)));

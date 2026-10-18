@@ -47,12 +47,13 @@ public class ProgramDiskItem extends Item {
         }
     }
 
-    /** Replaces the stored program data on the given stack. */
+    /** Replaces the stored program data on the given stack. Written disks become unstackable. */
     public static void write(ItemStack stack, ProgramDiskData program) {
         CustomData existing = stack.get(DataComponents.CUSTOM_DATA);
         CompoundTag tag = existing == null ? new CompoundTag() : existing.copyTag();
         tag.putByteArray(DATA_KEY, program.encode());
         stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+        stack.set(DataComponents.MAX_STACK_SIZE, 1);
     }
 
     @Override

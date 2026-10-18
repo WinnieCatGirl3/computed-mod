@@ -448,6 +448,10 @@ public final class ComputedNetworking {
                 new ProgramDiskData(assembly.kind, assembly.path, assembly.buffer.toByteArray());
         ItemStack handDisk = player.getMainHandItem();
         if (handDisk.getItem() instanceof ProgramDiskItem) {
+            if (handDisk.getCount() > 1) {
+                ItemStack blanks = handDisk.split(handDisk.getCount() - 1);
+                player.getInventory().placeItemBackInInventory(blanks);
+            }
             ProgramDiskItem.write(handDisk, data);
             return PackageTransferService.WriteResult.ok(assembly.path);
         }
