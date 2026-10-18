@@ -174,6 +174,9 @@ public final class LuaGraphScheduler {
         definitions.putAll(IntegrationLuaLibrary.load());
         definitions.putAll(program.library());
         for (GraphNode node : program.rootGraph().nodes()) {
+            if (EditorOnlyNodes.isEditorOnly(node.definitionId())) {
+                continue;
+            }
             LuaDefinitionSource source = definitions.get(node.definitionId());
             if (source == null) {
                 definitionDiagnostics.add(error(

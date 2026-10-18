@@ -3,6 +3,7 @@ package dev.propulsionteam.computed.client.editor.canvas;
 import dev.propulsionteam.computed.graph.ComputedGraph;
 import dev.propulsionteam.computed.graph.ComputedProgramV3;
 import dev.propulsionteam.computed.graph.ConfigurableNodePorts;
+import dev.propulsionteam.computed.graph.EditorOnlyNodes;
 import dev.propulsionteam.computed.graph.GraphConnection;
 import dev.propulsionteam.computed.graph.GraphNode;
 import dev.propulsionteam.computed.graph.GraphPoint;
@@ -37,6 +38,14 @@ public final class LuaEditorGraphAdapter {
         Map<UUID, LuaEditorNode> nodes = new LinkedHashMap<>();
         WGraph graph = new WGraph();
         for (GraphNode node : program.rootGraph().nodes()) {
+            if (EditorOnlyNodes.COMMENT.equals(node.definitionId())) {
+                graph.addNode(new CommentNote(node));
+                continue;
+            }
+            if (EditorOnlyNodes.FRAME.equals(node.definitionId())) {
+                graph.addNode(new FrameNote(node));
+                continue;
+            }
             LuaDefinitionSource definitionSource = definitions.get(node.definitionId());
             LuaNodeDefinition definition = definition(definitionSource);
             GraphNode editorSource = definitionSource != null
@@ -98,6 +107,14 @@ public final class LuaEditorGraphAdapter {
         base.rootGraph().nodes().forEach(node -> baseNodes.put(node.id(), node));
         List<GraphNode> nodes = new ArrayList<>();
         for (WNode editorNode : editor.getNodes()) {
+            if (editorNode instanceof CommentNote note) {
+                nodes.add(note.toGraphNode(note.getX(), note.getY(), note.getId()));
+                continue;
+            }
+            if (editorNode instanceof FrameNote note) {
+                nodes.add(note.toGraphNode(note.getX(), note.getY(), note.getId()));
+                continue;
+            }
             if (editorNode instanceof LuaEditorNode luaNode) {
                 nodes.add(luaNode.toGraphNode(
                         editorNode.getX(),

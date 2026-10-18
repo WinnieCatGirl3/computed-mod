@@ -1,5 +1,8 @@
 package dev.propulsionteam.computed.client;
 
+import dev.propulsionteam.computed.client.editor.canvas.CanvasLayoutOps;
+import dev.propulsionteam.computed.client.editor.canvas.CommentNote;
+import dev.propulsionteam.computed.client.editor.canvas.FrameNote;
 import dev.propulsionteam.computed.client.editor.canvas.LuaEditorGraphAdapter;
 import dev.propulsionteam.computed.client.editor.canvas.LuaEditorNode;
 import dev.propulsionteam.computed.client.editor.explorer.ExplorerNode;
@@ -50,6 +53,10 @@ public class ComputerEditorScreen extends WNodeScreen {
     private static final int AUTO_SAVE_INTERVAL_TICKS = 20;
     private static final int EXPLORER_WIDTH = 168;
     private static final int EXPLORER_ROW_HEIGHT = 15;
+    private static final int CONTEXT_WIDTH = 132;
+    private static final int CONTEXT_ROW = 18;
+    private static final int CONTEXT_SEPARATOR = 7;
+    private static final String ALIGN_MENU_LABEL = "Align  ▸";
     private static final String NEW_LUA_NODE_ACTION = "computed:editor/new_lua_node";
     private static final String COMMAND_NODE_ID = "computed:command";
 
@@ -78,6 +85,7 @@ public class ComputerEditorScreen extends WNodeScreen {
     private boolean contextOpen;
     private int contextX;
     private int contextY;
+    private boolean contextAlignOpen;
     private ExplorerNode explorerPressNode;
     private double explorerPressX;
     private double explorerPressY;
@@ -126,6 +134,9 @@ public class ComputerEditorScreen extends WNodeScreen {
             byte[] content,
             boolean toDisk,
             boolean toSlot) {}
+
+    /** One row of the canvas context menu; separators are drawn but never clickable. */
+    private record ContextEntry(String label, boolean separator, boolean enabled, Runnable action) {}
 
     public ComputerEditorScreen(
             BlockPos computerPos,
@@ -198,6 +209,7 @@ public class ComputerEditorScreen extends WNodeScreen {
     protected void openNodeExplorer(int screenX, int screenY, int graphX, int graphY) {
         explorerAnchorX = graphX;
         explorerAnchorY = graphY;
+        contextAlignOpen = false;
         if (selectNodeAtGraphPoint(graphX, graphY) || hasSelectedNodes()) {
             contextOpen = true;
             contextX = screenX;
@@ -211,9 +223,16 @@ public class ComputerEditorScreen extends WNodeScreen {
 
     @Override
     protected WNode createDuplicateNode(WNode source, int x, int y) {
-        return source instanceof LuaEditorNode luaNode
-                ? LuaEditorGraphAdapter.duplicateEditorNode(luaNode, x, y)
-                : super.createDuplicateNode(source, x, y);
+        if (source instanceof LuaEditorNode luaNode) {
+            return LuaEditorGraphAdapter.duplicateEditorNode(luaNode, x, y);
+        }
+        if (source instanceof CommentNote note) {
+            return CommentNote.duplicate(note, x, y);
+        }
+        if (source instanceof FrameNote note) {
+            return FrameNote.duplicate(note, x, y);
+        }
+        return super.createDuplicateNode(source, x, y);
     }
 
     @Override
@@ -445,6 +464,7 @@ public class ComputerEditorScreen extends WNodeScreen {
         }
         if (contextOpen && keyCode == GLFW.GLFW_KEY_ESCAPE) {
             contextOpen = false;
+            contextAlignOpen = false;
             return true;
         }
         if (transferMenuOpen && keyCode == GLFW.GLFW_KEY_ESCAPE) {
@@ -744,31 +764,119 @@ public class ComputerEditorScreen extends WNodeScreen {
     }
 
     private void renderContext(GuiGraphics graphics, int mouseX, int mouseY) {
-        boolean selected = hasSelectedNodes();
-        List<String> rows = selected
-                ? List.of("Clone", "Unlink", "Delete")
-                : List.of("Open Node Explorer", "New Lua Node…", "Paste Lua");
-        int menuWidth = selected ? 92 : 132;
-        int menuHeight = rows.size() * 18 + 4;
-        int x = Math.min(contextX, width - menuWidth - 2);
+        List<ContextEntry> entries = buildContextMenu();
+        int menuHeight = contextMenuHeight(entries);
+        int x = Math.min(contextX, width - CONTEXT_WIDTH - 2);
         int y = Math.min(contextY, height - menuHeight - 2);
-        graphics.fill(x, y, x + menuWidth, y + menuHeight, ComputedEditorTheme.MENU_BACKGROUND);
-        graphics.renderOutline(x, y, menuWidth, menuHeight, ComputedEditorTheme.BORDER_MENU);
-        for (int index = 0; index < rows.size(); index++) {
-            int rowY = y + 2 + index * 18;
-            if (mouseX >= x && mouseX < x + menuWidth && mouseY >= rowY && mouseY < rowY + 18) {
-                graphics.fill(x + 1, rowY, x + menuWidth - 1, rowY + 18, ComputedEditorTheme.MENU_HOVER);
-            }
-            graphics.drawString(
-                    font,
-                    rows.get(index),
-                    x + 7,
-                    rowY + 5,
-                    selected && index == 2
-                            ? ComputedEditorTheme.STATUS_ERROR_TEXT
-                            : ComputedEditorTheme.TEXT_PRIMARY,
-                    false);
+        renderContextPanel(graphics, entries, x, y, mouseX, mouseY);
+        if (contextAlignOpen) {
+            List<ContextEntry> flyout = alignMenu();
+            int flyoutHeight = contextMenuHeight(flyout);
+            int flyoutX = x + CONTEXT_WIDTH - 2;
+            int flyoutY = Math.min(contextAlignRowY(entries, y), height - flyoutHeight - 2);
+            renderContextPanel(graphics, flyout, flyoutX, flyoutY, mouseX, mouseY);
         }
+    }
+
+    private void renderContextPanel(
+            GuiGraphics graphics,
+            List<ContextEntry> entries,
+            int x,
+            int y,
+            int mouseX,
+            int mouseY) {
+        int menuHeight = contextMenuHeight(entries);
+        ComputedEditorStyle.drawMenuPanel(graphics, x, y, CONTEXT_WIDTH, menuHeight);
+        int cursor = y + 2;
+        for (ContextEntry entry : entries) {
+            if (entry.separator()) {
+                ComputedEditorStyle.drawSeparator(graphics, x + 6, cursor + 3, CONTEXT_WIDTH - 12);
+                cursor += CONTEXT_SEPARATOR;
+                continue;
+            }
+            boolean hovered = entry.enabled()
+                    && contains(mouseX, mouseY, x, cursor, CONTEXT_WIDTH, CONTEXT_ROW);
+            ComputedEditorStyle.drawMenuRow(graphics, x, cursor, CONTEXT_WIDTH, CONTEXT_ROW, hovered, false);
+            int color = !entry.enabled()
+                    ? ComputedEditorTheme.TEXT_DISABLED
+                    : entry.label().equals("Delete")
+                            ? ComputedEditorTheme.STATUS_ERROR_TEXT
+                            : ComputedEditorTheme.TEXT_PRIMARY;
+            graphics.drawString(font, entry.label(), x + 7, cursor + 5, color, false);
+            cursor += CONTEXT_ROW;
+        }
+    }
+
+    private List<ContextEntry> buildContextMenu() {
+        List<ContextEntry> entries = new ArrayList<>();
+        if (hasSelectedNodes()) {
+            entries.add(new ContextEntry("Clone", false, true, this::cloneSelectedNodes));
+            entries.add(new ContextEntry("Unlink", false, true, this::unlinkSelectedNodes));
+            entries.add(new ContextEntry("Delete", false, true, this::removeSelectedNodes));
+            entries.add(new ContextEntry("", true, false, () -> {}));
+            entries.add(new ContextEntry(
+                    ALIGN_MENU_LABEL, false, true, () -> contextAlignOpen = !contextAlignOpen));
+            entries.add(new ContextEntry("Auto Layout", false, true, this::autoLayoutCanvasNodes));
+            entries.add(new ContextEntry("", true, false, () -> {}));
+        }
+        entries.add(new ContextEntry("Add Comment", false, true, () -> addCommentNote(explorerAnchorX, explorerAnchorY)));
+        entries.add(new ContextEntry("Add Frame", false, true, () -> addFrameNote(explorerAnchorX, explorerAnchorY)));
+        if (!hasSelectedNodes()) {
+            entries.add(new ContextEntry("", true, false, () -> {}));
+            entries.add(new ContextEntry("Open Node Explorer", false, true, () -> {
+                explorerOpen = true;
+                explorerSearchFocused = true;
+            }));
+            entries.add(new ContextEntry("New Lua Node…", false, true, () -> openNewLuaNode(explorerAnchorX, explorerAnchorY)));
+            entries.add(new ContextEntry("Paste Lua", false, true, this::openLuaFromClipboard));
+        }
+        return entries;
+    }
+
+    private List<ContextEntry> alignMenu() {
+        return List.of(
+                new ContextEntry("Align Left", false, true, () -> alignSelectedNodes(CanvasLayoutOps.Align.LEFT)),
+                new ContextEntry("Align Center", false, true, () -> alignSelectedNodes(CanvasLayoutOps.Align.CENTER_H)),
+                new ContextEntry("Align Right", false, true, () -> alignSelectedNodes(CanvasLayoutOps.Align.RIGHT)),
+                new ContextEntry("Align Top", false, true, () -> alignSelectedNodes(CanvasLayoutOps.Align.TOP)),
+                new ContextEntry("Align Middle", false, true, () -> alignSelectedNodes(CanvasLayoutOps.Align.CENTER_V)),
+                new ContextEntry("Align Bottom", false, true, () -> alignSelectedNodes(CanvasLayoutOps.Align.BOTTOM)),
+                new ContextEntry("", true, false, () -> {}),
+                new ContextEntry("Distribute H", false, true, () -> distributeSelectedNodes(true)),
+                new ContextEntry("Distribute V", false, true, () -> distributeSelectedNodes(false)));
+    }
+
+    private int contextMenuHeight(List<ContextEntry> entries) {
+        int height = 4;
+        for (ContextEntry entry : entries) {
+            height += entry.separator() ? CONTEXT_SEPARATOR : CONTEXT_ROW;
+        }
+        return height;
+    }
+
+    /** Screen Y of the clickable row at {@code index}, or -1 for separators. */
+    private int contextRowAt(List<ContextEntry> entries, double mouseY, int menuY) {
+        int cursor = menuY + 2;
+        for (int index = 0; index < entries.size(); index++) {
+            ContextEntry entry = entries.get(index);
+            int rowHeight = entry.separator() ? CONTEXT_SEPARATOR : CONTEXT_ROW;
+            if (mouseY >= cursor && mouseY < cursor + rowHeight) {
+                return entry.separator() ? -1 : index;
+            }
+            cursor += rowHeight;
+        }
+        return -1;
+    }
+
+    private int contextAlignRowY(List<ContextEntry> entries, int menuY) {
+        int cursor = menuY + 2;
+        for (ContextEntry entry : entries) {
+            if (entry.label().equals(ALIGN_MENU_LABEL)) {
+                return cursor;
+            }
+            cursor += entry.separator() ? CONTEXT_SEPARATOR : CONTEXT_ROW;
+        }
+        return menuY + 2;
     }
 
     private boolean handleControlsClick(double mouseX, double mouseY) {
@@ -850,39 +958,55 @@ public class ComputerEditorScreen extends WNodeScreen {
     }
 
     private boolean handleContextClick(double mouseX, double mouseY, int button) {
-        if (button != 0) {
-            contextOpen = false;
-            return true;
-        }
-        boolean selected = hasSelectedNodes();
-        int menuWidth = selected ? 92 : 132;
-        int rowCount = 3;
-        int menuHeight = rowCount * 18 + 4;
-        int x = Math.min(contextX, width - menuWidth - 2);
+        List<ContextEntry> entries = buildContextMenu();
+        int menuHeight = contextMenuHeight(entries);
+        int x = Math.min(contextX, width - CONTEXT_WIDTH - 2);
         int y = Math.min(contextY, height - menuHeight - 2);
-        if (!contains(mouseX, mouseY, x, y, menuWidth, menuHeight)) {
+        if (contextAlignOpen) {
+            List<ContextEntry> flyout = alignMenu();
+            int flyoutHeight = contextMenuHeight(flyout);
+            int flyoutX = x + CONTEXT_WIDTH - 2;
+            int flyoutY = Math.min(contextAlignRowY(entries, y), height - flyoutHeight - 2);
+            if (contains(mouseX, mouseY, flyoutX, flyoutY, CONTEXT_WIDTH, flyoutHeight)) {
+                if (button == 0) {
+                    int row = contextRowAt(flyout, mouseY, flyoutY);
+                    contextOpen = false;
+                    contextAlignOpen = false;
+                    if (row >= 0) {
+                        flyout.get(row).action().run();
+                    }
+                }
+                return true;
+            }
+        }
+        if (button != 0 || !contains(mouseX, mouseY, x, y, CONTEXT_WIDTH, menuHeight)) {
             contextOpen = false;
+            contextAlignOpen = false;
             return true;
         }
-        int row = ((int) mouseY - y - 2) / 18;
+        int row = contextRowAt(entries, mouseY, y);
+        if (row < 0) {
+            return true;
+        }
+        ContextEntry entry = entries.get(row);
+        if (entry.label().equals(ALIGN_MENU_LABEL)) {
+            contextAlignOpen = !contextAlignOpen;
+            return true;
+        }
         contextOpen = false;
-        if (selected) {
-            if (row == 0) {
-                cloneSelectedNodes();
-            } else if (row == 1) {
-                unlinkSelectedNodes();
-            } else if (row == 2) {
-                removeSelectedNodes();
-            }
-        } else if (row == 0) {
-            explorerOpen = true;
-            explorerSearchFocused = true;
-        } else if (row == 1) {
-            openNewLuaNode(explorerAnchorX, explorerAnchorY);
-        } else if (row == 2) {
-            openLuaFromClipboard();
+        contextAlignOpen = false;
+        if (entry.enabled()) {
+            entry.action().run();
         }
         return true;
+    }
+
+    private void addCommentNote(int graphX, int graphY) {
+        addNodeToCanvas(new CommentNote(graphX, graphY, ""));
+    }
+
+    private void addFrameNote(int graphX, int graphY) {
+        addNodeToCanvas(new FrameNote(graphX, graphY, "Group"));
     }
 
     private void place(ExplorerNode node) {
@@ -1670,47 +1794,56 @@ public class ComputerEditorScreen extends WNodeScreen {
     private LuaDefinitionSource selectedSource() { return selectedExplorerNode == null ? null : LuaEditorGraphAdapter.definitions(baseProgram).get(selectedExplorerNode.id()); }
 
     private void renderExplorerContext(GuiGraphics graphics, int mouseX, int mouseY) {
-        int x = Math.max(2, Math.min(explorerContextX, width - 94));
-        int y = Math.max(2, Math.min(explorerContextY, height - 60));
+        int x = Math.max(2, Math.min(explorerContextX, width - 102));
+        int y = Math.max(2, Math.min(explorerContextY, height - 78));
         boolean user = contextExplorerNode.ownership() == ExplorerNode.Ownership.USER && contextExplorerNode.available();
-        ComputedEditorStyle.drawMenuPanel(graphics, x, y, 92, 58);
-        String[] labels = {user ? "Edit" : "View", "Export", "Delete"};
+        ComputedEditorStyle.drawMenuPanel(graphics, x, y, 100, 76);
+        String[] labels = {"Add to Canvas", user ? "Edit" : "View", "Export", "Delete"};
         for (int index = 0; index < labels.length; index++) {
             int rowY = y + 2 + index * 18;
-            boolean enabled = index == 0 ? contextExplorerNode.available() : user;
+            boolean enabled = index == 0 || index == 1
+                    ? contextExplorerNode.available()
+                    : user;
             ComputedEditorStyle.drawMenuRow(
                     graphics,
                     x,
                     rowY,
-                    92,
+                    100,
                     18,
-                    enabled && contains(mouseX, mouseY, x, rowY, 92, 18),
+                    enabled && contains(mouseX, mouseY, x, rowY, 100, 18),
                     false);
             int color = !enabled
                     ? ComputedEditorTheme.TEXT_DISABLED
-                    : index == 2 ? ComputedEditorTheme.STATUS_ERROR_TEXT : ComputedEditorTheme.TEXT_PRIMARY;
+                    : index == 3 ? ComputedEditorTheme.STATUS_ERROR_TEXT : ComputedEditorTheme.TEXT_PRIMARY;
             graphics.drawString(font, labels[index], x + 7, rowY + 5, color, false);
         }
     }
 
     private boolean handleExplorerContextClick(double mouseX, double mouseY, int button) {
         ExplorerNode node = contextExplorerNode;
-        int x = Math.max(2, Math.min(explorerContextX, width - 94));
-        int y = Math.max(2, Math.min(explorerContextY, height - 60));
+        int x = Math.max(2, Math.min(explorerContextX, width - 102));
+        int y = Math.max(2, Math.min(explorerContextY, height - 78));
         contextExplorerNode = null;
-        if (button != 0 || !contains(mouseX, mouseY, x, y, 92, 58)) return true;
+        if (button != 0 || !contains(mouseX, mouseY, x, y, 100, 76)) return true;
         int row = ((int) mouseY - y - 2) / 18;
         if (row < 0
-                || row >= 3
-                || !contains(mouseX, mouseY, x, y + 2 + row * 18, 92, 18)) {
+                || row >= 4
+                || !contains(mouseX, mouseY, x, y + 2 + row * 18, 100, 18)) {
+            return true;
+        }
+        if (row == 0 && node.available()) {
+            selectedExplorerNode = node;
+            explorerAnchorX = editorGraphX(width / 2.0);
+            explorerAnchorY = editorGraphY(height / 2.0);
+            place(node);
             return true;
         }
         LuaDefinitionSource source = LuaEditorGraphAdapter.definitions(baseProgram).get(node.id());
-        if (row == 0 && source != null) minecraft.setScreen(new LuaNodeEditorScreen(this, baseProgram, source.source(), source.origin(), false, 0, 0));
-        else if (row == 1 && node.ownership() == ExplorerNode.Ownership.USER) {
+        if (row == 1 && source != null) minecraft.setScreen(new LuaNodeEditorScreen(this, baseProgram, source.source(), source.origin(), false, 0, 0));
+        else if (row == 2 && node.ownership() == ExplorerNode.Ownership.USER) {
             selectedExplorerNode = node;
             exportSelectedNode();
-        } else if (row == 2 && node.ownership() == ExplorerNode.Ownership.USER) {
+        } else if (row == 3 && node.ownership() == ExplorerNode.Ownership.USER) {
             selectedExplorerNode = node;
             modal = Modal.DELETE_NODE;
         }

@@ -329,6 +329,21 @@ public class WNode {
         return false;
     }
 
+    /** Draw-order layer; lower layers render behind regular nodes (group frames use 0). */
+    public int renderLayer() {
+        return 10;
+    }
+
+    /** Whether dragging this node also moves nodes fully contained inside it (group frames). */
+    public boolean movesContainedNodes() {
+        return false;
+    }
+
+    /** Whether align and auto-layout operations should move this node (frames stay put). */
+    public boolean participatesInLayout() {
+        return true;
+    }
+
     private void renderPin(
             GuiGraphics graphics,
             int pinX,

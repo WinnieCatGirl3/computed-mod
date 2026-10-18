@@ -5,6 +5,7 @@ import dev.propulsionteam.computed.client.editor.EditorDetailLevel;
 import dev.propulsionteam.computed.client.editor.EditorHistory;
 import dev.propulsionteam.computed.client.editor.GraphPoint;
 import dev.propulsionteam.computed.client.editor.GraphRect;
+import dev.propulsionteam.computed.client.editor.canvas.CanvasLayoutOps;
 import dev.propulsionteam.computed.client.editor.canvas.InertialViewport;
 import dev.propulsionteam.computed.internal.node.api.WConnection;
 import dev.propulsionteam.computed.internal.node.api.WGraph;
@@ -285,6 +286,53 @@ public class WNodeScreen extends Screen {
         selectedNode = null;
     }
 
+    /** Aligns the selected nodes (frames excluded); requires at least two movable nodes. */
+    protected final boolean alignSelectedNodes(CanvasLayoutOps.Align align) {
+        return mutateLayout(layoutSelection(), nodes -> CanvasLayoutOps.align(nodes, align));
+    }
+
+    /** Spaces the selected nodes evenly (frames excluded); requires at least three nodes. */
+    protected final boolean distributeSelectedNodes(boolean horizontal) {
+        return mutateLayout(layoutSelection(), nodes -> CanvasLayoutOps.distribute(nodes, horizontal));
+    }
+
+    /**
+     * Topologically arranges the selection, or the whole canvas when fewer than two nodes are
+     * selected. Frames and comments stay where they are.
+     */
+    protected final boolean autoLayoutCanvasNodes() {
+        List<WNode> source = selectedNodes().size() >= 2 ? selectedNodes() : graph.getNodes();
+        return mutateLayout(
+                source.stream().filter(WNode::participatesInLayout).toList(),
+                nodes -> CanvasLayoutOps.autoLayout(nodes, 60, 24));
+    }
+
+    private List<WNode> layoutSelection() {
+        return selectedNodes().stream().filter(WNode::participatesInLayout).toList();
+    }
+
+    private boolean mutateLayout(List<WNode> nodes, java.util.function.Consumer<List<WNode>> operation) {
+        if (nodes.size() < 2) {
+            return false;
+        }
+        checkpoint();
+        Map<UUID, int[]> before = new HashMap<>();
+        for (WNode node : nodes) {
+            before.put(node.getId(), new int[] {node.getX(), node.getY()});
+        }
+        operation.accept(nodes);
+        for (WNode node : nodes) {
+            int[] previous = before.get(node.getId());
+            int deltaX = node.getX() - previous[0];
+            int deltaY = node.getY() - previous[1];
+            if (deltaX != 0 || deltaY != 0) {
+                graph.shiftWaypointsForConnectionsTouching(List.of(node.getId()), deltaX, deltaY);
+            }
+        }
+        wires.invalidate();
+        return true;
+    }
+
     @Override
     public void tick() {
         super.tick();
@@ -355,7 +403,8 @@ public class WNodeScreen extends Screen {
                     1.5f);
         }
         List<WNode> drawNodes = new ArrayList<>(graph.getNodes());
-        drawNodes.sort(Comparator.comparing(WNode::isSelected)
+        drawNodes.sort(Comparator.comparingInt(WNode::renderLayer)
+                .thenComparing(WNode::isSelected)
                 .thenComparingInt(WNode::getY)
                 .thenComparingInt(WNode::getX)
                 .thenComparing(WNode::getId));
@@ -545,9 +594,26 @@ public class WNodeScreen extends Screen {
             int deltaX = targetX - draggingNode.getX();
             int deltaY = targetY - draggingNode.getY();
             if (deltaX != 0 || deltaY != 0) {
-                List<UUID> moved = selectedNodes().stream().map(WNode::getId).toList();
+                List<WNode> moving = new ArrayList<>(selectedNodes());
+                if (draggingNode.movesContainedNodes()) {
+                    for (WNode node : graph.getNodes()) {
+                        if (moving.contains(node) || node == draggingNode) {
+                            continue;
+                        }
+                        node.ensureLayoutUpToDate();
+                        if (node.getX() >= draggingNode.getX()
+                                && node.getX() + node.getWidth()
+                                        <= draggingNode.getX() + draggingNode.getWidth()
+                                && node.getY() >= draggingNode.getY()
+                                && node.getY() + node.getHeight()
+                                        <= draggingNode.getY() + draggingNode.getHeight()) {
+                            moving.add(node);
+                        }
+                    }
+                }
+                List<UUID> moved = moving.stream().map(WNode::getId).toList();
                 graph.shiftWaypointsForConnectionsTouching(moved, deltaX, deltaY);
-                selectedNodes().forEach(node ->
+                moving.forEach(node ->
                         node.setPos(node.getX() + deltaX, node.getY() + deltaY));
                 wires.invalidate();
             }
@@ -752,7 +818,7 @@ public class WNodeScreen extends Screen {
         return itemPickerOpen;
     }
 
-    private void checkpoint() {
+    protected final void checkpoint() {
         revision++;
         history.execute(new Snapshot(graph.save()));
         wires.invalidate();
@@ -927,7 +993,7 @@ public class WNodeScreen extends Screen {
         selectedNode = null;
     }
 
-    private List<WNode> selectedNodes() {
+    protected final List<WNode> selectedNodes() {
         return graph.getNodes().stream().filter(WNode::isSelected).toList();
     }
 
