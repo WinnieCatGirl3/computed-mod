@@ -103,29 +103,40 @@ jobs:
             return 0
           }
           create_release() {
-            local prerelease_args=()
-            if [[ "${MOD_VERSION}" == *-alpha* || "${MOD_VERSION}" == *-beta* || "${MOD_VERSION}" == *-rc* ]]; then
-              prerelease_args+=(--prerelease)
+            # Immutable releases reject creating a release for a tag that already
+            # exists — drop any stale tag so GitHub recreates it at GITHUB_SHA
+            # together with the release (same conditions as a first-time release).
+            if git ls-remote --exit-code --tags origin "refs/tags/${TAG}" > /dev/null 2>&1; then
+              note "removing stale tag ${TAG} before create"
+              run_step "git push delete tag" git push origin ":refs/tags/${TAG}"
             fi
-            # Recreating right after a delete can hit a transient HTTP 422 while GitHub
-            # still knows the old release — retry before giving up.
+
+            local args=(-X POST "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/releases"
+              -f "tag_name=${TAG}"
+              -f "name=Winnie's Computed ${TAG}"
+              -f "target_commitish=${GITHUB_SHA}"
+              -F generate_release_notes=true)
+            if [[ "${MOD_VERSION}" == *-alpha* || "${MOD_VERSION}" == *-beta* || "${MOD_VERSION}" == *-rc* ]]; then
+              args+=(-F prerelease=true)
+            fi
+
+            # Recreating can hit transient HTTP 422s — retry and surface the full
+            # response body (including errors[]) as annotation for diagnosis.
             local attempt out rc=0
             for attempt in 1 2 3; do
               out=""; rc=0
-              out=$(gh release create "${TAG}" "${JAR_PATH}" \
-                --repo "${GITHUB_REPOSITORY}" \
-                --target "${GITHUB_SHA}" \
-                --title "Winnie's Computed ${TAG}" \
-                --generate-notes \
-                "${prerelease_args[@]}" 2>&1) || rc=$?
+              out=$(gh api "${args[@]}" 2>&1) || rc=$?
               if [ "$rc" -eq 0 ]; then
-                printf '%s\n' "$out"
+                note "release created via API (attempt ${attempt})"
+                run_step "gh release upload" gh release upload "${TAG}" "${JAR_PATH}" \
+                  --repo "${GITHUB_REPOSITORY}"
+                note "jar uploaded"
                 return 0
               fi
-              note "create attempt ${attempt}/3 rc=${rc}: $(printf '%s' "${out}" | tail -c 600)"
-              sleep 15
+              note "create attempt ${attempt}/3 rc=${rc}: $(printf '%s' "${out}" | tail -c 900)"
+              sleep 10
             done
-            die "gh release create failed after 3 attempts"
+            die "release create failed after 3 attempts"
           }
 
           command -v gh > /dev/null || die "gh CLI is not on PATH"
