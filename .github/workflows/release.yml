@@ -25,6 +25,8 @@ jobs:
 
       - name: Determine release target
         id: target
+        env:
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
@@ -41,25 +43,36 @@ jobs:
             tag="${default_tag}"
           fi
 
+          if gh release view "${tag}" --repo "${GITHUB_REPOSITORY}" > /dev/null 2>&1; then
+            echo "Release ${tag} already exists — skipping."
+            echo "needed=false" >> "${GITHUB_OUTPUT}"
+          else
+            echo "needed=true" >> "${GITHUB_OUTPUT}"
+          fi
           echo "tag=${tag}" >> "${GITHUB_OUTPUT}"
           echo "mod_version=${mod_version}" >> "${GITHUB_OUTPUT}"
 
       - name: Setup JDK 21
+        if: steps.target.outputs.needed == 'true'
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
 
       - name: Setup Gradle
+        if: steps.target.outputs.needed == 'true'
         uses: gradle/actions/setup-gradle@v4
 
       - name: Make Gradle wrapper executable
+        if: steps.target.outputs.needed == 'true'
         run: chmod +x ./gradlew
 
       - name: Build with Gradle
+        if: steps.target.outputs.needed == 'true'
         run: ./gradlew build
 
       - name: Prepare release jar
+        if: steps.target.outputs.needed == 'true'
         id: artifact
         shell: bash
         run: |
@@ -74,13 +87,8 @@ jobs:
           cp "${artifact}" "${release_path}"
           echo "path=${release_path}" >> "${GITHUB_OUTPUT}"
 
-      # The release for the current mod_version always mirrors main: create it on the
-      # first build, replace the jar (and move the tag) on every later push so an
-      # already-published version can be corrected without a version bump.
-      # Failures are reported as ::error annotations because run logs need auth.
-      # gh's own --clobber path returned HTTP 422, so assets are deleted via the
-      # REST API first and a full release delete+recreate is the fallback.
-      - name: Publish release
+      - name: Create GitHub Release
+        if: steps.target.outputs.needed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.target.outputs.tag }}
@@ -88,119 +96,14 @@ jobs:
           JAR_PATH: ${{ steps.artifact.outputs.path }}
         shell: bash
         run: |
-          set -uo pipefail
-
-          note() { echo "::notice title=Publish::${1}"; }
-          die() { echo "::error title=Publish failed::${1}"; exit 1; }
-          run_step() {
-            local desc="$1"; shift
-            local out rc=0
-            out=$("$@" 2>&1) || rc=$?
-            if [ "$rc" -ne 0 ]; then
-              die "${desc} (exit ${rc}): $(printf '%s' "$out" | tail -c 3500)"
-            fi
-            printf '%s\n' "$out"
-            return 0
-          }
-          create_release() {
-            # Immutable releases reject creating a release for a tag that already
-            # exists — drop any stale tag so GitHub recreates it at GITHUB_SHA
-            # together with the release (same conditions as a first-time release).
-            if git ls-remote --exit-code --tags origin "refs/tags/${TAG}" > /dev/null 2>&1; then
-              note "removing stale tag ${TAG} before create"
-              run_step "git push delete tag" git push origin ":refs/tags/${TAG}"
-            fi
-
-            local args=(-X POST "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/releases"
-              -f "tag_name=${TAG}"
-              -f "name=Winnie's Computed ${TAG}"
-              -f "target_commitish=${GITHUB_SHA}"
-              -F generate_release_notes=true)
-            if [[ "${MOD_VERSION}" == *-alpha* || "${MOD_VERSION}" == *-beta* || "${MOD_VERSION}" == *-rc* ]]; then
-              args+=(-F prerelease=true)
-            fi
-
-            # Recreating can hit transient HTTP 422s — retry and surface the full
-            # response body (including errors[]) as annotation for diagnosis.
-            local attempt out rc=0
-            for attempt in 1 2 3; do
-              out=""; rc=0
-              out=$(gh api "${args[@]}" 2>&1) || rc=$?
-              if [ "$rc" -eq 0 ]; then
-                note "release created via API (attempt ${attempt})"
-                run_step "gh release upload" gh release upload "${TAG}" "${JAR_PATH}" \
-                  --repo "${GITHUB_REPOSITORY}"
-                note "jar uploaded"
-                return 0
-              fi
-              note "create attempt ${attempt}/3 rc=${rc}: $(printf '%s' "${out}" | tail -c 900)"
-              sleep 10
-            done
-            die "release create failed after 3 attempts"
-          }
-
-          command -v gh > /dev/null || die "gh CLI is not on PATH"
-          note "tag=${TAG} sha=${GITHUB_SHA}"
-          ls -la "${JAR_PATH}" > /dev/null 2>&1 || die "jar missing at ${JAR_PATH}"
-          note "jar ok: $(ls -la "${JAR_PATH}")"
-          ASSET_NAME="$(basename "${JAR_PATH}")"
-
-          view_rc=0
-          view_out=$(gh release view "${TAG}" --repo "${GITHUB_REPOSITORY}" 2>&1) || view_rc=$?
-          note "gh release view rc=${view_rc}: $(printf '%s' "${view_out}" | head -c 300)"
-
-          if [ "${view_rc}" -eq 0 ]; then
-            published=1
-
-            # Level 1: delete the old asset through the REST API, then upload fresh.
-            ids=""
-            if ids=$(gh api --paginate \
-                "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/releases/tags/${TAG}" \
-                --jq ".assets[] | select(.name == \"${ASSET_NAME}\") | .id" 2>&1); then
-              for id in ${ids}; do
-                out=""; rc=0
-                out=$(gh api -X DELETE \
-                  "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/releases/assets/${id}" 2>&1) || rc=$?
-                if [ "$rc" -ne 0 ]; then
-                  note "asset ${id} delete rc=${rc}: $(printf '%s' "${out}" | head -c 600)"
-                  ids="FAIL"
-                  break
-                fi
-                note "deleted old asset ${id}"
-              done
-            else
-              note "asset listing failed: $(printf '%s' "${ids}" | head -c 600)"
-              ids="FAIL"
-            fi
-
-            if [ "${ids}" != "FAIL" ]; then
-              out=""; rc=0
-              out=$(gh release upload "${TAG}" "${JAR_PATH}" --repo "${GITHUB_REPOSITORY}" 2>&1) || rc=$?
-              if [ "$rc" -eq 0 ]; then
-                note "asset replaced"
-                published=0
-              else
-                note "upload rc=${rc}: $(printf '%s' "${out}" | head -c 600)"
-              fi
-            fi
-
-            # Level 2: full release delete + recreate.
-            if [ "${published}" -ne 0 ]; then
-              note "falling back to release delete + recreate"
-              run_step "gh release delete" gh release delete "${TAG}" \
-                --repo "${GITHUB_REPOSITORY}" --yes
-              sleep 5
-              create_release
-              note "release recreated"
-            fi
-          else
-            create_release
-            note "release created"
+          set -euo pipefail
+          prerelease_args=()
+          if [[ "${MOD_VERSION}" == *-alpha* || "${MOD_VERSION}" == *-beta* || "${MOD_VERSION}" == *-rc* ]]; then
+            prerelease_args+=(--prerelease)
           fi
-
-          # Always point the tag at the commit this jar was built from (a recreated
-          # release may briefly sit on the previous tag position).
-          run_step "git tag -f" git tag -f "${TAG}" "${GITHUB_SHA}"
-          run_step "git push tag" git push -f origin "refs/tags/${TAG}"
-          note "tag moved to ${GITHUB_SHA}"
-          note "publish done"
+          gh release create "${TAG}" "${JAR_PATH}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --target "${GITHUB_SHA}" \
+            --title "Winnie's Computed ${TAG}" \
+            --generate-notes \
+            "${prerelease_args[@]}"
