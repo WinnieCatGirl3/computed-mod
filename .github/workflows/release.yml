@@ -107,12 +107,25 @@ jobs:
             if [[ "${MOD_VERSION}" == *-alpha* || "${MOD_VERSION}" == *-beta* || "${MOD_VERSION}" == *-rc* ]]; then
               prerelease_args+=(--prerelease)
             fi
-            run_step "gh release create" gh release create "${TAG}" "${JAR_PATH}" \
-              --repo "${GITHUB_REPOSITORY}" \
-              --target "${GITHUB_SHA}" \
-              --title "Winnie's Computed ${TAG}" \
-              --generate-notes \
-              "${prerelease_args[@]}"
+            # Recreating right after a delete can hit a transient HTTP 422 while GitHub
+            # still knows the old release — retry before giving up.
+            local attempt out rc=0
+            for attempt in 1 2 3; do
+              out=""; rc=0
+              out=$(gh release create "${TAG}" "${JAR_PATH}" \
+                --repo "${GITHUB_REPOSITORY}" \
+                --target "${GITHUB_SHA}" \
+                --title "Winnie's Computed ${TAG}" \
+                --generate-notes \
+                "${prerelease_args[@]}" 2>&1) || rc=$?
+              if [ "$rc" -eq 0 ]; then
+                printf '%s\n' "$out"
+                return 0
+              fi
+              note "create attempt ${attempt}/3 rc=${rc}: $(printf '%s' "${out}" | tail -c 600)"
+              sleep 15
+            done
+            die "gh release create failed after 3 attempts"
           }
 
           command -v gh > /dev/null || die "gh CLI is not on PATH"
@@ -165,15 +178,18 @@ jobs:
               note "falling back to release delete + recreate"
               run_step "gh release delete" gh release delete "${TAG}" \
                 --repo "${GITHUB_REPOSITORY}" --yes
+              sleep 5
               create_release
               note "release recreated"
             fi
-
-            run_step "git tag -f" git tag -f "${TAG}" "${GITHUB_SHA}"
-            run_step "git push tag" git push -f origin "refs/tags/${TAG}"
-            note "tag moved to ${GITHUB_SHA}"
           else
             create_release
             note "release created"
           fi
+
+          # Always point the tag at the commit this jar was built from (a recreated
+          # release may briefly sit on the previous tag position).
+          run_step "git tag -f" git tag -f "${TAG}" "${GITHUB_SHA}"
+          run_step "git push tag" git push -f origin "refs/tags/${TAG}"
+          note "tag moved to ${GITHUB_SHA}"
           note "publish done"
