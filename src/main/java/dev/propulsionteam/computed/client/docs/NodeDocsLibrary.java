@@ -74,6 +74,40 @@ public final class NodeDocsLibrary {
                 new String[] {},
                 new String[] {}));
 
+        // ── Keyboard / mouse reference ─────────────────────────────────────
+        list.add(new NodeDocsEntry(
+                "docs:keys",
+                "Keyboard Shortcuts",
+                "help",
+                """
+                Mouse
+
+                - Left-drag empty canvas: rubber-band selection (hold Shift to add to it)
+                - Left-drag a node: move it; dragging a frame moves every node inside it
+                - Middle- or right-drag: pan the canvas
+                - Mouse wheel: zoom around the cursor
+                - Double-click a node: zoom to it; double-click a comment: edit its text
+                - Right-click empty canvas: add-node menu; right-click a wire: delete it
+                - Drag from an output pin: create a wire; dropping it on empty canvas opens the quick-add picker
+                - Click or drag the minimap (bottom right): jump around the graph
+
+                Keys
+
+                - Tab: quick-add picker (type to filter, Enter inserts, arrows choose)
+                - Shift+A: node explorer at the cursor
+                - F: zoom to fit the selection, or the whole graph
+                - Ctrl+Z / Ctrl+Y: undo / redo (matched to your keyboard layout)
+                - Ctrl+A: select everything
+                - Ctrl+C / Ctrl+X / Ctrl+V: copy / cut / paste at the cursor
+                - Ctrl+D: duplicate the selection
+                - Ctrl+U: unlink the selected nodes
+                - Delete: delete the selection
+                - Escape: close a picker or stop editing a comment or frame title
+                """,
+                "",
+                new String[] {},
+                new String[] {}));
+
         // ── Flow ───────────────────────────────────────────────────────────
         list.add(entry(
                 "computed:if_branch", "If Branch", "flow",

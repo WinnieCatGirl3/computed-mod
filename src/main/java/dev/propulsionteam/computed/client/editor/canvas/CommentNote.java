@@ -125,15 +125,24 @@ public final class CommentNote extends WNode {
         }
     }
 
+    /** Starts text editing at the given local coordinates (entered via double-click). */
+    public void beginEditing(double localX, double localY) {
+        editing = true;
+        cursor = clampCursorAt(localX, localY);
+    }
+
     @Override
     public boolean hasInteractiveElementAt(double localX, double localY) {
-        return isSelected();
+        return editing;
     }
 
     @Override
     public boolean mouseClicked(double localX, double localY, int button) {
         if (button != 0) {
             editing = false;
+            return false;
+        }
+        if (localX < 0 || localY < 0 || localX > getWidth() || localY > getHeight()) {
             return false;
         }
         if (!isSelected()) {
@@ -171,8 +180,11 @@ public final class CommentNote extends WNode {
             }
             case GLFW.GLFW_KEY_BACKSPACE -> {
                 if (cursor > 0) {
-                    setText(text.substring(0, cursor - 1) + text.substring(cursor));
-                    cursor--;
+                    int next = cursor - 1;
+                    setText(text.substring(0, next) + text.substring(cursor));
+                    // setText already clamped the cursor to the new length — assign explicitly,
+                    // otherwise a second decrement here pushes it to -1 at the end of the text.
+                    cursor = Math.min(next, getText().length());
                 }
                 return true;
             }
@@ -231,6 +243,7 @@ public final class CommentNote extends WNode {
         if (text.length() + insertion.length() > MAX_LENGTH) {
             return;
         }
+        cursor = Math.min(Math.max(cursor, 0), text.length());
         setText(text.substring(0, cursor) + insertion + text.substring(cursor));
         cursor += insertion.length();
     }

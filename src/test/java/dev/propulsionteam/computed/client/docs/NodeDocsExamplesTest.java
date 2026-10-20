@@ -1,6 +1,8 @@
 package dev.propulsionteam.computed.client.docs;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import dev.propulsionteam.computed.client.editor.canvas.LuaEditorGraphAdapter;
@@ -100,6 +102,14 @@ class NodeDocsExamplesTest {
             }
         }
         assertTrue(dropped.isEmpty(), () -> "Editor import drops content: " + dropped);
+    }
+
+    @Test
+    void keyboardShortcutsPageExistsUnderHelp() {
+        NodeDocsEntry keys = NodeDocsLibrary.byId("docs:keys");
+        assertNotNull(keys, "keyboard shortcuts page is missing");
+        assertEquals("Help", keys.folder());
+        assertFalse(keys.summary().isBlank());
     }
 
     @Test

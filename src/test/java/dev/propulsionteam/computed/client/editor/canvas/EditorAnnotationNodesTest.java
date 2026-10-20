@@ -144,6 +144,43 @@ class EditorAnnotationNodesTest {
     }
 
     @Test
+    void commentOnlyCapturesClicksWhileEditing() {
+        CommentNote note = new CommentNote(0, 0, "move me");
+        assertFalse(note.hasInteractiveElementAt(4, 4));
+        assertFalse(note.mouseClicked(4, 4, 0));
+        note.setSelected(true);
+        note.beginEditing(4, 4);
+        assertTrue(note.isEditing());
+        assertTrue(note.hasInteractiveElementAt(4, 4));
+        assertTrue(note.mouseClicked(4, 4, 0));
+        // Clicks outside the note fall through so the screen can start a drag or clear the selection.
+        assertFalse(note.mouseClicked(note.getWidth() + 10, 4, 0));
+        note.clearElementFocus();
+        assertFalse(note.isEditing());
+        assertFalse(note.hasInteractiveElementAt(4, 4));
+    }
+
+    @Test
+    void commentBackspaceAtEndKeepsCursorValid() {
+        int keyBackspace = 259; // GLFW.GLFW_KEY_BACKSPACE — lwjgl is not on the test classpath
+        CommentNote note = new CommentNote(0, 0, "");
+        note.setSelected(true);
+        note.beginEditing(4, 4);
+        note.charTyped('a', 0);
+        assertEquals("a", note.getText());
+        note.keyPressed(keyBackspace, 0, 0);
+        assertEquals("", note.getText());
+        // Used to leave the cursor at -1, crashing the next insertText with StringIndexOOB.
+        note.charTyped('b', 0);
+        assertEquals("b", note.getText());
+        note.keyPressed(keyBackspace, 0, 0);
+        note.keyPressed(keyBackspace, 0, 0);
+        assertEquals("", note.getText());
+        note.charTyped('c', 0);
+        assertEquals("c", note.getText());
+    }
+
+    @Test
     void regularNodesStillRoundTripBesideAnnotations() {
         WGraph canvas = new WGraph();
         CommentNote note = new CommentNote(0, 0, "note");

@@ -613,7 +613,7 @@ public class WNodeScreen extends Screen {
                     && Math.abs(mouseY - lastClickScreenY) <= 4) {
                 lastClickMillis = 0;
                 lastClickedNode = null;
-                zoomToNode(node);
+                onNodeDoubleClick(node, graphX - node.getX(), graphY - node.getY());
                 return true;
             }
             lastClickMillis = now;
@@ -622,6 +622,8 @@ public class WNodeScreen extends Screen {
             lastClickScreenY = mouseY;
             if (!Screen.hasShiftDown() && !node.isSelected()) {
                 clearSelection();
+            } else if (selectedNode != null && selectedNode != node) {
+                selectedNode.clearElementFocus();
             }
             node.setSelected(true);
             selectedNode = node;
@@ -1260,6 +1262,11 @@ public class WNodeScreen extends Screen {
         return true;
     }
 
+    /** Default double-click action; editors override this to edit annotations instead of zooming. */
+    protected void onNodeDoubleClick(WNode node, double localX, double localY) {
+        zoomToNode(node);
+    }
+
     private void zoomToNode(WNode node) {
         node.ensureLayoutUpToDate();
         editorFitBounds(
@@ -1403,6 +1410,9 @@ public class WNodeScreen extends Screen {
     }
 
     private void clearSelection() {
+        if (selectedNode != null) {
+            selectedNode.clearElementFocus();
+        }
         graph.getNodes().forEach(node -> node.setSelected(false));
         selectedNode = null;
     }
@@ -1411,19 +1421,38 @@ public class WNodeScreen extends Screen {
         return graph.getNodes().stream().filter(WNode::isSelected).toList();
     }
 
+    /** Hit-test in visual stacking order: mirrors the render sort so clicks land on what is drawn on top. */
     private WNode topNodeAt(int graphX, int graphY) {
         List<WNode> nodes = graph.getNodes();
-        for (int index = nodes.size() - 1; index >= 0; index--) {
-            WNode node = nodes.get(index);
+        WNode top = null;
+        for (WNode node : nodes) {
             node.ensureLayoutUpToDate();
             if (graphX >= node.getX() - 5
                     && graphX <= node.getX() + node.getWidth() + 5
                     && graphY >= node.getY()
-                    && graphY <= node.getY() + node.getHeight()) {
-                return node;
+                    && graphY <= node.getY() + node.getHeight()
+                    && (top == null || drawsAfter(node, top))) {
+                top = node;
             }
         }
-        return null;
+        return top;
+    }
+
+    /** Whether {@code node} is painted after (thus above) {@code other} in the render order. */
+    private static boolean drawsAfter(WNode node, WNode other) {
+        if (node.renderLayer() != other.renderLayer()) {
+            return node.renderLayer() > other.renderLayer();
+        }
+        if (node.isSelected() != other.isSelected()) {
+            return node.isSelected();
+        }
+        if (node.getY() != other.getY()) {
+            return node.getY() > other.getY();
+        }
+        if (node.getX() != other.getX()) {
+            return node.getX() > other.getX();
+        }
+        return node.getId().compareTo(other.getId()) > 0;
     }
 
     private void selectRectangle() {

@@ -2057,6 +2057,15 @@ public class ComputerEditorScreen extends WNodeScreen {
         return placed;
     }
 
+    @Override
+    protected void onNodeDoubleClick(WNode node, double localX, double localY) {
+        if (node instanceof CommentNote note) {
+            note.beginEditing(localX, localY);
+            return;
+        }
+        super.onNodeDoubleClick(node, localX, localY);
+    }
+
     private void ensureDefinitionCaches() {
         if (definitionTitles != null && definitionInputs != null) {
             return;
