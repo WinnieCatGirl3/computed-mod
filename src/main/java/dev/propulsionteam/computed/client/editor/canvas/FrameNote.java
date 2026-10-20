@@ -29,13 +29,14 @@ public final class FrameNote extends WNode {
     private static final int DEFAULT_WIDTH = 240;
     private static final int DEFAULT_HEIGHT = 160;
     private static final int MAX_TITLE = 40;
-    private static final int FRAME_FILL = 0x2A5B8FD0;
-    private static final int FRAME_FILL_SELECTED = 0x3A5B8FD0;
-    private static final int FRAME_BORDER = 0x884A7FB0;
-    private static final int FRAME_TITLE_BAR = 0x664A7FB0;
+    /** Frame accent colors; index persists with the note. */
+    private static final int[] PALETTE = {
+        0xFF5B8FD0, 0xFFD08F5B, 0xFF8FD05B, 0xFFD05B8F, 0xFF9B7FD4
+    };
 
     private int frameWidth = DEFAULT_WIDTH;
     private int frameHeight = DEFAULT_HEIGHT;
+    private int colorIndex;
     private boolean resizing;
     private boolean titleEditing;
     private int titleCursor;
@@ -57,6 +58,8 @@ public final class FrameNote extends WNode {
         CompoundTag height = source.fields().get("height");
         frameWidth = width == null ? DEFAULT_WIDTH : Math.max(MIN_WIDTH, width.getInt("value"));
         frameHeight = height == null ? DEFAULT_HEIGHT : Math.max(MIN_HEIGHT, height.getInt("value"));
+        CompoundTag color = source.fields().get("color");
+        colorIndex = color == null ? 0 : Math.floorMod(color.getInt("value"), PALETTE.length);
         setMeasuredSize(frameWidth, frameHeight);
     }
 
@@ -64,6 +67,7 @@ public final class FrameNote extends WNode {
         FrameNote copy = new FrameNote(x, y, source.getTitle());
         copy.frameWidth = source.frameWidth;
         copy.frameHeight = source.frameHeight;
+        copy.colorIndex = source.colorIndex;
         copy.setMeasuredSize(copy.frameWidth, copy.frameHeight);
         return copy;
     }
@@ -75,10 +79,13 @@ public final class FrameNote extends WNode {
         width.putInt("value", frameWidth);
         CompoundTag height = new CompoundTag();
         height.putInt("value", frameHeight);
+        CompoundTag color = new CompoundTag();
+        color.putInt("value", colorIndex);
         Map<String, CompoundTag> fields = new LinkedHashMap<>();
         fields.put("title", title);
         fields.put("width", width);
         fields.put("height", height);
+        fields.put("color", color);
         return new GraphNode(id, DEFINITION_ID, "", x, y, java.util.List.of(), fields);
     }
 
@@ -92,6 +99,16 @@ public final class FrameNote extends WNode {
 
     public boolean isTitleEditing() {
         return titleEditing;
+    }
+
+    /** Cycles the frame accent color through the palette. */
+    public void cycleColor() {
+        colorIndex = (colorIndex + 1) % PALETTE.length;
+    }
+
+    /** Current frame accent color (opaque RGB). */
+    public int frameColor() {
+        return PALETTE[Math.floorMod(colorIndex, PALETTE.length)];
     }
 
     @Override
@@ -121,25 +138,26 @@ public final class FrameNote extends WNode {
                 && mouseX <= getX() + getWidth()
                 && mouseY >= getY()
                 && mouseY <= getY() + getHeight();
+        int color = frameColor();
         graphics.fill(
                 getX(),
                 getY(),
                 getX() + getWidth(),
                 getY() + getHeight(),
-                isSelected() || hovered ? FRAME_FILL_SELECTED : FRAME_FILL);
+                withAlpha(color, isSelected() || hovered ? 0x3A : 0x2A));
         graphics.fill(
                 getX(),
                 getY(),
                 getX() + getWidth(),
                 getY() + TITLE_BAR,
-                FRAME_TITLE_BAR);
+                withAlpha(color, 0x66));
         ComputedEditorStyle.drawPixelOutline(
                 graphics,
                 getX(),
                 getY(),
                 getWidth(),
                 getHeight(),
-                isSelected() || titleEditing ? ComputedEditorTheme.ACCENT : FRAME_BORDER);
+                isSelected() || titleEditing ? ComputedEditorTheme.ACCENT : withAlpha(color, 0x88));
         var font = Minecraft.getInstance().font;
         String label = getTitle().isEmpty() ? "Group" : getTitle();
         String shown = font.plainSubstrByWidth(label, Math.max(0, getWidth() - 10));
@@ -155,7 +173,11 @@ public final class FrameNote extends WNode {
                 getY() + getHeight() - 2,
                 inResizeHandle(mouseX - getX(), mouseY - getY())
                         ? ComputedEditorTheme.ACCENT
-                        : FRAME_BORDER);
+                        : withAlpha(color, 0x88));
+    }
+
+    private static int withAlpha(int rgb, int alpha) {
+        return (alpha << 24) | (rgb & 0xFFFFFF);
     }
 
     @Override
@@ -271,6 +293,7 @@ public final class FrameNote extends WNode {
         CompoundTag tag = super.save();
         tag.putInt("frameW", frameWidth);
         tag.putInt("frameH", frameHeight);
+        tag.putInt("frameColor", colorIndex);
         return tag;
     }
 
@@ -279,6 +302,7 @@ public final class FrameNote extends WNode {
         super.load(tag);
         frameWidth = Math.max(MIN_WIDTH, tag.getInt("frameW") == 0 ? DEFAULT_WIDTH : tag.getInt("frameW"));
         frameHeight = Math.max(MIN_HEIGHT, tag.getInt("frameH") == 0 ? DEFAULT_HEIGHT : tag.getInt("frameH"));
+        colorIndex = Math.floorMod(tag.getInt("frameColor"), PALETTE.length);
         titleCursor = Math.min(titleCursor, getTitle().length());
         setMeasuredSize(frameWidth, frameHeight);
     }

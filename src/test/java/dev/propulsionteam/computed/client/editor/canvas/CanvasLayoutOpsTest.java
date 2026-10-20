@@ -140,4 +140,34 @@ class CanvasLayoutOpsTest {
         CanvasLayoutOps.align(nodes, CanvasLayoutOps.Align.LEFT);
         assertEquals(firstPassX, a.getX());
     }
+
+    @Test
+    void fitZoomScalesBoundsIntoTheViewportWithPadding() {
+        // 200×100 content in a 400×400 view with 50px padding on every side:
+        // min(400/300, 400/200) = 4/3.
+        float zoom = CanvasLayoutOps.fitZoom(200, 100, 400, 400, 3f, 50);
+        assertEquals(400f / 300f, zoom, 1e-4f);
+    }
+
+    @Test
+    void fitZoomClampsBetweenViewportMinimumAndMaxZoom() {
+        assertEquals(2f, CanvasLayoutOps.fitZoom(10, 10, 4000, 4000, 2f, 0), 1e-6f);
+        assertEquals(0.1f, CanvasLayoutOps.fitZoom(100000, 100000, 400, 400, 3f, 0), 1e-6f);
+    }
+
+    @Test
+    void fitZoomReturnsOneForDegenerateInput() {
+        assertEquals(1f, CanvasLayoutOps.fitZoom(0, 100, 400, 400, 3f, 10));
+        assertEquals(1f, CanvasLayoutOps.fitZoom(100, 100, -1, 400, 3f, 10));
+    }
+
+    @Test
+    void centerPanPlacesAGraphPointInTheViewportMiddle() {
+        // At screen X = viewW/2 the transform yields graph = viewW/2 - panX, so pan = viewW/2 - graph.
+        assertEquals(500.0, CanvasLayoutOps.centerPanX(500, 2000));
+        assertEquals(-500.0, CanvasLayoutOps.centerPanX(1500, 2000));
+        assertEquals(300.0, CanvasLayoutOps.centerPanY(100, 800));
+        assertEquals(0.0, CanvasLayoutOps.centerPanX(400, 800));
+        assertEquals(0.0, CanvasLayoutOps.centerPanY(300, 600));
+    }
 }

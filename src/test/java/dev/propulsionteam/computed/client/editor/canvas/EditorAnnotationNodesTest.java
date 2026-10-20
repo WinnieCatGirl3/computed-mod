@@ -54,6 +54,31 @@ class EditorAnnotationNodesTest {
     }
 
     @Test
+    void frameColorCyclesAndRoundTripsThroughGraphNode() {
+        FrameNote frame = new FrameNote(0, 0, "Group");
+        int initial = frame.frameColor();
+        frame.cycleColor();
+        assertTrue(frame.frameColor() != initial);
+
+        GraphNode node = frame.toGraphNode(0, 0, frame.getId());
+        FrameNote restored = new FrameNote(node);
+        assertEquals(frame.frameColor(), restored.frameColor());
+
+        FrameNote copy = FrameNote.duplicate(frame, 5, 5);
+        assertEquals(frame.frameColor(), copy.frameColor());
+
+        WGraph graph = new WGraph();
+        graph.addNode(frame);
+        frame.cycleColor();
+        int cycled = frame.frameColor();
+        CompoundTag snapshot = graph.save();
+        frame.cycleColor();
+        graph.load(snapshot);
+        FrameNote fromSnapshot = (FrameNote) graph.getNode(frame.getId());
+        assertEquals(cycled, fromSnapshot.frameColor());
+    }
+
+    @Test
     void annotationsSurviveCanvasUndoSnapshot() {
         WGraph graph = new WGraph();
         CommentNote note = new CommentNote(0, 0, "original");

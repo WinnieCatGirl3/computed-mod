@@ -116,4 +116,35 @@ public final class CanvasLayoutOps {
         WNode last = ordered.get(ordered.size() - 1);
         return last.getY() + last.getHeight();
     }
+
+    /**
+     * Zoom that fits {@code boundsWidth × boundsHeight} into the viewport, inflated by
+     * {@code padding} pixels on every side and clamped between the viewport minimum and
+     * {@code maxZoom}. Returns {@code 1} for degenerate input.
+     */
+    public static float fitZoom(
+            double boundsWidth,
+            double boundsHeight,
+            int viewWidth,
+            int viewHeight,
+            float maxZoom,
+            double padding) {
+        if (boundsWidth <= 0 || boundsHeight <= 0 || viewWidth <= 0 || viewHeight <= 0) {
+            return 1f;
+        }
+        float zoom = (float) Math.min(
+                viewWidth / (boundsWidth + padding * 2.0),
+                viewHeight / (boundsHeight + padding * 2.0));
+        return Math.max(InertialViewport.MIN_ZOOM, Math.min(maxZoom, zoom));
+    }
+
+    /** Pan X that centers the given graph coordinate in a viewport of {@code viewWidth}. */
+    public static double centerPanX(double graphX, int viewWidth) {
+        return viewWidth / 2.0 - graphX;
+    }
+
+    /** Pan Y that centers the given graph coordinate in a viewport of {@code viewHeight}. */
+    public static double centerPanY(double graphY, int viewHeight) {
+        return viewHeight / 2.0 - graphY;
+    }
 }

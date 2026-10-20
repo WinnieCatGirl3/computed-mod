@@ -43,6 +43,10 @@ public class WNodeScreen extends Screen {
     private static final int ITEM_PICKER_WIDTH = 260;
     private static final int ITEM_PICKER_ROWS = 9;
     private static final int ITEM_PICKER_ROW_HEIGHT = 20;
+    private static final int NODE_PICKER_WIDTH = 230;
+    private static final int NODE_PICKER_ROWS = 10;
+    private static final int NODE_PICKER_ROW_HEIGHT = 16;
+    private static final long DOUBLE_CLICK_MS = 350;
 
     private static WNodeScreen activeScreen;
 
@@ -81,6 +85,21 @@ public class WNodeScreen extends Screen {
     private int itemPickerScroll;
     private Consumer<ItemStack> itemPickerCallback;
     private final List<ItemStack> itemPickerItems = new ArrayList<>();
+    private boolean nodePickerOpen;
+    private String nodePickerQuery = "";
+    private int nodePickerScroll;
+    private int nodePickerSelected;
+    private int nodePickerX;
+    private int nodePickerY;
+    private int nodePickerGraphX;
+    private int nodePickerGraphY;
+    private List<NodePickerEntry> nodePickerSource = List.of();
+    private WNode pendingLinkSource;
+    private int pendingLinkPin = -1;
+    private WNode lastClickedNode;
+    private long lastClickMillis;
+    private double lastClickScreenX;
+    private double lastClickScreenY;
 
     public WNodeScreen(WGraph graph) {
         super(Component.literal("Winnie's Computed Node Editor"));
@@ -169,6 +188,80 @@ public class WNodeScreen extends Screen {
     protected final void adjustEditorZoom(double amount, double screenX, double screenY) {
         viewport.addZoomImpulse(amount, screenX, screenY);
         wires.invalidate();
+    }
+
+    /** One row of the quick-add node picker; {@code inputTypes} drives wire-drop filtering. */
+    public record NodePickerEntry(String id, String title, java.util.List<WPin.DataType> inputTypes) {}
+
+    /** Node definitions offered by the quick-add picker (Tab); an empty list disables it. */
+    protected java.util.List<NodePickerEntry> nodePickerEntries() {
+        return List.of();
+    }
+
+    /** Creates the picked node and adds it to the canvas at the given graph position. */
+    protected WNode createNodeFromPicker(String id, int graphX, int graphY) {
+        return null;
+    }
+
+    protected final void editorUndo() {
+        undo();
+    }
+
+    protected final void editorRedo() {
+        redo();
+    }
+
+    protected final List<WNode> editorCanvasNodes() {
+        return List.copyOf(graph.getNodes());
+    }
+
+    /** Centers the given graph coordinate in the viewport. */
+    protected final void editorCenterOnGraphPoint(double graphX, double graphY) {
+        viewport.restore(
+                CanvasLayoutOps.centerPanX(graphX, width),
+                CanvasLayoutOps.centerPanY(graphY, height),
+                viewport.zoom());
+        wires.invalidate();
+    }
+
+    /** Fits the given graph-space bounds into the view, zooming out only up to 1.25×. */
+    protected final void editorFitBounds(double left, double top, double right, double bottom) {
+        float zoom = CanvasLayoutOps.fitZoom(right - left, bottom - top, width, height, 1.25f, 48);
+        viewport.restore(
+                CanvasLayoutOps.centerPanX((left + right) / 2.0, width),
+                CanvasLayoutOps.centerPanY((top + bottom) / 2.0, height),
+                zoom);
+        wires.invalidate();
+    }
+
+    /** Zooms the selection into view, or the whole graph when nothing is selected. */
+    protected final void editorZoomToFit() {
+        List<WNode> focus = selectedNodes();
+        if (focus.isEmpty()) {
+            focus = graph.getNodes();
+        }
+        GraphRect bounds = boundsOf(focus);
+        if (bounds != null) {
+            editorFitBounds(bounds.minX(), bounds.minY(), bounds.maxX(), bounds.maxY());
+        }
+    }
+
+    private GraphRect boundsOf(List<WNode> nodes) {
+        if (nodes.isEmpty()) {
+            return null;
+        }
+        double minX = Double.POSITIVE_INFINITY;
+        double minY = Double.POSITIVE_INFINITY;
+        double maxX = Double.NEGATIVE_INFINITY;
+        double maxY = Double.NEGATIVE_INFINITY;
+        for (WNode node : nodes) {
+            node.ensureLayoutUpToDate();
+            minX = Math.min(minX, node.getX());
+            minY = Math.min(minY, node.getY());
+            maxX = Math.max(maxX, node.getX() + node.getWidth());
+            maxY = Math.max(maxY, node.getY() + node.getHeight());
+        }
+        return new GraphRect(minX, minY, maxX, maxY);
     }
 
     protected final void addNodeToCanvas(WNode node) {
@@ -353,6 +446,9 @@ public class WNodeScreen extends Screen {
         if (itemPickerOpen) {
             renderItemPicker(graphics, mouseX, mouseY);
         }
+        if (nodePickerOpen) {
+            renderNodePicker(graphics);
+        }
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 
@@ -439,6 +535,9 @@ public class WNodeScreen extends Screen {
         if (itemPickerOpen) {
             return handleItemPickerClick(mouseX, mouseY, button);
         }
+        if (nodePickerOpen) {
+            return handleNodePickerClick(mouseX, mouseY, button);
+        }
         int graphX = screenToGraphX(mouseX);
         int graphY = screenToGraphY(mouseY);
         if (selectedNode != null && selectedNode.hasFocusedElement()) {
@@ -507,6 +606,20 @@ public class WNodeScreen extends Screen {
                 linkingPin = output;
                 return true;
             }
+            long now = net.minecraft.Util.getMillis();
+            if (node == lastClickedNode
+                    && now - lastClickMillis <= DOUBLE_CLICK_MS
+                    && Math.abs(mouseX - lastClickScreenX) <= 4
+                    && Math.abs(mouseY - lastClickScreenY) <= 4) {
+                lastClickMillis = 0;
+                lastClickedNode = null;
+                zoomToNode(node);
+                return true;
+            }
+            lastClickMillis = now;
+            lastClickedNode = node;
+            lastClickScreenX = mouseX;
+            lastClickScreenY = mouseY;
             if (!Screen.hasShiftDown() && !node.isSelected()) {
                 clearSelection();
             }
@@ -527,6 +640,8 @@ public class WNodeScreen extends Screen {
         if (!Screen.hasShiftDown()) {
             clearSelection();
         }
+        lastClickMillis = 0;
+        lastClickedNode = null;
         selecting = true;
         selectionStartX = graphX;
         selectionStartY = graphY;
@@ -674,7 +789,7 @@ public class WNodeScreen extends Screen {
                 graph.connect(linkingNode.getId(), linkingPin, target.getId(), input);
                 wires.invalidate();
             } else {
-                openNodeExplorer((int) mouseX, (int) mouseY, graphX, graphY);
+                openSmartAddPickerForLink(graphX, graphY);
             }
         }
         if (selectedNode != null) {
@@ -702,6 +817,13 @@ public class WNodeScreen extends Screen {
                     Math.max(0, filteredItemPickerItems().size() - ITEM_PICKER_ROWS));
             return true;
         }
+        if (nodePickerOpen) {
+            nodePickerScroll = Mth.clamp(
+                    nodePickerScroll - (int) Math.signum(scrollY) * 3,
+                    0,
+                    Math.max(0, filteredNodePickerEntries().size() - NODE_PICKER_ROWS));
+            return true;
+        }
         if (scrollY == 0) {
             return false;
         }
@@ -721,17 +843,44 @@ public class WNodeScreen extends Screen {
             }
             return true;
         }
+        if (nodePickerOpen) {
+            if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+                closeNodePicker();
+            } else if (keyCode == GLFW.GLFW_KEY_ENTER) {
+                confirmNodePickerSelection();
+            } else if (keyCode == GLFW.GLFW_KEY_UP) {
+                nodePickerSelected = Math.max(0, nodePickerSelected - 1);
+                ensureNodePickerSelectionVisible();
+            } else if (keyCode == GLFW.GLFW_KEY_DOWN) {
+                nodePickerSelected++;
+                ensureNodePickerSelectionVisible();
+            } else if (keyCode == GLFW.GLFW_KEY_BACKSPACE && !nodePickerQuery.isEmpty()) {
+                nodePickerQuery = nodePickerQuery.substring(0, nodePickerQuery.length() - 1);
+                nodePickerScroll = 0;
+                nodePickerSelected = 0;
+            }
+            return true;
+        }
         if (selectedNode != null
                 && selectedNode.hasFocusedElement()
                 && recordInteraction(() -> selectedNode.keyPressed(keyCode, scanCode, modifiers))) {
             return true;
         }
-        if (hasControlDown() && keyCode == GLFW.GLFW_KEY_Z) {
-            undo();
-            return true;
-        }
-        if (hasControlDown() && keyCode == GLFW.GLFW_KEY_Y) {
-            redo();
+        if (hasControlDown()
+                && (keyCode == GLFW.GLFW_KEY_Z || keyCode == GLFW.GLFW_KEY_Y)) {
+            // Resolve the pressed key by its layout label so QWERTZ users get
+            // Strg+Z = undo and Strg+Y = redo (US positions are the opposite).
+            String label = GLFW.glfwGetKeyName(GLFW.GLFW_KEY_UNKNOWN, scanCode);
+            boolean redoKey = "y".equalsIgnoreCase(label);
+            boolean undoKey = "z".equalsIgnoreCase(label);
+            if (!redoKey && !undoKey) {
+                redoKey = keyCode == GLFW.GLFW_KEY_Y;
+            }
+            if (redoKey) {
+                redo();
+            } else {
+                undo();
+            }
             return true;
         }
         if (hasControlDown() && keyCode == GLFW.GLFW_KEY_A) {
@@ -764,10 +913,24 @@ public class WNodeScreen extends Screen {
         }
         if (Screen.hasShiftDown() && keyCode == GLFW.GLFW_KEY_A) {
             openNodeExplorer(
-                    mouseX,
-                    mouseY,
+                    (int) mouseX,
+                    (int) mouseY,
                     screenToGraphX(mouseX),
                     screenToGraphY(mouseY));
+            return true;
+        }
+        if (keyCode == GLFW.GLFW_KEY_TAB
+                && !hasControlDown()
+                && !hasAltDown()
+                && !itemPickerOpen) {
+            openNodePickerCentered();
+            return true;
+        }
+        if (keyCode == GLFW.GLFW_KEY_F
+                && !hasControlDown()
+                && !hasAltDown()
+                && !hasShiftDown()) {
+            editorZoomToFit();
             return true;
         }
         if (keyCode == GLFW.GLFW_KEY_DELETE) {
@@ -783,6 +946,14 @@ public class WNodeScreen extends Screen {
             if (!Character.isISOControl(codePoint) && itemPickerQuery.length() < 80) {
                 itemPickerQuery += Character.toLowerCase(codePoint);
                 itemPickerScroll = 0;
+            }
+            return true;
+        }
+        if (nodePickerOpen) {
+            if (!Character.isISOControl(codePoint) && nodePickerQuery.length() < 60) {
+                nodePickerQuery += Character.toLowerCase(codePoint);
+                nodePickerScroll = 0;
+                nodePickerSelected = 0;
             }
             return true;
         }
@@ -815,7 +986,7 @@ public class WNodeScreen extends Screen {
     }
 
     protected final boolean isEditorModalOpen() {
-        return itemPickerOpen;
+        return itemPickerOpen || nodePickerOpen;
     }
 
     protected final void checkpoint() {
@@ -853,6 +1024,249 @@ public class WNodeScreen extends Screen {
         itemPickerOpen = false;
         itemPickerCallback = null;
         itemPickerItems.clear();
+    }
+
+    /** Opens the quick-add node picker near the mouse, placed at the mouse's graph position. */
+    protected final void openNodePickerCentered() {
+        openNodePicker(
+                editorGraphX(mouseX),
+                editorGraphY(mouseY),
+                nodePickerEntries(),
+                null,
+                -1);
+    }
+
+    /** Opens a smart picker after an unresolved wire drop, filtered to compatible inputs. */
+    private void openSmartAddPickerForLink(int graphX, int graphY) {
+        if (linkingNode == null || linkingPin < 0
+                || linkingPin >= linkingNode.getOutputs().size()) {
+            return;
+        }
+        WPin.DataType required =
+                linkingNode.getOutputs().get(linkingPin).getDataType();
+        List<NodePickerEntry> compatible = nodePickerEntries().stream()
+                .filter(entry -> entry.inputTypes().contains(required))
+                .toList();
+        openNodePicker(graphX, graphY, compatible, linkingNode, linkingPin);
+    }
+
+    private void openNodePicker(
+            int graphX,
+            int graphY,
+            List<NodePickerEntry> entries,
+            WNode linkSource,
+            int linkPin) {
+        if (entries.isEmpty()) {
+            if (linkSource != null) {
+                openNodeExplorer((int) mouseX, (int) mouseY, graphX, graphY);
+            }
+            return;
+        }
+        nodePickerOpen = true;
+        nodePickerQuery = "";
+        nodePickerScroll = 0;
+        nodePickerSelected = 0;
+        nodePickerGraphX = graphX;
+        nodePickerGraphY = graphY;
+        nodePickerSource = List.copyOf(entries);
+        pendingLinkSource = linkSource;
+        pendingLinkPin = linkPin;
+        int panelHeight = nodePickerPanelHeight();
+        nodePickerX = Mth.clamp((int) mouseX + 8, 4, Math.max(4, width - NODE_PICKER_WIDTH - 4));
+        nodePickerY = Mth.clamp((int) mouseY + 8, 4, Math.max(4, height - panelHeight - 4));
+    }
+
+    private void closeNodePicker() {
+        nodePickerOpen = false;
+        nodePickerSource = List.of();
+        pendingLinkSource = null;
+        pendingLinkPin = -1;
+    }
+
+    private List<NodePickerEntry> filteredNodePickerEntries() {
+        if (nodePickerQuery.isBlank()) {
+            return nodePickerSource;
+        }
+        String query = nodePickerQuery.toLowerCase(java.util.Locale.ROOT);
+        return nodePickerSource.stream()
+                .filter(entry -> entry.title()
+                                .toLowerCase(java.util.Locale.ROOT)
+                                .contains(query)
+                        || entry.id().toLowerCase(java.util.Locale.ROOT).contains(query))
+                .toList();
+    }
+
+    private void confirmNodePickerSelection() {
+        List<NodePickerEntry> entries = filteredNodePickerEntries();
+        if (entries.isEmpty()) {
+            closeNodePicker();
+            return;
+        }
+        int index = Mth.clamp(nodePickerSelected, 0, entries.size() - 1);
+        NodePickerEntry entry = entries.get(index);
+        WNode created = createNodeFromPicker(entry.id(), nodePickerGraphX, nodePickerGraphY);
+        if (created != null
+                && pendingLinkSource != null
+                && pendingLinkPin >= 0
+                && pendingLinkPin < pendingLinkSource.getOutputs().size()) {
+            WPin.DataType required =
+                    pendingLinkSource.getOutputs().get(pendingLinkPin).getDataType();
+            for (int input = 0; input < created.getInputs().size(); input++) {
+                if (created.getInputs().get(input).getDataType() == required) {
+                    graph.connect(pendingLinkSource.getId(), pendingLinkPin, created.getId(), input);
+                    wires.invalidate();
+                    break;
+                }
+            }
+        }
+        closeNodePicker();
+    }
+
+    private void ensureNodePickerSelectionVisible() {
+        int count = filteredNodePickerEntries().size();
+        nodePickerSelected = Mth.clamp(nodePickerSelected, 0, Math.max(0, count - 1));
+        if (nodePickerSelected < nodePickerScroll) {
+            nodePickerScroll = nodePickerSelected;
+        } else if (nodePickerSelected >= nodePickerScroll + NODE_PICKER_ROWS) {
+            nodePickerScroll = nodePickerSelected - NODE_PICKER_ROWS + 1;
+        }
+    }
+
+    private int nodePickerPanelHeight() {
+        int visible = Math.min(
+                NODE_PICKER_ROWS, Math.max(1, filteredNodePickerEntries().size()));
+        return 26 + visible * NODE_PICKER_ROW_HEIGHT + 6;
+    }
+
+    private void renderNodePicker(GuiGraphics graphics) {
+        List<NodePickerEntry> entries = filteredNodePickerEntries();
+        nodePickerScroll = Mth.clamp(
+                nodePickerScroll, 0, Math.max(0, entries.size() - NODE_PICKER_ROWS));
+        nodePickerSelected = Mth.clamp(nodePickerSelected, 0, Math.max(0, entries.size() - 1));
+        int x = nodePickerX;
+        int y = nodePickerY;
+        int panelHeight = nodePickerPanelHeight();
+        graphics.pose().pushPose();
+        graphics.pose().translate(0, 0, 7200);
+        graphics.fill(0, 0, width, height, 0x66000000);
+        graphics.fill(
+                x,
+                y,
+                x + NODE_PICKER_WIDTH,
+                y + panelHeight,
+                ComputedEditorTheme.MENU_BACKGROUND);
+        graphics.renderOutline(
+                x,
+                y,
+                NODE_PICKER_WIDTH,
+                panelHeight,
+                ComputedEditorTheme.BORDER_MENU);
+        graphics.fill(
+                x + 5,
+                y + 5,
+                x + NODE_PICKER_WIDTH - 5,
+                y + 20,
+                ComputedEditorTheme.BACKGROUND_INPUT);
+        graphics.renderOutline(
+                x + 5,
+                y + 5,
+                NODE_PICKER_WIDTH - 10,
+                15,
+                ComputedEditorTheme.BORDER_DEFAULT);
+        boolean blink = (System.currentTimeMillis() / 500) % 2 == 0;
+        String queryText = nodePickerQuery.isEmpty()
+                ? (blink ? "Add node_" : "Add node")
+                : nodePickerQuery + (blink ? "_" : "");
+        graphics.drawString(
+                font,
+                queryText,
+                x + 9,
+                y + 9,
+                nodePickerQuery.isEmpty()
+                        ? ComputedEditorTheme.TEXT_TERTIARY
+                        : ComputedEditorTheme.TEXT_PRIMARY,
+                false);
+        if (entries.isEmpty()) {
+            graphics.drawString(
+                    font,
+                    "No matching nodes",
+                    x + 9,
+                    y + 31,
+                    ComputedEditorTheme.TEXT_TERTIARY,
+                    false);
+        }
+        for (int row = 0; row < NODE_PICKER_ROWS && nodePickerScroll + row < entries.size(); row++) {
+            NodePickerEntry entry = entries.get(nodePickerScroll + row);
+            int rowY = y + 26 + row * NODE_PICKER_ROW_HEIGHT;
+            if (nodePickerSelected == nodePickerScroll + row) {
+                graphics.fill(
+                        x + 3,
+                        rowY,
+                        x + NODE_PICKER_WIDTH - 3,
+                        rowY + NODE_PICKER_ROW_HEIGHT,
+                        ComputedEditorTheme.MENU_HOVER);
+                graphics.fill(
+                        x + 3,
+                        rowY,
+                        x + 5,
+                        rowY + NODE_PICKER_ROW_HEIGHT,
+                        ComputedEditorTheme.ACCENT);
+            }
+            String title = font.plainSubstrByWidth(entry.title(), NODE_PICKER_WIDTH - 60);
+            graphics.drawString(
+                    font,
+                    title,
+                    x + 9,
+                    rowY + 4,
+                    ComputedEditorTheme.TEXT_PRIMARY,
+                    false);
+            String id = font.plainSubstrByWidth(entry.id(), 70);
+            graphics.drawString(
+                    font,
+                    id,
+                    x + NODE_PICKER_WIDTH - 9 - font.width(id),
+                    rowY + 4,
+                    ComputedEditorTheme.TEXT_TERTIARY,
+                    false);
+        }
+        graphics.pose().popPose();
+    }
+
+    private boolean handleNodePickerClick(double mouseX, double mouseY, int button) {
+        if (button != 0) {
+            closeNodePicker();
+            return true;
+        }
+        int x = nodePickerX;
+        int y = nodePickerY;
+        int panelHeight = nodePickerPanelHeight();
+        if (mouseX < x
+                || mouseX >= x + NODE_PICKER_WIDTH
+                || mouseY < y
+                || mouseY >= y + panelHeight) {
+            closeNodePicker();
+            return true;
+        }
+        if (mouseY < y + 26) {
+            return true;
+        }
+        List<NodePickerEntry> entries = filteredNodePickerEntries();
+        int row = ((int) mouseY - y - 26) / NODE_PICKER_ROW_HEIGHT;
+        int index = nodePickerScroll + row;
+        if (row >= 0 && row < NODE_PICKER_ROWS && index >= 0 && index < entries.size()) {
+            nodePickerSelected = index;
+            confirmNodePickerSelection();
+        }
+        return true;
+    }
+
+    private void zoomToNode(WNode node) {
+        node.ensureLayoutUpToDate();
+        editorFitBounds(
+                node.getX(),
+                node.getY(),
+                node.getX() + node.getWidth(),
+                node.getY() + node.getHeight());
     }
 
     private List<ItemStack> filteredItemPickerItems() {

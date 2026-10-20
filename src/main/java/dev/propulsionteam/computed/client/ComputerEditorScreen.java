@@ -17,10 +17,12 @@ import dev.propulsionteam.computed.graph.ComputedProgramV3;
 import dev.propulsionteam.computed.graph.LuaDefinitionSource;
 import dev.propulsionteam.computed.internal.node.api.WGraph;
 import dev.propulsionteam.computed.internal.node.api.WNode;
+import dev.propulsionteam.computed.internal.node.api.WPin;
 import dev.propulsionteam.computed.internal.node.client.ui.WNodeScreen;
 import dev.propulsionteam.computed.internal.node.client.editor.ComputedEditorStyle;
 import dev.propulsionteam.computed.internal.node.client.editor.ComputedEditorTheme;
 import dev.propulsionteam.computed.lua.compiler.LuaSourceCompiler;
+import dev.propulsionteam.computed.lua.node.ConnectionType;
 import dev.propulsionteam.computed.lua.node.LuaDefinitionLoader;
 import dev.propulsionteam.computed.lua.sandbox.LuaSandbox;
 import dev.propulsionteam.computed.network.SaveComputerGraphPayload;
@@ -38,9 +40,13 @@ import dev.propulsionteam.computed.persistence.ProgramDiskData;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
@@ -59,6 +65,9 @@ public class ComputerEditorScreen extends WNodeScreen {
     private static final String ALIGN_MENU_LABEL = "Align  ▸";
     private static final String NEW_LUA_NODE_ACTION = "computed:editor/new_lua_node";
     private static final String COMMAND_NODE_ID = "computed:command";
+    private static final int MINIMAP_WIDTH = 62;
+    private static final int MINIMAP_HEIGHT = 42;
+    private static final int MINIMAP_MARGIN = 6;
 
     private final BlockPos computerPos;
     private WGraph editorGraph;
@@ -114,6 +123,12 @@ public class ComputerEditorScreen extends WNodeScreen {
     private int explorerContextX;
     private int explorerContextY;
     private boolean transferMenuOpen;
+    private boolean minimapDragging;
+    private MinimapTransform minimapDragTransform;
+    private double minimapDragOffsetX;
+    private double minimapDragOffsetY;
+    private Map<String, String> definitionTitles;
+    private Map<String, List<WPin.DataType>> definitionInputs;
 
     private enum Modal {
         NONE,
@@ -319,6 +334,9 @@ public class ComputerEditorScreen extends WNodeScreen {
             renderExplorer(graphics, mouseX, mouseY);
         }
         renderControls(graphics, mouseX, mouseY);
+        if (modal == Modal.NONE) {
+            renderMinimap(graphics);
+        }
         if (contextOpen) {
             renderContext(graphics, mouseX, mouseY);
         }
@@ -358,6 +376,9 @@ public class ComputerEditorScreen extends WNodeScreen {
         if (button == 0 && handleControlsClick(mouseX, mouseY)) {
             return true;
         }
+        if (button == 0 && handleMinimapClick(mouseX, mouseY)) {
+            return true;
+        }
         if (transferMenuOpen) {
             return handleTransferMenuClick(mouseX, mouseY, button);
         }
@@ -383,6 +404,10 @@ public class ComputerEditorScreen extends WNodeScreen {
         if (modal != Modal.NONE) {
             return true;
         }
+        if (button == 0 && minimapDragging) {
+            panMinimapViewport(mouseX, mouseY);
+            return true;
+        }
         if (button == 0 && explorerOpen && explorerSearchFocused) {
             explorerSearchInput.dragTo(searchColumn(mouseX));
             return true;
@@ -399,6 +424,11 @@ public class ComputerEditorScreen extends WNodeScreen {
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
         if (modal != Modal.NONE) {
+            return true;
+        }
+        if (button == 0 && minimapDragging) {
+            minimapDragging = false;
+            minimapDragTransform = null;
             return true;
         }
         if (button == 0 && explorerPressNode != null) {
@@ -640,6 +670,9 @@ public class ComputerEditorScreen extends WNodeScreen {
 
     private void renderControls(GuiGraphics graphics, int mouseX, int mouseY) {
         drawButton(graphics, 6, 6, 22, 18, explorerOpen ? "«" : "»", mouseX, mouseY);
+        drawButton(graphics, width - 288, 6, 24, 18, "Undo", mouseX, mouseY);
+        drawButton(graphics, width - 262, 6, 24, 18, "Redo", mouseX, mouseY);
+        drawButton(graphics, width - 236, 6, 24, 18, "Fit", mouseX, mouseY);
         drawButton(graphics, width - 212, 6, 48, 18, "Docs", mouseX, mouseY);
         drawButton(graphics, width - 158, 6, 98, 18, "Import / Export", mouseX, mouseY);
         drawButton(graphics, width - 54, 6, 22, 18, "−", mouseX, mouseY);
@@ -821,6 +854,15 @@ public class ComputerEditorScreen extends WNodeScreen {
         }
         entries.add(new ContextEntry("Add Comment", false, true, () -> addCommentNote(explorerAnchorX, explorerAnchorY)));
         entries.add(new ContextEntry("Add Frame", false, true, () -> addFrameNote(explorerAnchorX, explorerAnchorY)));
+        FrameNote selectedFrame = selectedFrame();
+        if (selectedFrame != null) {
+            entries.add(new ContextEntry("", true, false, () -> {}));
+            entries.add(new ContextEntry("Select Frame Contents", false, true, () -> selectFrameContents(selectedFrame)));
+            entries.add(new ContextEntry("Frame Color", false, true, () -> {
+                checkpoint();
+                selectedFrame.cycleColor();
+            }));
+        }
         if (!hasSelectedNodes()) {
             entries.add(new ContextEntry("", true, false, () -> {}));
             entries.add(new ContextEntry("Open Node Explorer", false, true, () -> {
@@ -884,6 +926,18 @@ public class ComputerEditorScreen extends WNodeScreen {
             explorerOpen = !explorerOpen;
             explorerSearchFocused = false;
             explorerSearchInput.blur();
+            return true;
+        }
+        if (contains(mouseX, mouseY, width - 288, 6, 24, 18)) {
+            editorUndo();
+            return true;
+        }
+        if (contains(mouseX, mouseY, width - 262, 6, 24, 18)) {
+            editorRedo();
+            return true;
+        }
+        if (contains(mouseX, mouseY, width - 236, 6, 24, 18)) {
+            editorZoomToFit();
             return true;
         }
         if (contains(mouseX, mouseY, width - 54, 6, 22, 18)) {
@@ -1929,6 +1983,8 @@ public class ComputerEditorScreen extends WNodeScreen {
     }
 
     private List<ExplorerNode> explorerNodes(ComputedProgramV3 program) {
+        definitionTitles = null;
+        definitionInputs = null;
         List<ExplorerNode> nodes = new ArrayList<>();
         nodes.add(new ExplorerNode(
                 NEW_LUA_NODE_ACTION,
@@ -1977,5 +2033,305 @@ public class ComputerEditorScreen extends WNodeScreen {
             }
         });
         return List.copyOf(nodes);
+    }
+
+    @Override
+    protected List<NodePickerEntry> nodePickerEntries() {
+        ensureDefinitionCaches();
+        List<NodePickerEntry> entries = new ArrayList<>();
+        definitionTitles.forEach((id, title) -> {
+            if (id.equals(COMMAND_NODE_ID) && !isCreativeComputer()) {
+                return;
+            }
+            entries.add(new NodePickerEntry(id, title, definitionInputs.getOrDefault(id, List.of())));
+        });
+        entries.sort(Comparator.comparing(NodePickerEntry::title, String.CASE_INSENSITIVE_ORDER));
+        return List.copyOf(entries);
+    }
+
+    @Override
+    protected WNode createNodeFromPicker(String id, int graphX, int graphY) {
+        LuaEditorNode placed =
+                LuaEditorGraphAdapter.createEditorNode(baseProgram, id, graphX, graphY);
+        addNodeToCanvas(placed);
+        return placed;
+    }
+
+    private void ensureDefinitionCaches() {
+        if (definitionTitles != null && definitionInputs != null) {
+            return;
+        }
+        definitionTitles = new HashMap<>();
+        definitionInputs = new HashMap<>();
+        LuaSourceCompiler compiler = new LuaSourceCompiler();
+        LuaDefinitionLoader loader = new LuaDefinitionLoader();
+        LuaSandbox sandbox = new LuaSandbox();
+        LuaEditorGraphAdapter.definitions(baseProgram).forEach((id, source) -> {
+            try {
+                var definition = loader.load(compiler.compile(source.apiVersion(), source.source()), sandbox);
+                definitionTitles.put(id, definition.title());
+                List<WPin.DataType> types = new ArrayList<>();
+                for (var port : definition.inputs()) {
+                    types.add(toPinType(port.type()));
+                }
+                definitionInputs.put(id, List.copyOf(types));
+            } catch (RuntimeException ignored) {
+                definitionTitles.put(id, id);
+                definitionInputs.put(id, List.of());
+            }
+        });
+    }
+
+    private static WPin.DataType toPinType(ConnectionType type) {
+        return switch (type) {
+            case NUMBER -> WPin.DataType.NUMBER;
+            case BOOLEAN -> WPin.DataType.BOOLEAN;
+            case STRING -> WPin.DataType.STRING;
+            case EVENT -> WPin.DataType.EVENT;
+            case WIDGET -> WPin.DataType.WIDGET;
+            case TABLE -> WPin.DataType.TABLE;
+        };
+    }
+
+    private FrameNote selectedFrame() {
+        for (WNode node : selectedNodes()) {
+            if (node instanceof FrameNote frame) {
+                return frame;
+            }
+        }
+        return null;
+    }
+
+    private void selectFrameContents(FrameNote frame) {
+        frame.ensureLayoutUpToDate();
+        double left = frame.getX();
+        double top = frame.getY();
+        double right = left + frame.getWidth();
+        double bottom = top + frame.getHeight();
+        Set<UUID> inside = new HashSet<>();
+        for (WNode node : editorGraph.getNodes()) {
+            if (node == frame || node instanceof FrameNote || node instanceof CommentNote) {
+                continue;
+            }
+            node.ensureLayoutUpToDate();
+            if (node.getX() >= left
+                    && node.getY() >= top
+                    && node.getX() + node.getWidth() <= right
+                    && node.getY() + node.getHeight() <= bottom) {
+                inside.add(node.getId());
+            }
+        }
+        for (WNode node : editorGraph.getNodes()) {
+            node.setSelected(inside.contains(node.getId()));
+        }
+    }
+
+    private void renderMinimap(GuiGraphics graphics) {
+        int x = width - MINIMAP_WIDTH - MINIMAP_MARGIN;
+        int y = height - MINIMAP_HEIGHT - MINIMAP_MARGIN;
+        graphics.fill(x - 2, y - 2, x + MINIMAP_WIDTH + 2, y + MINIMAP_HEIGHT + 2, 0xC0111111);
+        graphics.renderOutline(
+                x - 2,
+                y - 2,
+                MINIMAP_WIDTH + 4,
+                MINIMAP_HEIGHT + 4,
+                ComputedEditorTheme.BORDER_DEFAULT);
+        MinimapTransform transform =
+                minimapDragTransform != null ? minimapDragTransform : minimapTransform();
+        for (WNode node : editorCanvasNodes()) {
+            node.ensureLayoutUpToDate();
+            int left = (int) Math.round(transform.mapX(node.getX()));
+            int top = (int) Math.round(transform.mapY(node.getY()));
+            int right =
+                    Math.max(left + 2, (int) Math.round(transform.mapX(node.getX() + node.getWidth())));
+            int bottom =
+                    Math.max(top + 2, (int) Math.round(transform.mapY(node.getY() + node.getHeight())));
+            int color;
+            if (node.isSelected()) {
+                color = ComputedEditorTheme.ACCENT;
+            } else if (node instanceof FrameNote) {
+                color = 0x5B8FD0;
+            } else if (node instanceof CommentNote) {
+                color = 0xD0B840;
+            } else {
+                color = 0x9A9A9A;
+            }
+            graphics.fill(left, top, right, bottom, color & 0xFFFFFF | 0xAA000000);
+            graphics.renderOutline(left, top, right - left, bottom - top, color);
+        }
+        MapRect viewport = minimapViewport(transform);
+        if (viewport.width() <= 0.0 || viewport.height() <= 0.0) {
+            return;
+        }
+        int left = (int) Math.floor(viewport.left());
+        int top = (int) Math.floor(viewport.top());
+        int right = Math.max(left + 2, (int) Math.ceil(viewport.right()));
+        int bottom = Math.max(top + 2, (int) Math.ceil(viewport.bottom()));
+        graphics.fill(left, top, right, bottom, ComputedEditorTheme.ACCENT & 0xFFFFFF | 0x33000000);
+        graphics.renderOutline(left, top, right - left, bottom - top, ComputedEditorTheme.ACCENT);
+    }
+
+    private boolean handleMinimapClick(double mouseX, double mouseY) {
+        int x = width - MINIMAP_WIDTH - MINIMAP_MARGIN;
+        int y = height - MINIMAP_HEIGHT - MINIMAP_MARGIN;
+        if (mouseX < x
+                || mouseX >= x + MINIMAP_WIDTH
+                || mouseY < y
+                || mouseY >= y + MINIMAP_HEIGHT) {
+            return false;
+        }
+        MinimapTransform transform = minimapTransform();
+        if (!transform.contentBounds().contains(mouseX, mouseY)) {
+            return true;
+        }
+        MapRect viewport = minimapViewport(transform);
+        boolean inViewport = viewport.contains(mouseX, mouseY);
+        minimapDragOffsetX = inViewport ? mouseX - viewport.centerX() : 0.0;
+        minimapDragOffsetY = inViewport ? mouseY - viewport.centerY() : 0.0;
+        minimapDragTransform = transform;
+        minimapDragging = true;
+        if (!inViewport) {
+            panMinimapViewport(mouseX, mouseY);
+        }
+        return true;
+    }
+
+    private void panMinimapViewport(double mouseX, double mouseY) {
+        if (minimapDragTransform == null) {
+            return;
+        }
+        MapRect content = minimapDragTransform.contentBounds();
+        double mapCenterX = net.minecraft.util.Mth.clamp(
+                mouseX - minimapDragOffsetX, content.left(), content.right());
+        double mapCenterY = net.minecraft.util.Mth.clamp(
+                mouseY - minimapDragOffsetY, content.top(), content.bottom());
+        editorCenterOnGraphPoint(
+                minimapDragTransform.worldX(mapCenterX), minimapDragTransform.worldY(mapCenterY));
+    }
+
+    /**
+     * Fits the union of all nodes and the current view (plus 4% padding) into the minimap panel,
+     * mirroring Gadgets &amp; Gizmos: the frame tracks the view so nodes glide through it, and the
+     * viewport outline clips against the fitted content bounds.
+     */
+    private MinimapTransform minimapTransform() {
+        double minX = Math.min(editorGraphX(0), editorGraphX(width));
+        double maxX = Math.max(editorGraphX(0), editorGraphX(width));
+        double minY = Math.min(editorGraphY(0), editorGraphY(height));
+        double maxY = Math.max(editorGraphY(0), editorGraphY(height));
+        for (WNode node : editorCanvasNodes()) {
+            node.ensureLayoutUpToDate();
+            minX = Math.min(minX, node.getX());
+            minY = Math.min(minY, node.getY());
+            maxX = Math.max(maxX, node.getX() + node.getWidth());
+            maxY = Math.max(maxY, node.getY() + node.getHeight());
+        }
+        double padX = Math.max(24.0, (maxX - minX) * 0.04);
+        double padY = Math.max(24.0, (maxY - minY) * 0.04);
+        int x = width - MINIMAP_WIDTH - MINIMAP_MARGIN;
+        int y = height - MINIMAP_HEIGHT - MINIMAP_MARGIN;
+        return MinimapTransform.fit(
+                minX - padX,
+                minY - padY,
+                maxX + padX,
+                maxY + padY,
+                x + 6,
+                y + 6,
+                MINIMAP_WIDTH - 12,
+                MINIMAP_HEIGHT - 12);
+    }
+
+    /** The main view's graph rectangle mapped into the minimap, clipped to the content bounds. */
+    private MapRect minimapViewport(MinimapTransform transform) {
+        MapRect content = transform.contentBounds();
+        double x0 = transform.mapX(editorGraphX(0));
+        double y0 = transform.mapY(editorGraphY(0));
+        double x1 = transform.mapX(editorGraphX(width));
+        double y1 = transform.mapY(editorGraphY(height));
+        double left = net.minecraft.util.Mth.clamp(
+                Math.min(x0, x1), content.left(), content.right());
+        double top = net.minecraft.util.Mth.clamp(
+                Math.min(y0, y1), content.top(), content.bottom());
+        double right = net.minecraft.util.Mth.clamp(
+                Math.max(x0, x1), content.left(), content.right());
+        double bottom = net.minecraft.util.Mth.clamp(
+                Math.max(y0, y1), content.top(), content.bottom());
+        return new MapRect(
+                Math.min(left, right),
+                Math.min(top, bottom),
+                Math.max(left, right),
+                Math.max(top, bottom));
+    }
+
+    private record MinimapTransform(
+            double worldLeft,
+            double worldTop,
+            double worldWidth,
+            double worldHeight,
+            double originX,
+            double originY,
+            double scale) {
+        static MinimapTransform fit(
+                double worldLeft,
+                double worldTop,
+                double worldRight,
+                double worldBottom,
+                double mapLeft,
+                double mapTop,
+                double mapWidth,
+                double mapHeight) {
+            double worldWidth = Math.max(1.0, worldRight - worldLeft);
+            double worldHeight = Math.max(1.0, worldBottom - worldTop);
+            double usableWidth = Math.max(1.0, mapWidth);
+            double usableHeight = Math.max(1.0, mapHeight);
+            double scale = Math.min(usableWidth / worldWidth, usableHeight / worldHeight);
+            double originX = mapLeft + (usableWidth - worldWidth * scale) * 0.5;
+            double originY = mapTop + (usableHeight - worldHeight * scale) * 0.5;
+            return new MinimapTransform(
+                    worldLeft, worldTop, worldWidth, worldHeight, originX, originY, scale);
+        }
+
+        double mapX(double worldX) {
+            return originX + (worldX - worldLeft) * scale;
+        }
+
+        double mapY(double worldY) {
+            return originY + (worldY - worldTop) * scale;
+        }
+
+        double worldX(double mapX) {
+            return worldLeft + (mapX - originX) / scale;
+        }
+
+        double worldY(double mapY) {
+            return worldTop + (mapY - originY) / scale;
+        }
+
+        MapRect contentBounds() {
+            return new MapRect(
+                    originX, originY, originX + worldWidth * scale, originY + worldHeight * scale);
+        }
+    }
+
+    private record MapRect(double left, double top, double right, double bottom) {
+        double width() {
+            return Math.max(0.0, right - left);
+        }
+
+        double height() {
+            return Math.max(0.0, bottom - top);
+        }
+
+        double centerX() {
+            return (left + right) * 0.5;
+        }
+
+        double centerY() {
+            return (top + bottom) * 0.5;
+        }
+
+        boolean contains(double x, double y) {
+            return x >= left && x <= right && y >= top && y <= bottom;
+        }
     }
 }
