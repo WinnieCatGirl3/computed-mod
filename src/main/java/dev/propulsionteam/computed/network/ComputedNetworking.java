@@ -448,23 +448,36 @@ public final class ComputedNetworking {
                 new ProgramDiskData(assembly.kind, assembly.path, assembly.buffer.toByteArray());
         ItemStack handDisk = player.getMainHandItem();
         if (handDisk.getItem() instanceof ProgramDiskItem) {
-            if (handDisk.getCount() > 1) {
-                ItemStack blanks = handDisk.split(handDisk.getCount() - 1);
-                player.getInventory().placeItemBackInInventory(blanks);
-            }
-            ProgramDiskItem.write(handDisk, data);
+            writeOneDisk(handDisk, data, player.getInventory());
             return PackageTransferService.WriteResult.ok(assembly.path);
         }
         ComputerBlockEntity computer = requireComputer(player, assembly.pos);
         ItemStack slotDisk = computer.getItem(ComputerBlockEntity.DISK_SLOT_INDEX);
         if (slotDisk.getItem() instanceof ProgramDiskItem) {
-            ProgramDiskItem.write(slotDisk, data);
+            writeOneDisk(slotDisk, data, player.getInventory());
             computer.setChanged();
             computer.pushUpdateToClients();
             return PackageTransferService.WriteResult.ok(assembly.path);
         }
         throw new IllegalArgumentException(
                 "Insert a Program Disk in the computer's drive or hold one in your main hand");
+    }
+
+    /**
+     * Writes {@code data} onto exactly one disk of {@code stack}. The write happens before the
+     * extra blanks are returned to the inventory: the blanks are component-identical to the
+     * not-yet-written remainder, so returning them first would let them merge back into the same
+     * slot and the write would stamp the whole stack instead of one disk.
+     */
+    private static void writeOneDisk(
+            ItemStack stack, ProgramDiskData data, net.minecraft.world.entity.player.Inventory inventory) {
+        if (stack.getCount() > 1) {
+            ItemStack blanks = stack.split(stack.getCount() - 1);
+            ProgramDiskItem.write(stack, data);
+            inventory.placeItemBackInInventory(blanks);
+        } else {
+            ProgramDiskItem.write(stack, data);
+        }
     }
 
     /**
