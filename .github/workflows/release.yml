@@ -77,6 +77,7 @@ jobs:
       # The release for the current mod_version always mirrors main: create it on the
       # first build, replace the jar (and move the tag) on every later push so an
       # already-published version can be corrected without a version bump.
+      # Failures are reported as ::error annotations because run logs need auth.
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -85,23 +86,48 @@ jobs:
           JAR_PATH: ${{ steps.artifact.outputs.path }}
         shell: bash
         run: |
-          set -euo pipefail
-          if gh release view "${TAG}" --repo "${GITHUB_REPOSITORY}" > /dev/null 2>&1; then
-            echo "Release ${TAG} exists — replacing jar and moving tag to ${GITHUB_SHA}."
-            gh release upload "${TAG}" "${JAR_PATH}" \
-              --repo "${GITHUB_REPOSITORY}" \
-              --clobber
-            git tag -f "${TAG}" "${GITHUB_SHA}"
-            git push -f origin "refs/tags/${TAG}"
+          set -uo pipefail
+
+          note() { echo "::notice title=Publish::${1}"; }
+          die() { echo "::error title=Publish failed::${1}"; exit 1; }
+
+          run_step() {
+            local desc="$1"; shift
+            local out rc=0
+            out=$("$@" 2>&1) || rc=$?
+            if [ "$rc" -ne 0 ]; then
+              die "${desc} (exit ${rc}): $(printf '%s' "$out" | tail -c 3500)"
+            fi
+            printf '%s\n' "$out"
+            return 0
+          }
+
+          command -v gh > /dev/null || die "gh CLI is not on PATH"
+          note "tag=${TAG} sha=${GITHUB_SHA}"
+          ls -la "${JAR_PATH}" > /dev/null 2>&1 || die "jar missing at ${JAR_PATH}"
+          note "jar ok: $(ls -la "${JAR_PATH}")"
+
+          view_rc=0
+          view_out=$(gh release view "${TAG}" --repo "${GITHUB_REPOSITORY}" 2>&1) || view_rc=$?
+          note "gh release view rc=${view_rc}: $(printf '%s' "${view_out}" | head -c 400)"
+
+          if [ "${view_rc}" -eq 0 ]; then
+            run_step "gh release upload" gh release upload "${TAG}" "${JAR_PATH}" \
+              --repo "${GITHUB_REPOSITORY}" --clobber
+            note "asset replaced"
+            run_step "git tag -f" git tag -f "${TAG}" "${GITHUB_SHA}"
+            run_step "git push tag" git push -f origin "refs/tags/${TAG}"
+            note "tag moved to ${GITHUB_SHA}"
           else
             prerelease_args=()
             if [[ "${MOD_VERSION}" == *-alpha* || "${MOD_VERSION}" == *-beta* || "${MOD_VERSION}" == *-rc* ]]; then
               prerelease_args+=(--prerelease)
             fi
-            gh release create "${TAG}" "${JAR_PATH}" \
+            run_step "gh release create" gh release create "${TAG}" "${JAR_PATH}" \
               --repo "${GITHUB_REPOSITORY}" \
               --target "${GITHUB_SHA}" \
               --title "Winnie's Computed ${TAG}" \
               --generate-notes \
               "${prerelease_args[@]}"
+            note "release created"
           fi
