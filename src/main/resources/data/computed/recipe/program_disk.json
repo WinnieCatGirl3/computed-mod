@@ -2,9 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "PPR"
+    "IPR"
   ],
   "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
     "P": {
       "item": "minecraft:paper"
     },
