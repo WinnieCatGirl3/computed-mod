@@ -12,6 +12,9 @@ theme:
   language: en
   logo: assets/images/logo.png
   favicon: assets/images/favicon.png
+  font:
+    text: Inter
+    code: JetBrains Mono
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -49,6 +52,7 @@ plugins:
 markdown_extensions:
   - admonition
   - attr_list
+  - md_in_html
   - tables
   - toc:
       permalink: true

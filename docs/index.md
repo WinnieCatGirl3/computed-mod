@@ -1,43 +1,154 @@
+---
+title: Home
+---
+
+<div class="computed-hero" markdown>
+
+![Computed](assets/images/logo.png){ .hero-logo width=96 }
+
 # Winnie's Computed
 
-Fork of [The Propulsion Team](https://github.com/Propulsion-Team/computed-mod)'s **Computed**,
-re-themed and reworked with original CC0 assets and my own spin on it.
+Lua node-graph programming for NeoForge 1.21.1 — visual scripting with a sandboxed Lua runtime.
 
-Winnie's Computed is a NeoForge 1.21.1 programmable Lua node-graph mod. LuaJ powers one sandboxed
-VM per computer while the Computed engine owns graph scheduling, safe Minecraft endpoints,
+[Get started](getting-started.md){ .md-button .md-button--primary }
+[View on GitHub](https://github.com/WinnieCatGirl3/computed-mod){ .md-button .md-button--gh }
+
+</div>
+
+<div class="grid cards" markdown>
+
+-   **Getting Started**
+
+    ---
+
+    Build your first program in five minutes, no Lua required
+
+-   **Using the Editor**
+
+    ---
+
+    Shortcuts, frames, comments, and all toolbar tools
+
+-   **In-Game Documentation**
+
+    ---
+
+    120+ example programs you can import with one click
+
+-   **Monitors**
+
+    ---
+
+    Screens, widget layout, and every widget type
+
+-   **Portable Monitor**
+
+    ---
+
+    Handheld display and Link Cards
+
+-   **Glasses**
+
+    ---
+
+    Wearable HUD with live graph widgets
+
+-   **Speaker**
+
+    ---
+
+    Notes, sounds, waves, and music discs
+
+-   **Node Catalog**
+
+    ---
+
+    Every bundled node at a glance
+
+-   **Integrations**
+
+    ---
+
+    Create, Aeronautics, CC:Tweaked, Jade, GeckoLib
+
+-   **Lua Authoring**
+
+    ---
+
+    Create your own nodes in Lua
+
+-   **Lua API Reference**
+
+    ---
+
+    Complete definition and context method reference
+
+-   **Java Endpoints**
+
+    ---
+
+    Safely expose addon and Minecraft behavior
+
+-   **Types and State**
+
+    ---
+
+    Connection types and persistent values
+
+-   **Sandbox**
+
+    ---
+
+    Available libraries and instruction limits
+
+-   **Filesystem**
+
+    ---
+
+    Per-computer isolated CraftOS-style files
+
+-   **Live Preview**
+
+    ---
+
+    Editor validation and fixtures
+
+-   **Import and Export**
+
+    ---
+
+    Graph packages and program disks
+
+-   **CC:Tweaked**
+
+    ---
+
+    Optional peripheral bridge
+
+-   **Graph Events**
+
+    ---
+
+    Named wireless graph events
+
+-   **Architecture**
+
+    ---
+
+    Runtime and package boundaries
+
+</div>
+
+## About
+
+Fork of [The Propulsion Team](https://github.com/Propulsion-Team/computed-mod)'s **Computed**,
+re-themed and reworked with original CC0 assets and my own spin on it. LuaJ powers one sandboxed VM
+per computer while the Computed engine owns graph scheduling, safe Minecraft endpoints,
 persistence, networking, the editor, monitor rendering, and integrations.
 
 Program format 3 stores one root graph and an embedded Lua definition library. Legacy graphs,
 Functions, Sections, JSON custom nodes, CMP1, and CMP2 are intentionally discarded or rejected
 without migration.
-
-## Guides
-
-New to Computed? Start with the [Getting Started](getting-started.md) tutorial — your first
-program in five minutes, no Lua required.
-
-| Guide | Purpose |
-|---|---|
-| [Getting Started](getting-started.md) | Build your first program step by step |
-| [Using the Editor](editor.md) | Shortcuts, frames, comments, all toolbar tools |
-| [In-Game Documentation](in-game-docs.md) | 120+ importable example programs |
-| [Monitors](monitors.md) | Screens, widget layout, all widget types |
-| [Portable Monitor](portable-monitor.md) | Handheld display and Link Cards |
-| [Glasses](glasses.md) | Wearable HUD with live graph widgets |
-| [Speaker](speaker.md) | Notes, sounds, waves, and music discs |
-| [Node Catalog](nodes.md) | Every bundled node at a glance |
-| [Integrations](integrations.md) | Create, Aeronautics, CC:Tweaked, Jade, GeckoLib |
-| [Authoring](lua/authoring-guide.md) | Create your own Lua nodes |
-| [Lua API](lua/lua-api-reference.md) | Complete definition and context method reference |
-| [Java endpoints](lua/endpoint-api.md) | Safely expose addon and Minecraft behavior |
-| [Types and state](lua/types-and-state.md) | Connection types and persistent values |
-| [Sandbox](lua/sandbox-and-budgets.md) | Available libraries and instruction limits |
-| [Filesystem](lua/fs.md) | Per-computer isolated CraftOS-style files |
-| [Live preview](lua/live-preview.md) | Editor validation and fixtures |
-| [Import/export](lua/import-export.md) | Graph packages and program disks |
-| [CC:Tweaked](lua/computercraft.md) | Optional peripheral bridge |
-| [Graph events](lua/graph-events.md) | Named wireless graph events |
-| [Architecture](lua/architecture.md) | Runtime and package boundaries |
 
 Runnable code examples live under
 [`docs/lua/examples`](https://github.com/WinnieCatGirl3/computed-mod/tree/main/docs/lua/examples)
