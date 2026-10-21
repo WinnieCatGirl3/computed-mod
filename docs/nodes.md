@@ -110,6 +110,7 @@ See [Monitors](monitors.md) for layout rules.
 | `computed:terminal_widget` | Terminal area |
 | `computed:terminal_line` | One styled line |
 | `computed:peripheral` | **Monitor** — up to 16 widgets to a screen |
+| `computed:glasses_hud` | **Glasses HUD** — up to 16 widgets on every linked player's glasses |
 
 ## Speaker
 

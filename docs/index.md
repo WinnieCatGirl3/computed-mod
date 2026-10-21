@@ -23,6 +23,7 @@ program in five minutes, no Lua required.
 | [In-Game Documentation](in-game-docs.md) | 120+ importable example programs |
 | [Monitors](monitors.md) | Screens, widget layout, all widget types |
 | [Portable Monitor](portable-monitor.md) | Handheld display and Link Cards |
+| [Glasses](glasses.md) | Wearable HUD with live graph widgets |
 | [Speaker](speaker.md) | Notes, sounds, waves, and music discs |
 | [Node Catalog](nodes.md) | Every bundled node at a glance |
 | [Integrations](integrations.md) | Create, Aeronautics, CC:Tweaked, Jade, GeckoLib |

@@ -54,6 +54,9 @@ Link cards have two uses:
    click the linked computer's displays, even from far away — there is no distance limit. This is
    what keeps drones and planes usable.
 
+[Computed Glasses](glasses.md) use the same trick: they mirror your first bound card as a
+wearable HUD.
+
 ## Limits at a glance
 
 | Limit | Value |
