@@ -2,8 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "LG",
-    "IR"
+    "ILI",
+    "RGR",
+    "IGI"
   ],
   "key": {
     "L": {
