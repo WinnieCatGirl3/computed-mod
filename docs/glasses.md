@@ -1,10 +1,7 @@
 # Computed Glasses
 
-The glasses are a wearable HUD. Wear them on your head and they show a status line for your
-linked computer — plus up to 16 live widgets from your graph, right in the world.
-
-!!! note "In development"
-    Glasses are a new feature that is not part of the latest release yet.
+The glasses are a wearable HUD (added in 1.2.7). Wear them on your head and they show a status
+line for your linked computer — plus up to 16 live widgets from your graph, right in the world.
 
 ![Glasses recipe](assets/images/recipe/Glasses.png){ width=420 }
 
