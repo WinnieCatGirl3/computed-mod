@@ -1,20 +1,24 @@
 {
-  "type": "minecraft:crafting_shapeless",
+  "type": "minecraft:crafting_shaped",
   "category": "misc",
-  "ingredients": [
-    {
+  "pattern": [
+    "LG",
+    "IR"
+  ],
+  "key": {
+    "L": {
       "item": "computed:link_card"
     },
-    {
+    "G": {
       "item": "minecraft:glass"
     },
-    {
-      "item": "minecraft:redstone"
-    },
-    {
+    "I": {
       "item": "minecraft:iron_ingot"
+    },
+    "R": {
+      "item": "minecraft:redstone"
     }
-  ],
+  },
   "result": {
     "count": 1,
     "id": "computed:portable_monitor"
