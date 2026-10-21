@@ -2,15 +2,15 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "PC",
+    "IP",
     "LR"
   ],
   "key": {
     "P": {
       "item": "minecraft:glass_pane"
     },
-    "C": {
-      "item": "minecraft:copper_ingot"
+    "I": {
+      "item": "minecraft:iron_ingot"
     },
     "L": {
       "item": "computed:link_card"
