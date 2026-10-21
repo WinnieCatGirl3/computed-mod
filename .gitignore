@@ -42,7 +42,6 @@ repo/
 !**/src/**/repo/
 
 ### Local-only ###
-opencode/
 libs/
 *.log
 
