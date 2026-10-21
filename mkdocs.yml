@@ -1,0 +1,59 @@
+site_name: Winnie's Computed
+site_description: Wiki and documentation for Winnie's Computed, a NeoForge 1.21.1 Lua node-graph mod.
+site_url: https://winniecatgirl3.github.io/computed-mod/
+repo_url: https://github.com/WinnieCatGirl3/computed-mod
+repo_name: WinnieCatGirl3/computed-mod
+edit_uri: edit/main/docs/
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: material
+  language: en
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: deep purple
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: deep purple
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.footer
+    - navigation.top
+    - content.action.edit
+    - search.highlight
+    - search.suggest
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.superfences
+
+nav:
+  - Home: index.md
+  - Lua Node Authoring: lua/authoring-guide.md
+  - Lua API Reference: lua/lua-api-reference.md
+  - Types and State: lua/types-and-state.md
+  - Graph Events: lua/graph-events.md
+  - Sandbox and Budgets: lua/sandbox-and-budgets.md
+  - Filesystem: lua/fs.md
+  - Java Endpoint API: lua/endpoint-api.md
+  - Import and Export: lua/import-export.md
+  - Live Preview: lua/live-preview.md
+  - CC Tweaked: lua/computercraft.md
+  - Architecture: lua/architecture.md

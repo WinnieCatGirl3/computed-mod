@@ -63,4 +63,4 @@ node:field("speed", "number", {
 })
 ```
 
-See [Lua API Reference](lua-api-reference.md), [Types and State](types-and-state.md), [Sandbox and Budgets](sandbox-and-budgets.md), and the files under `docs/lua/examples`.
+See [Lua API Reference](lua-api-reference.md), [Types and State](types-and-state.md), [Sandbox and Budgets](sandbox-and-budgets.md), and the [examples](https://github.com/WinnieCatGirl3/computed-mod/tree/main/docs/lua/examples) in the repository.

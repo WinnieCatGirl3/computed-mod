@@ -45,3 +45,6 @@ repo/
 opencode/
 libs/
 *.log
+
+### Wiki ###
+/site/
