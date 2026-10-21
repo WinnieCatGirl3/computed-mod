@@ -17,7 +17,7 @@ Sender and Receiver payload pins correspond by their stable `data_N` names. A re
 only the fields it needs; additional sender fields are ignored. Use the same type for a given field
 on both sides.
 
-Monitor uses the same `+` and `-` controls for one to 16 widget inputs.
+Monitor uses the same `+` and `-` controls for one to 16 widget inputs. The Terminal widget accepts one configurable line input per pin (`line_N`), and the Table widget one configurable row input per pin (`row_N`).
 
 Delivery order is deterministic. The scheduler indexes named receivers, so unrelated graph sections
 are not scanned for each event. Events emitted by an event handler are deferred to the next graph

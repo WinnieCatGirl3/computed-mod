@@ -6,6 +6,8 @@ Adjacent peripherals are exposed through `ctx:endpoint("computercraft:peripheral
 
 Dedicated CC Input and CC Output Lua nodes exchange named channel values. The Computed peripheral lists channels, reads outputs, writes inputs, and emits output-changed events.
 
+When Create Aeronautics is installed, the peripheral also exposes a fixed `measure()` method. It returns the same telemetry table as the `aeronautics:telemetry` endpoint (position, velocity, speed, heading, and the rest).
+
 Filesystem, terminal, rednet, HTTP, and other CraftOS globals are not exposed.
 
 ```lua

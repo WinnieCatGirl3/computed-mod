@@ -46,14 +46,24 @@ markdown_extensions:
 
 nav:
   - Home: index.md
-  - Lua Node Authoring: lua/authoring-guide.md
-  - Lua API Reference: lua/lua-api-reference.md
-  - Types and State: lua/types-and-state.md
-  - Graph Events: lua/graph-events.md
-  - Sandbox and Budgets: lua/sandbox-and-budgets.md
-  - Filesystem: lua/fs.md
+  - Getting Started: getting-started.md
+  - Guides:
+      - Using the Editor: editor.md
+      - In-Game Documentation: in-game-docs.md
+      - Monitors: monitors.md
+      - Portable Monitor: portable-monitor.md
+      - Speaker: speaker.md
+      - Node Catalog: nodes.md
+      - Integrations: integrations.md
+  - Lua Reference:
+      - Lua Node Authoring: lua/authoring-guide.md
+      - Lua API Reference: lua/lua-api-reference.md
+      - Types and State: lua/types-and-state.md
+      - Graph Events: lua/graph-events.md
+      - Sandbox and Budgets: lua/sandbox-and-budgets.md
+      - Filesystem: lua/fs.md
+      - Import and Export: lua/import-export.md
+      - Live Preview: lua/live-preview.md
   - Java Endpoint API: lua/endpoint-api.md
-  - Import and Export: lua/import-export.md
-  - Live Preview: lua/live-preview.md
   - CC Tweaked: lua/computercraft.md
   - Architecture: lua/architecture.md

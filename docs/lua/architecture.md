@@ -10,7 +10,7 @@
 - `client/renderer/node` owns the semantic palette and shared layout.
 - `persistence` owns format 3 and the clean legacy reset.
 - `network` remains authoritative for distance, permissions, revisions, and payload size.
-- `integration/computercraft`, `integration/create`, and `integration/vanilla` own optional API boundaries and lifecycle cleanup.
+- `integration/computercraft`, `integration/create`, `integration/aeronautics`, `integration/geckolib`, `integration/jade`, and `integration/wthit` own optional API boundaries and lifecycle cleanup.
 
 Minecraft and addon objects stop at endpoint handlers. Lua nodes communicate through scheduler-owned edges, never by directly calling neighbors. `WireEditorController` remains the unchanged compatibility boundary for curves, colors, thickness, pulses, waypoints, hit testing, and socket behavior.
 

@@ -13,18 +13,27 @@ without migration.
 
 ## Guides
 
-Computed uses sandboxed Lua definitions for bundled, integration, and user-authored nodes.
+New to Computed? Start with the [Getting Started](getting-started.md) tutorial — your first
+program in five minutes, no Lua required.
 
 | Guide | Purpose |
 |---|---|
-| [Authoring](lua/authoring-guide.md) | Create a Lua node |
+| [Getting Started](getting-started.md) | Build your first program step by step |
+| [Using the Editor](editor.md) | Shortcuts, frames, comments, all toolbar tools |
+| [In-Game Documentation](in-game-docs.md) | 120+ importable example programs |
+| [Monitors](monitors.md) | Screens, widget layout, all widget types |
+| [Portable Monitor](portable-monitor.md) | Handheld display and Link Cards |
+| [Speaker](speaker.md) | Notes, sounds, waves, and music discs |
+| [Node Catalog](nodes.md) | Every bundled node at a glance |
+| [Integrations](integrations.md) | Create, Aeronautics, CC:Tweaked, Jade, GeckoLib |
+| [Authoring](lua/authoring-guide.md) | Create your own Lua nodes |
 | [Lua API](lua/lua-api-reference.md) | Complete definition and context method reference |
 | [Java endpoints](lua/endpoint-api.md) | Safely expose addon and Minecraft behavior |
 | [Types and state](lua/types-and-state.md) | Connection types and persistent values |
 | [Sandbox](lua/sandbox-and-budgets.md) | Available libraries and instruction limits |
 | [Filesystem](lua/fs.md) | Per-computer isolated CraftOS-style files |
 | [Live preview](lua/live-preview.md) | Editor validation and fixtures |
-| [Import/export](lua/import-export.md) | Embedded library sharing |
+| [Import/export](lua/import-export.md) | Graph packages and program disks |
 | [CC:Tweaked](lua/computercraft.md) | Optional peripheral bridge |
 | [Graph events](lua/graph-events.md) | Named wireless graph events |
 | [Architecture](lua/architecture.md) | Runtime and package boundaries |

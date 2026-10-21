@@ -53,39 +53,39 @@ Registers tick and unload callbacks for endpoint-owned external state. The liste
 
 ## computed:world/time
 
-Signature: `() -> number`. Runs on the computer thread, does not yield, has no side effects, and returns fixture `6000` in preview. Errors when the computer host cannot expose world time. Example: `ctx:endpoint("computed:world"):call("time")`.
+Signature: `() -> number`. Runs on the server thread, does not yield, has no side effects, and returns fixture `6000` in preview. Errors when the computer host cannot expose world time. Example: `ctx:endpoint("computed:world"):call("time")`.
 
 ## computed:world/position
 
-Signature: `() -> number, number, number`. Runs on the computer thread, has no side effects, and is available in previews with a fixed position fixture. Errors when host world access is unavailable. Example: `local x, y, z = ctx:endpoint("computed:world"):call("position")`.
+Signature: `() -> number, number, number`. Runs on the server thread, has no side effects, and is available in previews with a fixed position fixture. Errors when host world access is unavailable. Example: `local x, y, z = ctx:endpoint("computed:world"):call("position")`.
 
 ## computed:world/rotation
 
-Signature: `() -> number, number, number`. Runs on the computer thread, has no side effects, and is available in previews with a fixed rotation fixture. Errors when host world access is unavailable. Example: `local yaw, pitch, roll = ctx:endpoint("computed:world"):call("rotation")`.
+Signature: `() -> number, number, number`. Runs on the server thread, has no side effects, and is available in previews with a fixed rotation fixture. Errors when host world access is unavailable. Example: `local yaw, pitch, roll = ctx:endpoint("computed:world"):call("rotation")`.
 
 ## computed:world/block_present
 
-Signature: `(face: string) -> boolean`. Runs on the computer thread, has no side effects, and returns `false` in previews. Unknown face names return `false`; invalid argument types are errors. Example: `ctx:endpoint("computed:world"):call("block_present", "front")`.
+Signature: `(face: string) -> boolean`. Runs on the server thread, has no side effects, and returns `false` in previews. Unknown face names return `false`; invalid argument types are errors. Example: `ctx:endpoint("computed:world"):call("block_present", "front")`.
 
 ## computed:redstone/input
 
-Signature: `(face: string) -> number`. Runs on the computer thread, has no side effects, and returns zero in previews. Unknown face names return zero. Example: `ctx:endpoint("computed:redstone"):call("input", "left")`.
+Signature: `(face: string) -> number`. Runs on the server thread, has no side effects, and returns zero in previews. Unknown face names return zero. Example: `ctx:endpoint("computed:redstone"):call("input", "left")`.
 
 ## computed:redstone/comparator
 
-Signature: `(face: string) -> number`. Runs on the computer thread, has no side effects, and returns zero in previews. Unknown face names return zero. Example: `ctx:endpoint("computed:redstone"):call("comparator", "front")`.
+Signature: `(face: string) -> number`. Runs on the server thread, has no side effects, and returns zero in previews. Unknown face names return zero. Example: `ctx:endpoint("computed:redstone"):call("comparator", "front")`.
 
 ## computed:redstone/output
 
-Signature: `(face: string, level: number) -> ()`. Runs on the computer thread, clamps power to 0–15, performs a world side effect, and is unavailable in previews. Unknown face names are ignored. Example: `ctx:endpoint("computed:redstone"):call("output", "back", 15)`.
+Signature: `(face: string, level: number) -> ()`. Runs on the server thread, clamps power to 0–15, performs a world side effect, and is unavailable in previews. Unknown face names are ignored. Example: `ctx:endpoint("computed:redstone"):call("output", "back", 15)`.
 
 ## computed:command/run
 
-Signature: `(string) -> ()`. Available only on a Creative Computer. Runs on the computer thread, does not yield, performs a command side effect, and is unavailable in preview. Errors on a normal Computer, missing host, invalid argument, or command failure. Example: `ctx:endpoint("computed:command"):call("run", "say hello")`.
+Signature: `(string) -> ()`. Runs on the server thread, performs a command side effect, and is unavailable in preview. The Creative Computer type no longer exists, so this endpoint currently errors on every computer; it stays registered for compatibility. Example: `ctx:endpoint("computed:command"):call("run", "say hello")`.
 
 ## computed:widget/text
 
-Signature: `(string) -> table`. Runs on the computer thread, does not yield, has no world side effect, and uses the same deterministic fixture in preview. Returns `{ type = "text", text = value }`. Example: `ctx:output("widget", ctx:endpoint("computed:widget"):call("text", "Ready"))`.
+Signature: `(text: string, color: number) -> table`. Runs on the computer thread, does not yield, has no world side effect, and uses the same deterministic fixture in preview. Returns a full text widget table. Example: `ctx:output("widget", ctx:endpoint("computed:widget"):call("text", "Ready", 0xffffffff))`.
 
 ## computed:widget/number
 
@@ -137,7 +137,7 @@ Signature: `(columns: string, rows: table, headerFg: number, headerBg: number, c
 
 ## computed:monitor/show
 
-Signature: `(widgets: table) -> ()`. Runs on the computer thread, refreshes an adjacent monitor, performs a world side effect, and is unavailable in previews. The endpoint target selects the computer-relative face. Invalid widget records are ignored. Example: `ctx:endpoint("computed:monitor", "front"):call("show", widgets)`.
+Signature: `(widgets: table) -> ()`. Runs on the server thread, refreshes an adjacent monitor, performs a world side effect, and is unavailable in previews. The endpoint target selects the computer-relative face. Invalid widget records are ignored. Example: `ctx:endpoint("computed:monitor", "front"):call("show", widgets)`.
 
 ## computed:fs/list
 
@@ -197,7 +197,7 @@ Signature: `() -> number`. Returns this computer's numeric id — the folder nam
 
 ## computed:fs/open
 
-Signature: `(path: string, mode: string) -> table`. Opens a file with mode `r`, `w`, `a`, `rb`, `wb`, or `ab` and returns a handle table. Handle methods: `read_line()`, `read_all()`, `read(count)`, `read_bytes(count)`, `write(text)`, `write_line(text)`, `write_bytes(raw)`, `seek(whence, offset)`, `flush()`, `close()`. Reads return `nil` at EOF. Runs on the computer thread with a filesystem side effect and is unavailable in preview. Errors on unsupported modes, missing read targets, closed handles, mode mismatches, or quota exhaustion. Example: `local handle = ctx:endpoint("computed:fs"):call("open", "/note.txt", "w"); handle:write_line("hi"); handle:close()`.
+Signature: `(path: string, mode: string) -> table`. Opens a file with mode `r`, `w`, `a`, `rb`, `wb`, or `ab` and returns a handle table. Handle methods: `read_line()`, `read_all()`, `read(count)`, `read_bytes(count)`, `write(text)`, `write_line(text)`, `seek(whence, offset)`, `flush()`, `close()`. Reads return `nil` at EOF. Runs on the computer thread with a filesystem side effect and is unavailable in preview. Errors on unsupported modes, missing read targets, closed handles, mode mismatches, or quota exhaustion. Example: `local handle = ctx:endpoint("computed:fs"):call("open", "/note.txt", "w"); handle:write_line("hi"); handle:close()`.
 
 ## computed:net/send
 
@@ -249,4 +249,4 @@ Signature: `(methodName: string, ...) -> table`. It invokes a public CC API meth
 
 ## aeronautics:telemetry/measure
 
-Signature: `() -> table`. It returns telemetry for the nearest Create contraption (including Create Aeronautics structures) around the computer: the table has `present` (boolean), `name` (string), `x`/`y`/`z` (contraption position), `vx`/`vy`/`vz` (contraption velocity) and `distance` (blocks to the computer). It runs on the server tick thread, does not yield or mutate the world, and returns `present = false` with zeroed fields in preview. Missing Create Aeronautics is an error; when no contraption is within range `present` is `false`. Example: `local telemetry = ctx:endpoint("aeronautics:telemetry"):call("measure")`.
+Signature: `() -> table`. It returns telemetry for the nearest Create contraption (including Create Aeronautics structures) around the computer. The table has `present` (boolean), `name` and `source` (strings), `x`/`y`/`z` (contraption position), `vx`/`vy`/`vz` (contraption velocity), `speed`, `distance`, `heading`, `pitch`, `roll`, the heading frame `hx`/`hy`/`hz`, the right frame `rx`/`ry`/`rz`, and the angular velocity `wx`/`wy`/`wz`. It runs on the server tick thread, does not yield or mutate the world, and returns `present = false` with zeroed fields in preview. Missing Create Aeronautics is an error; when no contraption is within range `present` is `false`. Example: `local telemetry = ctx:endpoint("aeronautics:telemetry"):call("measure")`.

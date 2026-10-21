@@ -59,7 +59,7 @@ binary:seek("set", 0)
 binary:close()
 ```
 
-Handle methods: `read_line()`, `read_all()`, `read(count)`, `read_bytes(count)`, `write(text)`, `write_line(text)`, `write_bytes(raw)`, `seek(whence, offset)` with `set`/`cur`/`end`, `flush()`, `close()`. Reads return `nil` at EOF. Writing on a read handle or reading on a write handle is an error. Closing twice is safe.
+Handle methods: `read_line()`, `read_all()`, `read(count)`, `read_bytes(count)`, `write(text)`, `write_line(text)`, `seek(whence, offset)` with `set`/`cur`/`end`, `flush()`, `close()`. Reads return `nil` at EOF. Writing on a read handle or reading on a write handle is an error. Closing twice is safe.
 
 ## Lifecycle
 

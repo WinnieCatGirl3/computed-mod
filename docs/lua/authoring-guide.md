@@ -1,5 +1,8 @@
 # Lua Node Authoring Guide
 
+New to Computed? The [Getting Started](../getting-started.md) tutorial shows the editor basics
+first. This page is about writing your own nodes in Lua.
+
 Every Computed node is a Lua definition. A file creates one node, declares an immutable schema, installs callbacks, and returns that node.
 
 ```lua
