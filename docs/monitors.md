@@ -5,11 +5,7 @@ monitor block grows automatically into a bigger screen when you place more monit
 
 ## Crafting and placing a monitor
 
-```text
-Copper          Redstone Lamp      Copper
-Tinted Glass   Redstone           Tinted Glass
-Copper         Redstone Lamp      Copper
-```
+![Monitor recipe](assets/images/recipe/Monitor.png){ width=420 }
 
 Where you look while placing decides the orientation: look straight ahead for a wall screen, look
 down for a floor screen, look up for a ceiling screen.

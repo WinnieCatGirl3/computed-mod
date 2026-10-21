@@ -6,10 +6,13 @@ your inventory.
 
 ## Crafting
 
-| Item | Recipe (shapeless) |
-|---|---|
-| **Link Card** | Paper + Redstone + Copper Ingot |
-| **Portable Monitor** | Link Card + Glass + Redstone + Iron Ingot |
+**Link Card** — paper, redstone, and a copper ingot (shapeless):
+
+![Link Card recipe](assets/images/recipe/Link_Card.png){ width=420 }
+
+**Portable Monitor** — a link card, glass, redstone, and an iron ingot (shapeless):
+
+![Portable Monitor recipe](assets/images/recipe/Portable_Monitor.png){ width=420 }
 
 ## Linking computers
 

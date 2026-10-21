@@ -5,13 +5,9 @@ minutes and needs no Lua knowledge.
 
 ## What you need
 
-- A **Computer**. Craft it from copper, redstone, a lightning rod, chiseled copper, and a monitor:
+- A **Computer**:
 
-    ```text
-    Redstone   Lightning Rod   Redstone
-    Copper     Monitor         Copper
-    Copper     Chiseled Copper Copper
-    ```
+    ![Computer recipe](assets/images/recipe/Computer.png){ width=420 }
 
 - A **Monitor** block in front of the computer (you already needed one to craft the computer).
 

@@ -5,11 +5,7 @@ to six speakers around one computer — one per side.
 
 ## Crafting
 
-```text
-Iron     Jukebox     Iron
-Note Block  Redstone Note Block
-Iron     Iron        Iron
-```
+![Speaker recipe](assets/images/recipe/Speaker.png){ width=420 }
 
 The speaker faces you when you place it. Right-click it with a music disc to insert the disc;
 right-click it empty-handed to take the disc back.
