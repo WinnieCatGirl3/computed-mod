@@ -75,6 +75,14 @@ repositories {
     }
 
     maven {
+        name = 'Curios'
+        url = 'https://maven.theillusivec4.top/'
+        content {
+            includeGroup 'top.theillusivec4.curios'
+        }
+    }
+
+    maven {
         name = 'WTHIT'
         url = 'https://maven2.bai.lol'
         content {
@@ -112,6 +120,13 @@ neoForge {
     runs {
         client {
             client()
+
+            // Headless diagnosis run: COMPUTED_HUD_SELFTEST=1 ./gradlew runClient boots straight
+            // into the copy of the test world used by the glasses HUD self test.
+            if (System.getenv('COMPUTED_HUD_SELFTEST') != null) {
+                programArgument '--quickPlaySingleplayer'
+                programArgument 'HudTest'
+            }
 
             // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
@@ -183,6 +198,8 @@ dependencies {
     testImplementation platform('org.junit:junit-bom:5.11.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'org.slf4j:slf4j-api:2.0.17'
+    // Matches the Gson Minecraft bundles, so client settings tests parse the same way.
+    testImplementation 'com.google.code.gson:gson:2.10.1'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     // Create stack: dev runs only via localRuntime (not compile classpath / not published for dependents).
@@ -210,6 +227,11 @@ dependencies {
     testImplementation "cc.tweaked:cc-tweaked-1.21.1-common-api:${cct_version}"
     testImplementation "cc.tweaked:cc-tweaked-1.21.1-forge-api:${cct_version}"
     localRuntime "cc.tweaked:cc-tweaked-1.21.1-forge:${cct_version}"
+
+    // Curios (optional): dedicated Link Card slot. API compile-only so the mod loads without it;
+    // the full jar is dev-run-only, same as Jade / GeckoLib.
+    compileOnly "top.theillusivec4.curios:curios-neoforge:${curios_version}"
+    localRuntime "top.theillusivec4.curios:curios-neoforge:${curios_version}"
 
     // Jade / WTHIT (Waila-style hover tooltips): API compile-only, full jars for dev runs only.
     compileOnly "maven.modrinth:jade:${jade_version}"

@@ -6,6 +6,7 @@ import dev.propulsionteam.computed.content.blocks.ComputerBlockEntity;
 import dev.propulsionteam.computed.content.blocks.ComputerBlockItem;
 import dev.propulsionteam.computed.content.blocks.SpeakerBlock;
 import dev.propulsionteam.computed.content.blocks.SpeakerBlockEntity;
+import dev.propulsionteam.computed.content.items.GlassesItem;
 import dev.propulsionteam.computed.content.items.LinkCardItem;
 import dev.propulsionteam.computed.content.items.PortableMonitorItem;
 import dev.propulsionteam.computed.content.items.ProgramDiskItem;
@@ -143,6 +144,9 @@ public final class ComputedRegistries {
                     ? GeckoLibSupport.createPortableMonitor(new Item.Properties().stacksTo(1))
                     : new PortableMonitorItem(new Item.Properties().stacksTo(1)));
 
+    public static final DeferredItem<GlassesItem> GLASSES_ITEM = ITEMS.register(
+            "glasses", () -> new GlassesItem(new Item.Properties().stacksTo(1)));
+
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> MAIN_TAB =
             CREATIVE_MODE_TABS.register(
                     "main",
@@ -157,6 +161,7 @@ public final class ComputedRegistries {
                                 output.accept(dev.propulsionteam.computed.content.items.ExamplePrograms.widgetDemoDisk());
                                 output.accept(LINK_CARD_ITEM.get());
                                 output.accept(PORTABLE_MONITOR_ITEM.get());
+                                output.accept(GLASSES_ITEM.get());
                             })
                             .build());
 

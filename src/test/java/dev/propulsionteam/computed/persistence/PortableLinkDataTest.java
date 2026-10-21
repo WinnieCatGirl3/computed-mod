@@ -1,6 +1,7 @@
 package dev.propulsionteam.computed.persistence;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -51,5 +52,61 @@ class PortableLinkDataTest {
         assertNotEquals(
                 new PortableLinkData(1, 2, 3, "minecraft:overworld"),
                 new PortableLinkData(1, 2, 4, "minecraft:overworld"));
+    }
+
+    @Test
+    void legacyTagWithoutNameOrIdLoads() {
+        CompoundTag tag = new CompoundTag();
+        tag.putInt("x", 4);
+        tag.putInt("y", 5);
+        tag.putInt("z", 6);
+        tag.putString("dimension", "minecraft:overworld");
+
+        PortableLinkData link = PortableLinkData.of(tag);
+        assertEquals("", link.name());
+        assertEquals(-1, link.computerId());
+        assertEquals(link, new PortableLinkData(4, 5, 6, "minecraft:overworld"));
+    }
+
+    @Test
+    void toTagCarriesNameAndIdWhenPresent() {
+        PortableLinkData link = new PortableLinkData(
+                1, 2, 3, "minecraft:overworld", "My Computer", 42);
+        PortableLinkData back = PortableLinkData.of(link.toTag());
+        assertEquals("My Computer", back.name());
+        assertEquals(42, back.computerId());
+        assertEquals(link, back);
+    }
+
+    @Test
+    void toTagOmitsDefaultNameAndId() {
+        CompoundTag tag = new PortableLinkData(0, 0, 0, "minecraft:overworld").toTag();
+        assertFalse(tag.contains("name"));
+        assertFalse(tag.contains("computerId"));
+    }
+
+    @Test
+    void equalityIgnoresNameAndId() {
+        PortableLinkData bare = new PortableLinkData(7, 8, 9, "minecraft:overworld");
+        PortableLinkData named =
+                new PortableLinkData(7, 8, 9, "minecraft:overworld", "Renamed", 12);
+        assertEquals(bare, named, "re-binding the same position stays the same channel");
+        assertEquals(bare.hashCode(), named.hashCode());
+    }
+
+    @Test
+    void displayNamePrefersNameThenFallsBackToCoordinates() {
+        assertEquals("My Computer", new PortableLinkData(
+                        1, 64, -8, "minecraft:overworld", "My Computer", 3)
+                .displayName());
+        assertEquals("1, 64, -8", new PortableLinkData(1, 64, -8, "minecraft:overworld")
+                .displayName());
+    }
+
+    @Test
+    void nullNameBecomesEmpty() {
+        PortableLinkData link =
+                new PortableLinkData(0, 0, 0, "minecraft:overworld", null, -1);
+        assertEquals("", link.name());
     }
 }

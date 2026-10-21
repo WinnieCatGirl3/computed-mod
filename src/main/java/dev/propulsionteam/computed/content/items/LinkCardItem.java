@@ -83,14 +83,19 @@ public class LinkCardItem extends Item {
     public InteractionResult useOn(UseOnContext context) {
         Level level = context.getLevel();
         BlockPos pos = context.getClickedPos();
-        if (!(level.getBlockEntity(pos) instanceof ComputerBlockEntity)) {
+        if (!(level.getBlockEntity(pos) instanceof ComputerBlockEntity computer)) {
             return InteractionResult.PASS;
         }
         if (level.isClientSide) {
             return InteractionResult.sidedSuccess(true);
         }
         PortableLinkData link = new PortableLinkData(
-                pos.getX(), pos.getY(), pos.getZ(), level.dimension().location().toString());
+                pos.getX(),
+                pos.getY(),
+                pos.getZ(),
+                level.dimension().location().toString(),
+                computer.computerName(),
+                computer.getOrCreateComputerId());
         write(context.getItemInHand(), link);
         if (context.getPlayer() != null) {
             context.getPlayer().displayClientMessage(

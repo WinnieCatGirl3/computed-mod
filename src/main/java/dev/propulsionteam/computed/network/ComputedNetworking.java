@@ -14,6 +14,7 @@ import dev.propulsionteam.computed.content.monitors.widgets.MonitorWidgetLayout;
 import dev.propulsionteam.computed.content.monitors.widgets.SliderWidget;
 import dev.propulsionteam.computed.content.monitors.widgets.Widget;
 import dev.propulsionteam.computed.content.monitors.widgets.WidgetDrawList;
+import dev.propulsionteam.computed.integration.curios.CuriosIntegration;
 import dev.propulsionteam.computed.lua.fs.ComputerIdAssigner;
 import dev.propulsionteam.computed.persistence.LegacyPackageMigration;
 import dev.propulsionteam.computed.persistence.PackageTransferService;
@@ -705,7 +706,7 @@ public final class ComputedNetworking {
                 rawWidgets, knownHash, sentFrame);
     }
 
-    /** True when the player's inventory holds a card or portable monitor linked to {@code pos}. */
+    /** True when the player's inventory, curio slots or offhand hold a link to {@code pos}. */
     private static boolean playerCarriesLinkTo(ServerPlayer player, BlockPos pos) {
         for (ItemStack stack : player.getInventory().items) {
             if (stackLinksTo(stack, pos)) {
@@ -713,6 +714,11 @@ public final class ComputedNetworking {
             }
         }
         for (ItemStack stack : player.getInventory().offhand) {
+            if (stackLinksTo(stack, pos)) {
+                return true;
+            }
+        }
+        for (ItemStack stack : CuriosIntegration.stacks(player)) {
             if (stackLinksTo(stack, pos)) {
                 return true;
             }

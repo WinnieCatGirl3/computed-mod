@@ -153,11 +153,16 @@ public class PortableMonitorItem extends Item {
     public InteractionResult useOn(UseOnContext context) {
         Level level = context.getLevel();
         BlockPos pos = context.getClickedPos();
-        if (!(level.getBlockEntity(pos) instanceof ComputerBlockEntity)) {
+        if (!(level.getBlockEntity(pos) instanceof ComputerBlockEntity computer)) {
             return InteractionResult.PASS;
         }
         PortableLinkData link = new PortableLinkData(
-                pos.getX(), pos.getY(), pos.getZ(), level.dimension().location().toString());
+                pos.getX(),
+                pos.getY(),
+                pos.getZ(),
+                level.dimension().location().toString(),
+                computer.computerName(),
+                computer.getOrCreateComputerId());
         if (context.isSecondaryUseActive()) {
             if (level.isClientSide) {
                 return InteractionResult.sidedSuccess(true);
