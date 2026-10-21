@@ -13,7 +13,8 @@ import dev.propulsionteam.computed.content.items.PortableLinkData;
 /**
  * Client-side placement of the glasses HUD elements, persisted as JSON in the config directory.
  * Every element is a text template with its own normalized position (0..1, so it survives
- * resolution and GUI-scale changes) and its own scale. A y of {@link #DEFAULT_Y} means
+ * resolution and GUI-scale changes) and its own scale. The graph widget region (widgets wired
+ * into the Glasses HUD node) carries its own normalized anchor and scale the same way. A y of {@link #DEFAULT_Y} means
  * "above the hotbar" and is resolved against the current GUI height at render time.
  */
 public final class GlassesHudSettings {
@@ -27,6 +28,12 @@ public final class GlassesHudSettings {
 
     /** HUD elements; an empty list turns the glasses HUD off. */
     public List<HudElement> elements = new ArrayList<>();
+    /** Normalized horizontal center of the graph widget region (the Glasses HUD node's widgets). */
+    public float widgetsX = 0.12f;
+    /** Normalized vertical top of the graph widget region. */
+    public float widgetsY = 0.1f;
+    /** Scale of the graph widget region, clamped like element scales. */
+    public float widgetsScale = 1f;
 
     private GlassesHudSettings() {}
 
@@ -174,7 +181,18 @@ public final class GlassesHudSettings {
             element.clamp();
             settings.elements.add(element);
         }
+        settings.widgetsX = json.has("widgetsX") ? json.get("widgetsX").getAsFloat() : settings.widgetsX;
+        settings.widgetsY = json.has("widgetsY") ? json.get("widgetsY").getAsFloat() : settings.widgetsY;
+        settings.widgetsScale = json.has("widgetsScale") ? json.get("widgetsScale").getAsFloat() : settings.widgetsScale;
+        settings.clampWidgetPlacement();
         return settings;
+    }
+
+    /** Clamps the graph widget region's anchor and scale back into their valid ranges. */
+    void clampWidgetPlacement() {
+        widgetsX = Math.clamp(widgetsX, 0f, 1f);
+        widgetsY = Math.clamp(widgetsY, 0f, 1f);
+        widgetsScale = Math.clamp(widgetsScale, 0.5f, 2f);
     }
 
     private static Path configFile() {

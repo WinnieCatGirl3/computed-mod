@@ -862,6 +862,17 @@ public final class NodeDocsLibrary {
                 new String[] {}));
 
         list.add(entry(
+                "computed:glasses_hud", "Glasses HUD", "widgets",
+                "The glasses hub. Widget inputs are painted on the HUD of every player whose link card points at this computer, with their own x/y and size like on a monitor - text, clocks, progress bars and friends without a screen.",
+                """
+                local w = ctx:endpoint("computed:widget"):call("clock", 0xffffffff, false)
+                w.line = 1
+                ctx:endpoint("computed:glasses"):call("show", { w })
+                """,
+                new String[] {"widget_1:widget", "widget_2:widget", "widget_3:widget", "widget_4:widget", "widget_5:widget", "widget_6:widget"},
+                new String[] {}));
+
+        list.add(entry(
                 "computed:text_widget", "Text Widget", "widgets",
                 "A single line of left-aligned text on the monitor.",
                 "local w = ctx:endpoint(\"computed:widget\"):call(\"text\", \"Hello\", 0xffffffff)",

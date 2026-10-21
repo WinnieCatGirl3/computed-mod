@@ -89,4 +89,32 @@ class ConfigurableNodePortsTest {
                 .map(PortSnapshot::id)
                 .toList());
     }
+
+    @Test
+    void glassesHudPortsAreWidgetInputs() {
+        List<PortSnapshot> ports = ConfigurableNodePorts.withInitialPort(
+                ConfigurableNodePorts.GLASSES_HUD, List.of());
+
+        assertEquals("widget_1", ports.getLast().id());
+        assertEquals(ConnectionType.WIDGET, ports.getLast().type());
+        assertEquals(PortDirection.INPUT, ports.getLast().direction());
+        assertEquals("Widget 1", ports.getLast().label());
+
+        ports = ConfigurableNodePorts.add(ConfigurableNodePorts.GLASSES_HUD, ports);
+        assertEquals(List.of("widget_1", "widget_2"), ports.stream()
+                .map(PortSnapshot::id)
+                .toList());
+
+        // Widget-only: the type must never cycle.
+        assertEquals(ports, ConfigurableNodePorts.cycleType(
+                ConfigurableNodePorts.GLASSES_HUD, ports, "widget_1"));
+        assertEquals(ports, ConfigurableNodePorts.cycleLastType(
+                ConfigurableNodePorts.GLASSES_HUD, ports));
+
+        ports = ConfigurableNodePorts.removeLast(ConfigurableNodePorts.GLASSES_HUD, ports);
+        assertEquals(List.of("widget_1"), ConfigurableNodePorts.dynamicPorts(
+                ConfigurableNodePorts.GLASSES_HUD, ports).stream()
+                .map(PortSnapshot::id)
+                .toList());
+    }
 }

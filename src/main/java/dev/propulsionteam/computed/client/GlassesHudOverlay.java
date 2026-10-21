@@ -5,6 +5,8 @@ import dev.propulsionteam.computed.content.ComputedRegistries;
 import dev.propulsionteam.computed.content.items.GlassesItem;
 import dev.propulsionteam.computed.content.items.LinkCardItem;
 import dev.propulsionteam.computed.content.items.PortableLinkData;
+import dev.propulsionteam.computed.content.monitors.widgets.WidgetDrawList;
+import dev.propulsionteam.computed.network.RequestGlassesHudPayload;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import net.minecraft.client.Minecraft;
@@ -23,11 +25,13 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 import dev.propulsionteam.computed.integration.curios.CuriosIntegration;
 
 /**
- * Draws the glasses HUD line ("Connected with: ...") while the local player wears glasses and
- * carries a bound link card, and opens {@link GlassesHudSettingsScreen} on the keybind.
+ * Draws the glasses HUD while the local player wears glasses and carries a bound link card:
+ * the designer's text elements plus the graph's widgets in the fixed top-left region. Opens
+ * {@link GlassesHudSettingsScreen} on the keybind.
  */
 @EventBusSubscriber(modid = Computed.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.GAME)
 public final class GlassesHudOverlay {
@@ -36,6 +40,9 @@ public final class GlassesHudOverlay {
     @SubscribeEvent
     static void onClientTick(ClientTickEvent.Post event) {
         Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.level == null) {
+            GlassesHudClientState.reset();
+        }
         while (GlassesHudKeybinds.OPEN_SETTINGS.consumeClick()) {
             if (minecraft.player == null) {
                 continue;
@@ -276,8 +283,14 @@ public final class GlassesHudOverlay {
             return;
         }
         logState("rendering HUD: link=" + link.displayName());
+        WidgetDrawList widgets = GlassesHudClientState.drawListFor(link);
+        if (GlassesHudClientState.shouldRequest()) {
+            PacketDistributor.sendToServer(new RequestGlassesHudPayload(
+                    link.dimension(), link.blockPos(), GlassesHudClientState.knownHash()));
+        }
         GlassesHudSettings settings = GlassesHudSettings.get();
         GuiGraphics graphics = event.getGuiGraphics();
+        drawWidgets(minecraft, graphics, settings, widgets);
         for (GlassesHudSettings.HudElement element : settings.elements) {
             if (!element.visible) {
                 continue;
@@ -302,6 +315,26 @@ public final class GlassesHudOverlay {
         graphics.pose().scale(scale, scale, 1f);
         graphics.drawString(minecraft.font, text, 0, 0, element.textColor(), true);
         graphics.pose().popPose();
+    }
+
+    /**
+     * The graph widget region: painted at the settings' anchor and scale (the same box the K
+     * designer drags), over a dark backing plate so the widgets stay readable against the world.
+     */
+    private static void drawWidgets(
+            Minecraft minecraft,
+            GuiGraphics graphics,
+            GlassesHudSettings settings,
+            WidgetDrawList drawList) {
+        if (drawList.isEmpty()) {
+            return;
+        }
+        GlassesHudWidgetRegion.Box box = GlassesHudWidgetRegion.boxFor(
+                settings, drawList, graphics.guiWidth(), graphics.guiHeight());
+        graphics.fill(
+                box.x() - 4, box.y() - 4, box.x() + box.width() + 4, box.y() + box.height() + 4,
+                0x66000000);
+        GlassesHudWidgetRegion.paint(graphics, drawList, box, settings.widgetsScale);
     }
 
     /** Debug aid: logs only when the HUD state changes, so a test session shows exactly why nothing draws. */

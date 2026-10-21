@@ -145,6 +145,42 @@ class BundledLuaLibraryTest {
         assertEquals("auto", shown.properties().get("fit"));
     }
 
+    @Test
+    void glassesHudDefinitionStreamsItsWidgetTableThroughTheBuiltinEndpoint() {
+        BuiltinEndpoints.register();
+        QueuedBuiltinHost host = new QueuedBuiltinHost();
+        var source = BundledLuaLibrary.load().get("computed:glasses_hud");
+        var runtime = new LuaComputerRuntime(UUID.randomUUID(), new LuaInstructionBudget(), host);
+        runtime.beginTick(1);
+        var instance = runtime.createNode(UUID.randomUUID(), source.apiVersion(), source.source());
+        var inputs = new LinkedHashMap<String, org.luaj.vm2.LuaValue>();
+        var widget = new org.luaj.vm2.LuaTable();
+        widget.set("type", "text");
+        widget.set("text", "Glasses output");
+        widget.set("x", 4);
+        widget.set("y", 6);
+        widget.set("width", 48);
+        widget.set("height", 12);
+        inputs.put("widget_1", widget);
+        var fields = new LinkedHashMap<String, org.luaj.vm2.LuaValue>();
+
+        LuaInvocationResult result =
+                instance.run(inputs, fields, 1, runtime.nextGraphStep(), false, (name, values) -> {});
+        result = completeQueuedInvocation(host, instance, result);
+
+        assertEquals(LuaNodeStatus.IDLE, result.status(), String.valueOf(result.diagnostics()));
+        assertEquals(List.of(), result.diagnostics());
+        assertEquals(1, host.glassesHudWidgets.size());
+        List<BuiltinWidget> shown = host.glassesHudWidgets.getFirst();
+        assertEquals(1, shown.size());
+        assertEquals("text", shown.getFirst().type());
+        assertEquals("Glasses output", shown.getFirst().properties().get("text"));
+        assertEquals(4, shown.getFirst().x());
+        assertEquals(6, shown.getFirst().y());
+        assertEquals(48, shown.getFirst().width());
+        assertEquals(12, shown.getFirst().height());
+    }
+
     private static LuaInvocationResult completeQueuedInvocation(
             QueuedBuiltinHost host,
             LuaNodeInstance instance,
@@ -167,6 +203,7 @@ class BundledLuaLibraryTest {
         private final List<Integer> redstoneLevels = new ArrayList<>();
         private final List<String> monitorTargets = new ArrayList<>();
         private final List<List<BuiltinWidget>> monitorWidgets = new ArrayList<>();
+        private final List<List<BuiltinWidget>> glassesHudWidgets = new ArrayList<>();
         private String redstoneThread;
 
         @Override
@@ -184,6 +221,11 @@ class BundledLuaLibraryTest {
         public void showWidgets(String target, List<BuiltinWidget> widgets) {
             monitorTargets.add(target);
             monitorWidgets.add(widgets);
+        }
+
+        @Override
+        public void showGlassesHud(List<BuiltinWidget> widgets) {
+            glassesHudWidgets.add(widgets);
         }
 
         @Override

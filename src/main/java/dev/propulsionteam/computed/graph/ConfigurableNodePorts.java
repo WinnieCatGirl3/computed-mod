@@ -12,6 +12,7 @@ public final class ConfigurableNodePorts {
     public static final String EVENT_SENDER = "computed:event_sender";
     public static final String EVENT_RECEIVER = "computed:event_receiver";
     public static final String MONITOR = "computed:peripheral";
+    public static final String GLASSES_HUD = "computed:glasses_hud";
     public static final String TERMINAL = "computed:terminal_widget";
     public static final String TABLE_WIDGET = "computed:table_widget";
     public static final int MAX_PORTS = 16;
@@ -26,6 +27,7 @@ public final class ConfigurableNodePorts {
         return EVENT_SENDER.equals(definitionId)
                 || EVENT_RECEIVER.equals(definitionId)
                 || MONITOR.equals(definitionId)
+                || GLASSES_HUD.equals(definitionId)
                 || TERMINAL.equals(definitionId)
                 || TABLE_WIDGET.equals(definitionId);
     }
@@ -91,7 +93,8 @@ public final class ConfigurableNodePorts {
 
     public static List<PortSnapshot> cycleType(
             String definitionId, List<PortSnapshot> current, String portId) {
-        if (MONITOR.equals(definitionId)) {
+        if (MONITOR.equals(definitionId) || GLASSES_HUD.equals(definitionId)) {
+            // Fixed payload type: widgets only (monitor screens and the glasses HUD).
             return List.copyOf(current);
         }
         PortSnapshot selected = dynamicPorts(definitionId, current).stream()
@@ -123,8 +126,9 @@ public final class ConfigurableNodePorts {
     }
 
     private static String prefix(String definitionId) {
-        return TERMINAL.equals(definitionId) || TABLE_WIDGET.equals(definitionId) ? "line_"
-                : MONITOR.equals(definitionId) ? "widget_"
+        return TERMINAL.equals(definitionId) || TABLE_WIDGET.equals(definitionId)
+                ? "line_"
+                : MONITOR.equals(definitionId) || GLASSES_HUD.equals(definitionId) ? "widget_"
                 : configurable(definitionId) ? "data_"
                 : null;
     }
@@ -136,13 +140,16 @@ public final class ConfigurableNodePorts {
     }
 
     private static ConnectionType defaultType(String definitionId) {
-        return MONITOR.equals(definitionId) ? ConnectionType.WIDGET
-                : TERMINAL.equals(definitionId) || TABLE_WIDGET.equals(definitionId) ? ConnectionType.STRING
+        return MONITOR.equals(definitionId) || GLASSES_HUD.equals(definitionId)
+                ? ConnectionType.WIDGET
+                : TERMINAL.equals(definitionId)
+                        || TABLE_WIDGET.equals(definitionId) ? ConnectionType.STRING
                 : ConnectionType.NUMBER;
     }
 
     private static String label(String definitionId, int index) {
-        return MONITOR.equals(definitionId) ? "Widget " + index
+        return MONITOR.equals(definitionId) || GLASSES_HUD.equals(definitionId)
+                ? "Widget " + index
                 : TERMINAL.equals(definitionId) ? "Line " + index
                 : TABLE_WIDGET.equals(definitionId) ? "Row " + index
                 : "Data " + index;

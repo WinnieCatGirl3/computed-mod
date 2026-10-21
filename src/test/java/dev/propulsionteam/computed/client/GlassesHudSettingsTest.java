@@ -66,6 +66,30 @@ class GlassesHudSettingsTest {
     }
 
     @Test
+    void widgetRegionKeepsDefaultsWhenAbsent() {
+        JsonObject json = JsonParser.parseString("{\"elements\":[]}").getAsJsonObject();
+
+        GlassesHudSettings settings = GlassesHudSettings.fromJson(json);
+
+        assertEquals(0.12f, settings.widgetsX, 1e-6f);
+        assertEquals(0.1f, settings.widgetsY, 1e-6f);
+        assertEquals(1f, settings.widgetsScale, 1e-6f);
+    }
+
+    @Test
+    void widgetRegionIsReadAndClamped() {
+        JsonObject json = JsonParser.parseString(
+                        "{\"elements\":[],\"widgetsX\":7,\"widgetsY\":-2,\"widgetsScale\":9}")
+                .getAsJsonObject();
+
+        GlassesHudSettings settings = GlassesHudSettings.fromJson(json);
+
+        assertEquals(1f, settings.widgetsX, 1e-6f);
+        assertEquals(0f, settings.widgetsY, 1e-6f);
+        assertEquals(2f, settings.widgetsScale, 1e-6f);
+    }
+
+    @Test
     void resolvesPlaceholders() {
         PortableLinkData link = new PortableLinkData(2, -60, 0, "minecraft:overworld", "Test", 0);
 

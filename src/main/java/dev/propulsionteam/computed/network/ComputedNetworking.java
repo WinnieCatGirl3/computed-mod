@@ -2,6 +2,7 @@ package dev.propulsionteam.computed.network;
 
 import dev.propulsionteam.computed.ComputerEditorBridge;
 import dev.propulsionteam.computed.Computed;
+import dev.propulsionteam.computed.GlassesHudBridge;
 import dev.propulsionteam.computed.PackageTransferBridge;
 import dev.propulsionteam.computed.PortableDisplayBridge;
 import dev.propulsionteam.computed.content.blocks.ComputerBlockEntity;
@@ -27,10 +28,14 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.Mth;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -186,6 +191,16 @@ public final class ComputedNetworking {
                 PortableDisplayPayload.STREAM_CODEC,
                 (payload, ctx) -> ctx.enqueueWork(() -> PortableDisplayBridge.deliver(
                         payload.computerPos(), payload.drawListBytes(), payload.computerName())));
+        registrar.playToServer(
+                RequestGlassesHudPayload.TYPE,
+                RequestGlassesHudPayload.STREAM_CODEC,
+                ComputedNetworking::handleRequestGlassesHud);
+        registrar.playToClient(
+                GlassesHudWidgetsPayload.TYPE,
+                GlassesHudWidgetsPayload.STREAM_CODEC,
+                (payload, ctx) -> ctx.enqueueWork(() -> GlassesHudBridge.deliver(
+                        payload.dimension(), payload.computerPos(), payload.hash(),
+                        payload.drawListBytes())));
     }
 
     public static OpenComputerEditorPayload openPayload(BlockPos pos, long serverRevision, CompoundTag graphTag) {
@@ -562,6 +577,31 @@ public final class ComputedNetworking {
     }
 
     /**
+     * Serves a glasses HUD widget request: only when the player carries a link to that computer,
+     * and only when the line hash differs from the client's known hash.
+     */
+    private static void handleRequestGlassesHud(RequestGlassesHudPayload payload, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            if (!(ctx.player() instanceof ServerPlayer player)) {
+                return;
+            }
+            if (!playerCarriesLinkTo(player, payload.computerPos())) {
+                return;
+            }
+            MinecraftServer server = player.getServer();
+            ServerLevel level = server == null
+                    ? null
+                    : server.getLevel(ResourceKey.create(
+                            Registries.DIMENSION, ResourceLocation.parse(payload.dimension())));
+            if (level == null
+                    || !(level.getBlockEntity(payload.computerPos()) instanceof ComputerBlockEntity computer)) {
+                return;
+            }
+            computer.sendGlassesHudTo(player, payload.knownHash());
+        });
+    }
+
+    /**
      * Resolves the computer's raw widgets for the portable canvas. Compact rows: 24px lines give
      * six instead of four. Frame pulls and click hit tests must share this exact resolution.
      */
@@ -707,7 +747,7 @@ public final class ComputedNetworking {
     }
 
     /** True when the player's inventory, curio slots or offhand hold a link to {@code pos}. */
-    private static boolean playerCarriesLinkTo(ServerPlayer player, BlockPos pos) {
+    public static boolean playerCarriesLinkTo(ServerPlayer player, BlockPos pos) {
         for (ItemStack stack : player.getInventory().items) {
             if (stackLinksTo(stack, pos)) {
                 return true;

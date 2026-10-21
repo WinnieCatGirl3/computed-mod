@@ -37,5 +37,12 @@ public interface BuiltinEndpointHost {
 
     default void showWidgets(String target, List<BuiltinWidget> widgets) {}
 
+    /**
+     * Latest glasses HUD widgets from the graph, painted on every linked player's HUD like on a
+     * monitor (own x/y/size on the fixed glasses canvas). Delivered to every player whose link
+     * card points at this computer.
+     */
+    default void showGlassesHud(List<BuiltinWidget> widgets) {}
+
     void runCommand(String command);
 }

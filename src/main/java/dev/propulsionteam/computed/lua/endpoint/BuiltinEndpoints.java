@@ -284,6 +284,17 @@ public final class BuiltinEndpoints {
                 },
                 null,
                 "Shows widget values on the monitor at the endpoint target."));
+        ComputedEndpoints.register("computed:glasses", endpoint -> endpoint.method(
+                "show",
+                EndpointSignature.of(List.of(EndpointType.TABLE), List.of()),
+                EndpointPolicy.serverThread(true, false),
+                invocation -> {
+                    requireHost(invocation).showGlassesHud(
+                            parseWidgets(invocation.arguments().getFirst().checktable(), invocation.nodeId()));
+                    return EndpointResult.immediate();
+                },
+                null,
+                "Shows widget values on the glasses HUD of every player linked to this computer."));
         dev.propulsionteam.computed.lua.fs.FsEndpoints.register();
         dev.propulsionteam.computed.lua.net.NetEndpoints.register();
     }

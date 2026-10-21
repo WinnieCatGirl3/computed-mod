@@ -35,6 +35,7 @@ public final class BundledLuaLibrary {
             new Entry("computed:slider_widget", "computed/lua/nodes/widgets/slider.lua"),
             new Entry("computed:progress_bar_widget", "computed/lua/nodes/widgets/progress.lua"),
             new Entry("computed:peripheral", "computed/lua/nodes/widgets/monitor.lua"),
+            new Entry("computed:glasses_hud", "computed/lua/nodes/widgets/glasses_hud.lua"),
             new Entry("computed:terminal_widget", "computed/lua/nodes/widgets/terminal.lua"),
             new Entry("computed:terminal_line", "computed/lua/nodes/widgets/terminal_line.lua"),
             new Entry("computed:panel_widget", "computed/lua/nodes/widgets/panel.lua"),

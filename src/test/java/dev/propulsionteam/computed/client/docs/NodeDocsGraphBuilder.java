@@ -67,8 +67,9 @@ public final class NodeDocsGraphBuilder {
             return null;
         }
 
-        // The peripheral entry documents the sink itself — no second copy of it.
-        boolean featuredIsSink = featured.id().equals("computed:peripheral");
+        // Sink entries document themselves — no second copy of a peripheral-style hub.
+        boolean featuredIsSink = featured.id().equals("computed:peripheral")
+                || featured.id().equals("computed:glasses_hud");
         LuaNodeDefinition sink = null;
         if (!featuredIsSink) {
             LuaDefinitionSource sinkSource = defs.get("computed:peripheral");
@@ -103,7 +104,8 @@ public final class NodeDocsGraphBuilder {
         boolean useInteractiveInputs = !featuredHasWidget;
         List<SourcePlan> sourcePlans = new ArrayList<>();
         if (featuredIsSink) {
-            // The monitor documents itself: a demo trio, widgets only, no data edges.
+            // The monitor (and the glasses hub) document themselves: a demo trio, widgets only,
+            // no data edges.
             for (String demoId : List.of(
                     "computed:button_widget", "computed:slider_widget", "computed:text_input_widget")) {
                 LuaNodeDefinition demo = compile(defs.get(demoId));

@@ -43,6 +43,7 @@
   "computed.glasses.settings.edit_title": "Edit HUD Element",
   "computed.glasses.settings.toggle_visibility": "Toggle Visibility",
   "computed.glasses.settings.active": "Double-click empty space to add an overlay",
+  "computed.glasses.settings.widgets": "Graph widgets",
   "computed.glasses.settings.tooltip.title": "Glasses HUD editor",
   "computed.glasses.settings.tooltip.drag": "Drag an overlay to move it",
   "computed.glasses.settings.tooltip.resize": "Resize from a handle, double-click to edit",

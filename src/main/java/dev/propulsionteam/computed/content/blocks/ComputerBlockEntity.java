@@ -3,6 +3,7 @@ package dev.propulsionteam.computed.content.blocks;
 import dev.propulsionteam.computed.Computed;
 import dev.propulsionteam.computed.content.ComputedRegistries;
 import dev.propulsionteam.computed.content.Peripherals;
+import dev.propulsionteam.computed.content.items.PortableMonitorItem;
 import dev.propulsionteam.computed.content.items.ProgramDiskItem;
 import dev.propulsionteam.computed.content.monitors.MonitorBlockEntity;
 import dev.propulsionteam.computed.content.monitors.widgets.ButtonWidget;
@@ -35,6 +36,7 @@ import dev.propulsionteam.computed.lua.fs.ComputerIdAssigner;
 import dev.propulsionteam.computed.menu.ComputerPeripheralMenu;
 import dev.propulsionteam.computed.network.ComputerEditPolicy;
 import dev.propulsionteam.computed.network.ComputedNetworking;
+import dev.propulsionteam.computed.network.GlassesHudWidgetsPayload;
 import dev.propulsionteam.computed.persistence.ProgramDiskData;
 import dev.propulsionteam.computed.persistence.ProgramV3Codec;
 import java.io.ByteArrayOutputStream;
@@ -57,10 +59,12 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -70,6 +74,8 @@ import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.phys.Vec3;
+import io.netty.buffer.Unpooled;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
 public class ComputerBlockEntity extends BaseContainerBlockEntity
@@ -102,6 +108,10 @@ public class ComputerBlockEntity extends BaseContainerBlockEntity
     private transient String lastGraphDiagnostics = "";
     private transient String lastWidgetWarning = "";
     private transient List<Widget> lastPortableWidgets = List.of();
+    /** Latest glasses HUD lines from the graph; {@code null} entries keep the element's own text. */
+    private transient WidgetDrawList glassesHudDrawList = WidgetDrawList.EMPTY;
+    private transient long glassesHudHash = WidgetDrawList.EMPTY.hash();
+    private transient boolean glassesHudSynced;
     private final int[] emittedRedstone = new int[Direction.values().length];
     private boolean redstoneUpdatePending;
 
@@ -662,6 +672,70 @@ public class ComputerBlockEntity extends BaseContainerBlockEntity
     /** Widgets from the last show call, before line layout, for portable monitor streaming. */
     public List<Widget> lastShownWidgets() {
         return lastPortableWidgets;
+    }
+
+    @Override
+    public void showGlassesHud(List<BuiltinWidget> definitions) {
+        if (!(level instanceof ServerLevel serverLevel) || isRemoved()) {
+            return;
+        }
+        requireServerThread(serverLevel);
+        List<Widget> widgets = new java.util.ArrayList<>();
+        for (BuiltinWidget definition : definitions) {
+            Widget widget = toWidget(definition);
+            if (widget != null) {
+                widgets.add(widget);
+            }
+        }
+        widgets = MonitorWidgetLayout.resolve(
+                widgets, PortableMonitorItem.CANVAS_W, PortableMonitorItem.CANVAS_H);
+        glassesHudDrawList = new WidgetDrawList(widgets);
+        long hash = glassesHudDrawList.hash();
+        if (glassesHudSynced && hash == glassesHudHash) {
+            return;
+        }
+        glassesHudHash = hash;
+        glassesHudSynced = true;
+        for (ServerPlayer player : serverLevel.getServer().getPlayerList().getPlayers()) {
+            if (ComputedNetworking.playerCarriesLinkTo(player, worldPosition)) {
+                sendGlassesHud(player);
+            }
+        }
+    }
+
+    /**
+     * Answers a client glasses HUD request when the known hash differs from the current state,
+     * mirroring the portable monitor's hash-gated pull.
+     */
+    public void sendGlassesHudTo(ServerPlayer player, long knownHash) {
+        if (glassesHudHash == knownHash) {
+            return;
+        }
+        sendGlassesHud(player);
+    }
+
+    private void sendGlassesHud(ServerPlayer player) {
+        if (level == null) {
+            return;
+        }
+        PacketDistributor.sendToPlayer(player, new GlassesHudWidgetsPayload(
+                level.dimension().location().toString(),
+                worldPosition,
+                glassesHudHash,
+                wireBytes(glassesHudDrawList)));
+    }
+
+    /** Wire encoding of a draw list, identical to the portable display frame bytes. */
+    private static byte[] wireBytes(WidgetDrawList drawList) {
+        FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
+        try {
+            drawList.write(buf);
+            byte[] bytes = new byte[buf.readableBytes()];
+            buf.readBytes(bytes);
+            return bytes;
+        } finally {
+            buf.release();
+        }
     }
 
     /**

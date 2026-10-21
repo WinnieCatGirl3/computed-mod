@@ -139,6 +139,10 @@ Signature: `(columns: string, rows: table, headerFg: number, headerBg: number, c
 
 Signature: `(widgets: table) -> ()`. Runs on the server thread, refreshes an adjacent monitor, performs a world side effect, and is unavailable in previews. The endpoint target selects the computer-relative face. Invalid widget records are ignored. Example: `ctx:endpoint("computed:monitor", "front"):call("show", widgets)`.
 
+## computed:glasses/show
+
+Signature: `(widgets: table) -> ()`. Runs on the server thread, performs a world side effect, and is unavailable in previews. Shows widget values on the glasses HUD of every player whose link card points at this computer: widgets keep their own x/y and size like on a monitor, resolved onto the fixed glasses canvas, while HUD element positions and scale stay in the K designer. Invalid widget records are ignored. Example: `ctx:endpoint("computed:glasses"):call("show", widgets)`.
+
 ## computed:fs/list
 
 Signature: `(path: string) -> table`. Lists entry names inside a directory on the per-computer isolated filesystem (rooted under the world save). Runs on the computer thread with a filesystem side effect and is unavailable in preview. Errors when the filesystem is not attached or the path is not a directory. Example: `local names = ctx:endpoint("computed:fs"):call("list", "/")`.

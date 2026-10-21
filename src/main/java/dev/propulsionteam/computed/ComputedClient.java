@@ -2,6 +2,7 @@ package dev.propulsionteam.computed;
 
 import dev.propulsionteam.computed.client.ComputerEditorScreen;
 import dev.propulsionteam.computed.client.ComputerPeripheralScreen;
+import dev.propulsionteam.computed.client.GlassesHudClientState;
 import dev.propulsionteam.computed.client.PortableMonitorScreen;
 import dev.propulsionteam.computed.content.ComputedRegistries;
 import dev.propulsionteam.computed.content.Peripherals;
@@ -87,6 +88,7 @@ public class ComputedClient {
                     }
                 },
                 (sources, active) -> Minecraft.getInstance().setScreen(new PortableMonitorScreen(sources, active)));
+        GlassesHudBridge.install(GlassesHudClientState::deliver);
     }
 
     public ComputedClient(ModContainer container) {

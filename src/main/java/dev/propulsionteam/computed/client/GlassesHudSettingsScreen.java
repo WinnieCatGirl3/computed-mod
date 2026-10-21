@@ -11,7 +11,10 @@ import dev.propulsionteam.computed.Computed;
 import dev.propulsionteam.computed.client.GlassesHudSettings.HudElement;
 import dev.propulsionteam.computed.content.items.GlassesItem;
 import dev.propulsionteam.computed.content.items.PortableLinkData;
+import dev.propulsionteam.computed.content.monitors.widgets.WidgetDrawList;
 import dev.propulsionteam.computed.internal.node.client.editor.ComputedEditorTheme;
+import dev.propulsionteam.computed.network.RequestGlassesHudPayload;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * WYSIWYG editor for the glasses HUD: a plain canvas without widgets or blur over the live
@@ -19,7 +22,8 @@ import dev.propulsionteam.computed.internal.node.client.editor.ComputedEditorThe
  * handles, a visibility toggle and a cursor tooltip. Elements are dragged directly, resized
  * from any edge or corner (mapping the target rect onto the text scale), and double-clicking
  * an element opens {@link GlassesHudElementEditScreen} for text and color while
- * double-clicking empty space creates an element there.
+ * double-clicking empty space creates an element there. The graph widget region (widgets wired
+ * into the Glasses HUD node) shows its live preview in its own draggable, resizable box.
  * Interaction follows the overlay
  * editor patterns of Gadgets &amp; Gizmos, but the visuals are Computed's own.
  * Settings persist via {@link GlassesHudSettings#save()} on close.
@@ -87,6 +91,10 @@ public class GlassesHudSettingsScreen extends Screen {
     /** Scale at the start of the resize; the target rect is mapped onto it proportionally. */
     private float resizeStartScale;
 
+    /** True while the graph widget region (not an element) is being dragged or resized. */
+    private boolean draggingWidgets;
+    private boolean resizingWidgets;
+
     /** Double-click bookkeeping: the box target and press position of the last click. */
     private HudElement pendingElement;
     private double pendingMouseX;
@@ -137,6 +145,23 @@ public class GlassesHudSettingsScreen extends Screen {
 
     private Rect boxOf(HudElement element) {
         return boxOf(element, currentLink());
+    }
+
+    /** The graph widget region's box: live widget bounds scaled, anchored by the settings. */
+    private Rect widgetBox() {
+        GlassesHudWidgetRegion.Box box = GlassesHudWidgetRegion.boxFor(
+                settings,
+                GlassesHudClientState.drawListFor(currentLink()),
+                this.width,
+                this.height);
+        return new Rect(box.x(), box.y(), box.width(), box.height());
+    }
+
+    /** Writes the region's box back into its normalized anchor (center x, top y). */
+    private void applyWidgetRect(Rect rect) {
+        settings.widgetsX = (rect.x() + rect.width() / 2f) / this.width;
+        settings.widgetsY = rect.y() / (float) this.height;
+        settings.clampWidgetPlacement();
     }
 
     /** G&amp;G's visibilityButtonRect. */
@@ -214,7 +239,7 @@ public class GlassesHudSettingsScreen extends Screen {
                 return true;
             }
         }
-        return false;
+        return resizeHandleAt(widgetBox(), mouseX, mouseY) != null;
     }
 
     /** Writes a screen-space rect back into the element's normalized, center-based position. */
@@ -243,6 +268,8 @@ public class GlassesHudSettingsScreen extends Screen {
     private void openModal(HudElement element) {
         dragging = null;
         resizing = null;
+        draggingWidgets = false;
+        resizingWidgets = false;
         resizeStartBox = null;
         clearPendingClick();
         this.minecraft.setScreen(new GlassesHudElementEditScreen(this, element));
@@ -264,11 +291,13 @@ public class GlassesHudSettingsScreen extends Screen {
         HudElement target = elementAt(mouseX, mouseY);
         HudElement visTarget = visibilityTargetAt(mouseX, mouseY);
         boolean onHandle = handleAtAny(mouseX, mouseY);
+        boolean onWidgetBox = widgetBox().contains(mouseX, mouseY);
         // Ours (G&G edits HUD text through its node editor instead): a second press on the
         // same box within 400 ms opens the properties modal; on empty canvas it creates an
         // element at the pointer first. A first press on the visibility button also counts,
         // and its toggle is undone so the double-click never changes visibility.
         if (!onHandle
+                && !onWidgetBox
                 && pendingClickAt != 0
                 && now - pendingClickAt <= DOUBLE_CLICK_MS
                 && Math.hypot(mouseX - pendingMouseX, mouseY - pendingMouseY)
@@ -281,6 +310,8 @@ public class GlassesHudSettingsScreen extends Screen {
             clearPendingClick();
             dragging = null;
             resizing = null;
+            draggingWidgets = false;
+            resizingWidgets = false;
             resizeStartBox = null;
             if (target != null) {
                 openModal(target);
@@ -326,6 +357,17 @@ public class GlassesHudSettingsScreen extends Screen {
                 return true;
             }
         }
+        // The widget region resizes the same way, mapping the rect onto its block scale.
+        ResizeHandle widgetHandle = resizeHandleAt(widgetBox(), mouseX, mouseY);
+        if (widgetHandle != null) {
+            resizingWidgets = true;
+            resizingHandle = widgetHandle;
+            resizeStartBox = widgetBox();
+            resizeStartMouseX = mouseX;
+            resizeStartMouseY = mouseY;
+            resizeStartScale = settings.widgetsScale;
+            return true;
+        }
         // G&G: drag the topmost box under the cursor.
         for (int index = settings.elements.size() - 1; index >= 0; index--) {
             HudElement element = settings.elements.get(index);
@@ -336,6 +378,12 @@ public class GlassesHudSettingsScreen extends Screen {
                 dragOffsetY = mouseY - box.y();
                 return true;
             }
+        }
+        if (onWidgetBox) {
+            draggingWidgets = true;
+            dragOffsetX = mouseX - widgetBox().x();
+            dragOffsetY = mouseY - widgetBox().y();
+            return true;
         }
         return super.mouseClicked(mouseX, mouseY, button);
     }
@@ -349,6 +397,10 @@ public class GlassesHudSettingsScreen extends Screen {
             resizeElement(mouseX, mouseY);
             return true;
         }
+        if (resizingWidgets) {
+            resizeWidgets(mouseX, mouseY);
+            return true;
+        }
         if (dragging != null) {
             Rect box = boxOf(dragging);
             Rect candidate = clampToScreen(new Rect(
@@ -359,6 +411,16 @@ public class GlassesHudSettingsScreen extends Screen {
             applyRect(dragging, candidate);
             return true;
         }
+        if (draggingWidgets) {
+            Rect box = widgetBox();
+            Rect candidate = clampToScreen(new Rect(
+                    (int) (mouseX - dragOffsetX),
+                    (int) (mouseY - dragOffsetY),
+                    box.width(),
+                    box.height()));
+            applyWidgetRect(candidate);
+            return true;
+        }
         return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
     }
 
@@ -366,6 +428,8 @@ public class GlassesHudSettingsScreen extends Screen {
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
         dragging = null;
         resizing = null;
+        draggingWidgets = false;
+        resizingWidgets = false;
         resizingHandle = null;
         resizeStartBox = null;
         return super.mouseReleased(mouseX, mouseY, button);
@@ -390,6 +454,23 @@ public class GlassesHudSettingsScreen extends Screen {
         };
         resizing.scale = Math.clamp(resizeStartScale * scale, MIN_SCALE, MAX_SCALE);
         applyRect(resizing, candidate);
+    }
+
+    /** The widget region's resize: same rect math, mapped onto the block scale. */
+    private void resizeWidgets(double mouseX, double mouseY) {
+        if (resizeStartBox == null || resizingHandle == null) {
+            return;
+        }
+        Rect candidate = resizedBox(mouseX, mouseY);
+        float ratioWidth = candidate.width() / (float) resizeStartBox.width();
+        float ratioHeight = candidate.height() / (float) resizeStartBox.height();
+        float scale = switch (resizingHandle) {
+            case LEFT, RIGHT -> ratioWidth;
+            case TOP, BOTTOM -> ratioHeight;
+            default -> Math.min(ratioWidth, ratioHeight);
+        };
+        settings.widgetsScale = Math.clamp(resizeStartScale * scale, MIN_SCALE, MAX_SCALE);
+        applyWidgetRect(candidate);
     }
 
     /** Shared per-axis resize math: edge handles move one side, corners both, mins, screen clamp. */
@@ -502,6 +583,7 @@ public class GlassesHudSettingsScreen extends Screen {
                 OUTLINE_HOVER,
                 false);
         PortableLinkData link = currentLink();
+        drawWidgetRegion(graphics, mouseX, mouseY, link);
         for (HudElement element : settings.elements) {
             Rect box = boxOf(element, link);
             boolean hovered = box.contains(mouseX, mouseY);
@@ -528,6 +610,39 @@ public class GlassesHudSettingsScreen extends Screen {
             }
         }
         drawCursorTooltip(graphics, mouseX, mouseY);
+    }
+
+    /**
+     * The graph widget region: live widget preview in a draggable, resizable editor box; a
+     * placeholder label shows where the block will appear before the graph sends widgets.
+     */
+    private void drawWidgetRegion(
+            GuiGraphics graphics, int mouseX, int mouseY, PortableLinkData link) {
+        WidgetDrawList drawList = GlassesHudClientState.drawListFor(link);
+        if (link != null && GlassesHudClientState.shouldRequest()) {
+            PacketDistributor.sendToServer(new RequestGlassesHudPayload(
+                    link.dimension(), link.blockPos(), GlassesHudClientState.knownHash()));
+        }
+        Rect box = widgetBox();
+        boolean hovered = box.contains(mouseX, mouseY);
+        graphics.fill(box.x(), box.y(), box.right(), box.bottom(), PANEL_BG);
+        GlassesHudWidgetRegion.paint(
+                graphics,
+                drawList,
+                new GlassesHudWidgetRegion.Box(box.x(), box.y(), box.width(), box.height()),
+                settings.widgetsScale);
+        if (drawList.isEmpty()) {
+            graphics.drawCenteredString(
+                    this.font,
+                    Component.translatable("computed.glasses.settings.widgets"),
+                    box.x() + box.width() / 2,
+                    box.y() + box.height() / 2 - 4,
+                    BODY_COLOR);
+        }
+        graphics.renderOutline(
+                box.x(), box.y(), box.width(), box.height(),
+                hovered ? OUTLINE_HOVER : OUTLINE_IDLE);
+        drawResizeHandles(graphics, box, hovered);
     }
 
     /** Eight dark 7x7 handles around the box, outlined in the accent color while hovered. */

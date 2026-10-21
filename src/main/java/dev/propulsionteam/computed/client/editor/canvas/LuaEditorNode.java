@@ -355,6 +355,8 @@ public final class LuaEditorNode extends WNode {
                 ? "Widgets " + dynamic.size()
                 : ConfigurableNodePorts.TERMINAL.equals(source.definitionId())
                 ? "Lines " + dynamic.size()
+                : ConfigurableNodePorts.GLASSES_HUD.equals(source.definitionId())
+                ? "HUD Widgets " + dynamic.size()
                 : ConfigurableNodePorts.TABLE_WIDGET.equals(source.definitionId())
                 ? "Rows " + dynamic.size()
                 : "Payloads " + dynamic.size();
