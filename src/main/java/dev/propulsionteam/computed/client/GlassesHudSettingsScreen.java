@@ -11,28 +11,33 @@ import dev.propulsionteam.computed.Computed;
 import dev.propulsionteam.computed.client.GlassesHudSettings.HudElement;
 import dev.propulsionteam.computed.content.items.GlassesItem;
 import dev.propulsionteam.computed.content.items.PortableLinkData;
+import dev.propulsionteam.computed.internal.node.client.editor.ComputedEditorTheme;
 
 /**
- * WYSIWYG editor for the glasses HUD, a 1:1 recreation of Gadgets &amp; Gizmos'
- * {@code OverlayInteractionScreen} edit mode: a plain canvas without any widgets or blur over
- * the live game view, one dark panel per element with G&amp;G's outline, eight resize handles,
- * a "Toggle Visibility" button, the bottom-left hint and the cursor tooltip. Elements are
- * dragged directly, resized from any edge or corner (mapping the target rect onto the text
- * scale), and double-clicking an element opens {@link GlassesHudElementEditScreen} for text
- * and color, double-clicking empty space creates an element there. Settings persist via
- * {@link GlassesHudSettings#save()} on close, like G&amp;G's saveOverlayLayout.
+ * WYSIWYG editor for the glasses HUD: a plain canvas without widgets or blur over the live
+ * game view, one dark panel per element with Computed's own editor theme, eight resize
+ * handles, a visibility toggle and a cursor tooltip. Elements are dragged directly, resized
+ * from any edge or corner (mapping the target rect onto the text scale), and double-clicking
+ * an element opens {@link GlassesHudElementEditScreen} for text and color while
+ * double-clicking empty space creates an element there.
+ * Interaction follows the overlay
+ * editor patterns of Gadgets &amp; Gizmos, but the visuals are Computed's own.
+ * Settings persist via {@link GlassesHudSettings#save()} on close.
  */
 public class GlassesHudSettingsScreen extends Screen {
-    // G&G's exact palette (signed ints in their source).
-    private static final int PANEL_BG = 0xAA101820;
-    private static final int OUTLINE_HOVER = 0xFFF4D35E;
-    private static final int OUTLINE_IDLE = 0xCC58D7FF;
-    private static final int TITLE_COLOR = 0xFFE8F7FF;
-    private static final int BODY_COLOR = 0xFF9FB3C4;
-    private static final int HANDLE_FILL = 0xD5101820;
-    private static final int HIDDEN_FILL = 0x99101820;
-    private static final int VIS_VISIBLE = 0xDD315A45;
-    private static final int VIS_HIDDEN = 0xDD633B3B;
+    // Computed's editor palette (same green identity as the node editor).
+    private static final int PANEL_BG = 0xC81A1A1A;
+    private static final int OUTLINE_IDLE = ComputedEditorTheme.BORDER_DEFAULT;
+    private static final int OUTLINE_HOVER = ComputedEditorTheme.ACCENT;
+    private static final int TITLE_COLOR = ComputedEditorTheme.TEXT_HEADER;
+    private static final int BODY_COLOR = ComputedEditorTheme.TEXT_SECONDARY;
+    private static final int HANDLE_FILL = ComputedEditorTheme.BACKGROUND_TERTIARY;
+    private static final int HANDLE_OUTLINE = ComputedEditorTheme.BORDER_HIGHLIGHT;
+    private static final int HIDDEN_FILL = ComputedEditorTheme.BACKGROUND_MODAL_SCRIM;
+    private static final int VIS_VISIBLE = ComputedEditorTheme.ACCENT_DARK;
+    private static final int VIS_HIDDEN = ComputedEditorTheme.DANGER_BACKGROUND;
+    private static final int VIS_OUTLINE = ComputedEditorTheme.BORDER_HIGHLIGHT;
+    private static final int VIS_TEXT = ComputedEditorTheme.TEXT_PRIMARY;
 
     private static final float MIN_SCALE = 0.5f;
     private static final float MAX_SCALE = 2.0f;
@@ -79,8 +84,8 @@ public class GlassesHudSettingsScreen extends Screen {
     private Rect resizeStartBox;
     private double resizeStartMouseX;
     private double resizeStartMouseY;
-    /** Unscaled panel base width (label/content measure + 10) at the start of the resize. */
-    private float resizeStartBaseWidth;
+    /** Scale at the start of the resize; the target rect is mapped onto it proportionally. */
+    private float resizeStartScale;
 
     /** Double-click bookkeeping: the box target and press position of the last click. */
     private HudElement pendingElement;
@@ -106,7 +111,8 @@ public class GlassesHudSettingsScreen extends Screen {
         return minecraft.player == null ? null : GlassesItem.findFirstBoundLink(minecraft.player);
     }
 
-    private static Component previewText(HudElement element, PortableLinkData link) {
+    /** Preview text: the element's own placeholder template. */
+    private Component previewText(HudElement element, PortableLinkData link) {
         return Component.literal(GlassesHudSettings.resolveTemplate(element.text, link));
     }
 
@@ -114,25 +120,18 @@ public class GlassesHudSettingsScreen extends Screen {
         return previewText(element, currentLink());
     }
 
-    /** G&amp;G draws a label line above the content of every custom HUD box ("HUD" default). */
-    private Component boxLabel() {
-        return Component.translatable("computed.glasses.settings.box_label");
-    }
-
     /**
-     * The element's box, following G&amp;G's panel measure: label line plus content line
-     * ({@code lines * 10 + 7} = 27 tall at 1x, 60x26 minimum), with the content line placed
-     * exactly where the in-game HUD text renders.
+     * The element's box around its text: one line ({@code width + 10} by {@code 17} at 1x)
+     * with a 60x26 minimum for usable handles; the text line is centered vertically so the
+     * box hugs the HUD text wherever the element sits.
      */
     private Rect boxOf(HudElement element, PortableLinkData link) {
         int textWidth = this.font.width(previewText(element, link));
-        int labelWidth = this.font.width(boxLabel());
         float scale = element.scale;
-        int width = Math.max(Math.round((Math.max(textWidth, labelWidth) + 10) * scale), BOX_MIN_WIDTH);
-        int height = Math.max(Math.round(27 * scale), BOX_MIN_HEIGHT);
+        int width = Math.max(Math.round((textWidth + 10) * scale), BOX_MIN_WIDTH);
+        int height = Math.max(Math.round(17 * scale), BOX_MIN_HEIGHT);
         float centerX = element.resolvedX(this.width);
-        // The content line sits at box top + 5 + 10 * scale and must equal resolvedY.
-        float boxTop = element.resolvedY(this.height) - 5 - 10 * scale;
+        float boxTop = element.resolvedY(this.height) - (height - 9f * scale) / 2f;
         return new Rect(Math.round(centerX - width / 2f), Math.round(boxTop), width, height);
     }
 
@@ -222,16 +221,15 @@ public class GlassesHudSettingsScreen extends Screen {
     private void applyRect(HudElement element, Rect rect) {
         float centerX = rect.x() + rect.width() / 2f;
         element.x = centerX / this.width;
-        // Inverse of boxOf: resolvedY = box top + 5 + 10 * scale.
-        element.y = (rect.y() + 5 + 10 * element.scale) / this.height;
+        // Inverse of boxOf: resolvedY = box top + (height - text height) / 2.
+        element.y = (rect.y() + (rect.height() - 9f * element.scale) / 2f) / this.height;
     }
 
-    /** Creates an element whose box is centered on the given pointer position. */
+    /** Creates an element whose text is centered on the given pointer position. */
     private HudElement createElementAt(double mouseX, double mouseY) {
         HudElement element = new HudElement();
         element.x = (float) (mouseX / this.width);
-        int boxHeight = Math.max(Math.round(27 * element.scale), BOX_MIN_HEIGHT);
-        element.y = (float) ((mouseY - boxHeight / 2f + 5 + 10 * element.scale) / this.height);
+        element.y = (float) ((mouseY - (9f * element.scale) / 2f) / this.height);
         element.clamp();
         return element;
     }
@@ -324,8 +322,7 @@ public class GlassesHudSettingsScreen extends Screen {
                 resizeStartBox = boxOf(element);
                 resizeStartMouseX = mouseX;
                 resizeStartMouseY = mouseY;
-                resizeStartBaseWidth = Math.max(
-                        this.font.width(previewText(element)), this.font.width(boxLabel())) + 10;
+                resizeStartScale = element.scale;
                 return true;
             }
         }
@@ -383,6 +380,20 @@ public class GlassesHudSettingsScreen extends Screen {
         if (resizing == null || resizeStartBox == null || resizingHandle == null) {
             return;
         }
+        Rect candidate = resizedBox(mouseX, mouseY);
+        float ratioWidth = candidate.width() / (float) resizeStartBox.width();
+        float ratioHeight = candidate.height() / (float) resizeStartBox.height();
+        float scale = switch (resizingHandle) {
+            case LEFT, RIGHT -> ratioWidth;
+            case TOP, BOTTOM -> ratioHeight;
+            default -> Math.min(ratioWidth, ratioHeight);
+        };
+        resizing.scale = Math.clamp(resizeStartScale * scale, MIN_SCALE, MAX_SCALE);
+        applyRect(resizing, candidate);
+    }
+
+    /** Shared per-axis resize math: edge handles move one side, corners both, mins, screen clamp. */
+    private Rect resizedBox(double mouseX, double mouseY) {
         int deltaX = (int) mouseX - (int) resizeStartMouseX;
         int deltaY = (int) mouseY - (int) resizeStartMouseY;
         int left = resizeStartBox.x();
@@ -427,18 +438,7 @@ public class GlassesHudSettingsScreen extends Screen {
                 bottom = top + BOX_MIN_HEIGHT;
             }
         }
-        Rect candidate = clampToScreen(
-                new Rect(left, top, right - left, bottom - top));
-        float baseWidth = resizeStartBaseWidth;
-        float ratioWidth = candidate.width() / baseWidth;
-        float ratioHeight = candidate.height() / 27f;
-        float scale = switch (resizingHandle) {
-            case LEFT, RIGHT -> ratioWidth;
-            case TOP, BOTTOM -> ratioHeight;
-            default -> Math.min(ratioWidth, ratioHeight);
-        };
-        resizing.scale = Math.clamp(scale, MIN_SCALE, MAX_SCALE);
-        applyRect(resizing, candidate);
+        return clampToScreen(new Rect(left, top, right - left, bottom - top));
     }
 
     @Override
@@ -493,6 +493,14 @@ public class GlassesHudSettingsScreen extends Screen {
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        // The hint sits under the element boxes so overlays always read on top of it.
+        graphics.drawString(
+                this.font,
+                Component.translatable("computed.glasses.settings.active"),
+                8,
+                this.height - 18,
+                OUTLINE_HOVER,
+                false);
         PortableLinkData link = currentLink();
         for (HudElement element : settings.elements) {
             Rect box = boxOf(element, link);
@@ -503,40 +511,27 @@ public class GlassesHudSettingsScreen extends Screen {
                     box.x(), box.y(), box.width(), box.height(),
                     hovered ? OUTLINE_HOVER : OUTLINE_IDLE);
             graphics.pose().pushPose();
-            graphics.pose().translate(box.x() + 5, box.y() + 5, 0f);
+            graphics.pose().translate(
+                    box.x() + 5,
+                    box.y() + (box.height() - 9f * element.scale) / 2f,
+                    0f);
             graphics.pose().scale(element.scale, element.scale, 1f);
-            // G&G's custom HUD panel: label line first, content line below it.
-            graphics.drawString(this.font, boxLabel(), 0, 0, TITLE_COLOR, false);
-            graphics.drawString(this.font, text, 0, 10, element.textColor(), false);
+            graphics.drawString(this.font, text, 0, 0, element.textColor(), false);
             graphics.pose().popPose();
-            // G&G draws the resize handles for every box in edit mode.
-            drawResizeHandles(graphics, box);
+            drawResizeHandles(graphics, box, hovered);
             if (!element.visible) {
                 graphics.fill(box.x(), box.y(), box.right(), box.bottom(), HIDDEN_FILL);
             }
-            drawVisibilityButton(graphics, box, element);
+            // The toggle only shows while the box is hovered, so the text stays unobstructed.
+            if (hovered) {
+                drawVisibilityButton(graphics, box, element);
+            }
         }
-        // G&G's bottom-left hint, plus our double-click affordance line.
-        graphics.drawString(
-                this.font,
-                Component.translatable("computed.glasses.settings.active"),
-                8,
-                this.height - 18,
-                OUTLINE_HOVER,
-                false);
-        graphics.drawString(
-                this.font,
-                Component.translatable("computed.glasses.settings.hint_edit"),
-                8,
-                this.height - 30,
-                OUTLINE_HOVER,
-                false);
         drawCursorTooltip(graphics, mouseX, mouseY);
     }
 
-    /** G&amp;G's renderResizeHandles: beige outline plus eight dark 7x7 handles. */
-    private void drawResizeHandles(GuiGraphics graphics, Rect rect) {
-        graphics.renderOutline(rect.x(), rect.y(), rect.width(), rect.height(), OUTLINE_HOVER);
+    /** Eight dark 7x7 handles around the box, outlined in the accent color while hovered. */
+    private void drawResizeHandles(GuiGraphics graphics, Rect rect, boolean hovered) {
         for (ResizeHandle handle : ResizeHandle.values()) {
             Rect handleRect = resizeHandleRect(rect, handle);
             graphics.fill(
@@ -544,27 +539,27 @@ public class GlassesHudSettingsScreen extends Screen {
                     HANDLE_FILL);
             graphics.renderOutline(
                     handleRect.x(), handleRect.y(), handleRect.width(), handleRect.height(),
-                    OUTLINE_HOVER);
+                    hovered ? OUTLINE_HOVER : HANDLE_OUTLINE);
         }
     }
 
-    /** G&amp;G's renderVisibilityEditor: dark fill while hidden plus the toggle button. */
+    /** Toggle button on the box's top right: green while visible, danger red while hidden. */
     private void drawVisibilityButton(GuiGraphics graphics, Rect box, HudElement element) {
         Rect button = visibilityButtonRect(box);
         graphics.fill(
                 button.x(), button.y(), button.right(), button.bottom(),
                 element.visible ? VIS_VISIBLE : VIS_HIDDEN);
         graphics.renderOutline(
-                button.x(), button.y(), button.width(), button.height(), OUTLINE_HOVER);
+                button.x(), button.y(), button.width(), button.height(), VIS_OUTLINE);
         graphics.drawCenteredString(
                 this.font,
                 Component.translatable("computed.glasses.settings.toggle_visibility"),
                 button.x() + button.width() / 2,
                 button.y() + 3,
-                0xFFFFFF);
+                VIS_TEXT);
     }
 
-    /** G&amp;G's drawCursorModeTooltip, extended with the two double-click hints. */
+    /** Floating help box following the cursor: four short lines in Computed's editor colors. */
     private void drawCursorTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
         List<Component> lines = List.of(
                 Component.translatable("computed.glasses.settings.tooltip.title"),
@@ -572,9 +567,7 @@ public class GlassesHudSettingsScreen extends Screen {
                 Component.translatable("computed.glasses.settings.tooltip.resize"),
                 Component.translatable(
                         "computed.glasses.settings.tooltip.exit",
-                        GlassesHudKeybinds.OPEN_SETTINGS.getTranslatedKeyMessage().getString()),
-                Component.translatable("computed.glasses.settings.tooltip.edit"),
-                Component.translatable("computed.glasses.settings.tooltip.add"));
+                        GlassesHudKeybinds.OPEN_SETTINGS.getTranslatedKeyMessage().getString()));
         int width = lines.stream().mapToInt(this.font::width).max().orElse(0) + 10;
         int height = lines.size() * 10 + 7;
         int x = Math.clamp(mouseX + 12, 0, Math.max(0, this.width - width));

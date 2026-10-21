@@ -8,29 +8,30 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import dev.propulsionteam.computed.Computed;
 import dev.propulsionteam.computed.client.GlassesHudSettings.HudElement;
+import dev.propulsionteam.computed.internal.node.client.editor.ComputedEditorTheme;
 
 /**
- * Element properties modal for the glasses HUD canvas, modeled 1:1 on Gadgets &amp; Gizmos'
- * {@code TextInputScreen}/{@code ControllerTextInputScreen}: a centered panel with a title, a
- * prompt, a borderless text field and Cancel/Save in the bottom corners - Enter saves, Escape
- * cancels, and closing returns to the parent canvas (no background blur, like their base
- * class). Save commits the text and persists, while Duplicate, Delete and the Color cycle are
- * our equivalents of the palette the old toolbar provided.
+ * Element properties modal for the glasses HUD canvas: a centered panel with a title, a
+ * prompt, a borderless text field and Cancel/Save in the bottom corners - Enter saves,
+ * Escape cancels, and closing returns to the parent canvas without background blur. Save
+ * commits the text and persists, while Duplicate, Delete and the Color cycle provide the
+ * element actions. The panel follows Computed's editor theme, matching the canvas behind it.
  */
 public class GlassesHudElementEditScreen extends Screen {
-    /** Same panel geometry as G&amp;G's text-input modal, widened for the extra buttons. */
+    /** Centered panel geometry, widened for the element action buttons. */
     private static final int PANEL_W = 290;
     private static final int PANEL_H = 87;
 
-    private static final int PANEL_BG = 0xAA101820;
-    private static final int OUTLINE_HOVER = 0xFFF4D35E;
-    private static final int OUTLINE_IDLE = 0xCC58D7FF;
-    private static final int TITLE_COLOR = 0xFFE8F7FF;
-    private static final int PROMPT_COLOR = 0xFFDDD3C3;
-    private static final int FIELD_BG = 0xD5101820;
+    private static final int PANEL_BG = 0xE01A1A1A;
+    private static final int OUTLINE = ComputedEditorTheme.ACCENT;
+    private static final int TITLE_COLOR = ComputedEditorTheme.TEXT_HEADER;
+    private static final int PROMPT_COLOR = ComputedEditorTheme.TEXT_SECONDARY;
+    private static final int FIELD_BG = ComputedEditorTheme.BACKGROUND_INPUT;
+    private static final int FIELD_OUTLINE = ComputedEditorTheme.BORDER_DEFAULT;
 
+    /** Text colors for the Color cycle; Computed's accent green leads the set. */
     private static final int[] PALETTE = {
-        0xFFFFFF, 0xA0A0A0, 0x202020, 0xFFAA00, 0xFFFF55, 0x55FF55,
+        0xFFFFFF, 0x00FF88, 0xA0A0A0, 0x202020, 0xFFAA00, 0xFFFF55, 0x55FF55,
         0x55FFFF, 0x5555FF, 0xFF55FF, 0xFF5555,
     };
 
@@ -174,7 +175,7 @@ public class GlassesHudElementEditScreen extends Screen {
         int x = (this.width - PANEL_W) / 2;
         int y = (this.height - PANEL_H) / 2;
         graphics.fill(x, y, x + PANEL_W, y + PANEL_H, PANEL_BG);
-        graphics.renderOutline(x, y, PANEL_W, PANEL_H, OUTLINE_HOVER);
+        graphics.renderOutline(x, y, PANEL_W, PANEL_H, OUTLINE);
         graphics.drawCenteredString(
                 this.font,
                 this.font.plainSubstrByWidth(this.title.getString(), PANEL_W - 16),
@@ -189,7 +190,7 @@ public class GlassesHudElementEditScreen extends Screen {
                 PROMPT_COLOR,
                 false);
         graphics.fill(x + 7, y + 40, x + PANEL_W - 7, y + 56, FIELD_BG);
-        graphics.renderOutline(x + 7, y + 40, PANEL_W - 14, 16, OUTLINE_IDLE);
+        graphics.renderOutline(x + 7, y + 40, PANEL_W - 14, 16, FIELD_OUTLINE);
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 
