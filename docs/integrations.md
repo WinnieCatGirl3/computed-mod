@@ -35,8 +35,3 @@ sublevels, and Computed reads contraption positions through it automatically.
 
 Hover a Computed computer with Jade or WTHIT installed and the tooltip shows the computer's ID —
 handy when you wire up [networking](lua/endpoint-api.md#computednetsend) between machines.
-
-## GeckoLib
-
-If GeckoLib is installed, the Portable Monitor item gets an animated model instead of the plain
-one. Nothing else changes.

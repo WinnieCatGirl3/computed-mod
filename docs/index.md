@@ -69,7 +69,7 @@ Lua node-graph programming for NeoForge 1.21.1 — visual scripting with a sandb
 
     ---
 
-    Create, Aeronautics, CC:Tweaked, Jade, GeckoLib
+    Create, Aeronautics, CC:Tweaked, Jade
 
 -   **Lua Authoring**
 

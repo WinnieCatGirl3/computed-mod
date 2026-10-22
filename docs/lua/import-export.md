@@ -4,7 +4,7 @@ The graph toolbar has one **Import / Export** menu beside the zoom controls. It 
 
 Both `graphs/` and `nodes/` inside a computer's package folder support subfolders. The import dialog shows folders first and lets you browse into them (`..` returns to the parent). Export names may include a path such as `planes/racers/sprint`; intermediate folders are created automatically. Existing user folders in the world save are picked up without conversion.
 
-Programs can also travel on a **Program Disk** (two paper and redstone make four disks):
+Programs can also travel on a **Program Disk** (an iron ingot, paper, and redstone make four disks):
 
 ![Program Disk recipe](../assets/images/recipe/Program_Disk.png){ width=420 }
 
