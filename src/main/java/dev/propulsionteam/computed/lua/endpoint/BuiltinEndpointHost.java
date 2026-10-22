@@ -33,6 +33,14 @@ public interface BuiltinEndpointHost {
         return false;
     }
 
+    /**
+     * Namespaced id of the block at a relative face ({@code minecraft:stone}), or
+     * {@code minecraft:air} when the face is empty or unknown.
+     */
+    default String blockId(String face) {
+        return "minecraft:air";
+    }
+
     default void redstoneOutput(String face, int level) {}
 
     default void showWidgets(String target, List<BuiltinWidget> widgets) {}

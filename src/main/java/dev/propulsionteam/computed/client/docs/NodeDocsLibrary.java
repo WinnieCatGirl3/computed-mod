@@ -638,13 +638,15 @@ public final class NodeDocsLibrary {
         list.add(entry(
                 "computed:block_presence", "Block Presence", "world",
                 "Reports whether a block is present at a face of the computer as text "
-                        + "('present' or 'absent').",
+                        + "('present' or 'absent') plus the block's namespaced id.",
                 """
                 local present = ctx:endpoint("computed:world"):call("block_present", ctx:field("face"))
+                local block = ctx:endpoint("computed:world"):call("block_id", ctx:field("face"))
                 ctx:output("present", present and "present" or "absent")
+                ctx:output("block", block)
                 """,
                 new String[] {},
-                new String[] {"present:string"}));
+                new String[] {"present:string", "block:string"}));
 
         list.add(entry(
                 "computed:redstone_input", "Redstone Input", "world",

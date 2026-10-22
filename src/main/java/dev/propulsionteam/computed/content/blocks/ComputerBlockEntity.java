@@ -594,6 +594,22 @@ public class ComputerBlockEntity extends BaseContainerBlockEntity
     }
 
     @Override
+    public String blockId(String face) {
+        if (!(level instanceof ServerLevel serverLevel) || isRemoved()) {
+            return "minecraft:air";
+        }
+        requireServerThread(serverLevel);
+        Direction worldFace = worldFace(face);
+        if (worldFace == null) {
+            return "minecraft:air";
+        }
+        var state = serverLevel.getBlockState(worldPosition.relative(worldFace));
+        return net.minecraft.core.registries.BuiltInRegistries.BLOCK
+                .getKey(state.getBlock())
+                .toString();
+    }
+
+    @Override
     public void redstoneOutput(String face, int power) {
         Level currentLevel = level;
         if (!(currentLevel instanceof ServerLevel serverLevel) || isRemoved()) {

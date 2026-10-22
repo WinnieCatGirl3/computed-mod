@@ -52,7 +52,16 @@ public final class BuiltinEndpoints {
                         invocation -> EndpointResult.immediate(LuaValue.valueOf(
                                 requireHost(invocation).blockPresent(argument(invocation, 0)))),
                         invocation -> EndpointResult.immediate(LuaValue.FALSE),
-                        "Reports whether a block is present at a relative face."));
+                        "Reports whether a block is present at a relative face.")
+                .method(
+                        "block_id",
+                        EndpointSignature.of(List.of(EndpointType.STRING), List.of(EndpointType.STRING)),
+                        EndpointPolicy.serverThread(false, true),
+                        invocation -> EndpointResult.immediate(LuaValue.valueOf(
+                                requireHost(invocation).blockId(argument(invocation, 0)))),
+                        invocation -> EndpointResult.immediate(LuaValue.valueOf("minecraft:air")),
+                        "Returns the namespaced id of the block at a relative face "
+                                + "(minecraft:stone); empty or unknown faces return minecraft:air."));
         ComputedEndpoints.register("computed:redstone", endpoint -> endpoint.method(
                         "input",
                         EndpointSignature.of(List.of(EndpointType.STRING), List.of(EndpointType.NUMBER)),

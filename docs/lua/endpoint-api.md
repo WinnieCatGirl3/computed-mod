@@ -67,6 +67,10 @@ Signature: `() -> number, number, number`. Runs on the server thread, has no sid
 
 Signature: `(face: string) -> boolean`. Runs on the server thread, has no side effects, and returns `false` in previews. Unknown face names return `false`; invalid argument types are errors. Example: `ctx:endpoint("computed:world"):call("block_present", "front")`.
 
+## computed:world/block_id
+
+Signature: `(face: string) -> string`. Runs on the server thread, has no side effects, and returns `minecraft:air` in previews. Unknown face names return `minecraft:air`; invalid argument types are errors. Example: `ctx:endpoint("computed:world"):call("block_id", "front")`.
+
 ## computed:redstone/input
 
 Signature: `(face: string) -> number`. Runs on the server thread, has no side effects, and returns zero in previews. Unknown face names return zero. Example: `ctx:endpoint("computed:redstone"):call("input", "left")`.
