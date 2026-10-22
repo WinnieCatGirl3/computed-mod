@@ -15,7 +15,7 @@
   --md-accent-fg-color--transparent: rgba(124, 252, 0, 0.15);
   --md-header-bg-color: #1a4bb8;
   --md-header-bg: linear-gradient(180deg, #245edc 0%, #1a4bb8 100%);
-  --md-footer-bg-color: #1a4bb8;
+  --md-footer-bg-color: #000000de;
   --md-code-bg-color: #0a0f0a;
   --md-code-fg-color: #33ff66;
   --y2k-lime: #7cfc00;
@@ -35,7 +35,7 @@
   --md-accent-fg-color--transparent: rgba(0, 229, 255, 0.15);
   --md-header-bg-color: #04121f;
   --md-header-bg: #04121f;
-  --md-footer-bg-color: #04121f;
+  --md-footer-bg-color: #000000de;
   --md-code-bg-color: #050a05;
   --md-code-fg-color: #33ff66;
   --y2k-lime: #00e5ff;
@@ -251,6 +251,14 @@ article.md-content__inner:has(> .computed-hero) > a.md-content__button {
   background: #04121f;
 }
 
+.md-tabs {
+  background: linear-gradient(180deg, #245edc 0%, #1a4bb8 100%);
+}
+
+[data-md-color-scheme="slate"] .md-tabs {
+  background: #04121f;
+}
+
 .md-header__button.md-logo img {
   border-radius: 6px;
   border: 2px solid #fff;
@@ -458,13 +466,11 @@ details > summary {
 
 /* --- Footer --------------------------------------------------------- */
 .md-footer {
-  background: linear-gradient(180deg, #245edc 0%, #1a4bb8 100%);
-  border-top: 3px ridge #6aa4ff;
+  background: #000000de;
 }
 
 [data-md-color-scheme="slate"] .md-footer {
-  background: #04121f;
-  border-top-color: #12324a;
+  background: #000000de;
 }
 
 .md-footer__copyright {
