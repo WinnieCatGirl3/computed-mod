@@ -28,9 +28,9 @@
 }
 
 [data-md-color-scheme="slate"] {
-  --md-primary-fg-color: #0b2b4a;
-  --md-primary-fg-color--light: #14406b;
-  --md-primary-fg-color--dark: #061a30;
+  --md-primary-fg-color: #00e5ff;
+  --md-primary-fg-color--light: #7df0ff;
+  --md-primary-fg-color--dark: #00a8c4;
   --md-accent-fg-color: #00e5ff;
   --md-accent-fg-color--transparent: rgba(0, 229, 255, 0.15);
   --md-header-bg-color: #061a30;
