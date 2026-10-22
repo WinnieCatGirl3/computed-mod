@@ -15,10 +15,6 @@ want to comment on one.
 
 ### Speaker and audio
 
-- **Envelope for `play_wave`** — attack/decay parameters so sounds do not cut off harshly.
-- **Sweep oscillator** — `play_sweep(wave, f1, f2, seconds)`: the frequency glides from f1 to
-  f2 (risers, alarms, motors).
-- **Disc loop** — endless playback for the inserted music disc.
 - **`play_sequence`** — play a list of notes with timing (little melodies without external
   clock data).
 - **Disc playlist** — queue several discs; `play` advances through them.
@@ -53,6 +49,10 @@ want to comment on one.
 
 A short look at what the thread already produced:
 
+- Speaker: **Play Sweep** (frequency glide), **attack/decay envelopes** on Play Wave, and
+  **disc loop** for endless playback.
+- Aeronautics: **vertical speed** and **altitude** nodes, plus the **Threshold Trigger** node
+  for alarms (altitude below X, overspeed, climb warnings).
 - Glasses HUD: graph widgets on your glasses, a movable widget region in the K designer, and
   a reworked glasses model with its own recipe.
 - Undo/redo and auto-save in the editor, the Lua live preview, and a demo disk in the

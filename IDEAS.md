@@ -8,10 +8,6 @@ die rohe Arbeitsliste daraus.
 ## Offene Ideen
 
 ### Speaker / Audio
-- **Envelope für `play_wave`** — Attack/Decay-Parameter, damit Töne nicht hart abbeißen.
-- **Sweep/Oszillator** — `play_sweep(wave, f1, f2, seconds)`: Frequenz wandert linear
-  von f1 nach f2 (Riser, Alarme, Motoren).
-- **Disc-Loop** — SpeakerEndpoint `loop(true/false)` oder `play(loop)` für endlose Platten.
 - **`play_sequence`** — Node/Endpoint der eine Liste von Noten mit Timing abspielt
   (kleine Melodien ohne externe Taktdaten).
 - **Disc-Playlist** — mehrere Discs in die Warteschlange legen, `play` spielt der Reihe nach.
@@ -44,6 +40,11 @@ die rohe Arbeitsliste daraus.
 
 ## Umgesetzt
 
+- **Speaker Envelope/Sweep/Loop** — `play_wave` mit Attack/Decay (0–2 s, Slice-Restarts),
+  neuer `play_sweep(wave, f1, f2, seconds, volume)`-Endpoint + Node, Disc-Loop via
+  `set_loop(true)` (Ticker startet die Platte neu), Status meldet `is_looping`.
+- **Aeronautics Vertical Speed + Altitude** — Einzel-Nodes für Steigrate (vy) und Y-Höhe;
+  dazu der generische **Threshold Trigger**-Node (above/below + Hysteresis) für Alarme.
 - **Undo/Redo im Graph-Editor** — Ctrl+Z/Ctrl+Y, 256 History-Stände, jedes Layout-Operation
   rückgängig machbar.
 - **Auto-Save** — Graph speichert sich ca. einmal pro Sekunde und beim Schließen; kein

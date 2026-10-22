@@ -15,7 +15,7 @@ class IntegrationLuaLibraryTest {
         LuaSandbox sandbox = new LuaSandbox();
         var definitions = IntegrationLuaLibrary.load();
 
-        assertEquals(20, definitions.size());
+        assertEquals(22, definitions.size());
         definitions.forEach((id, source) -> {
             assertTrue(!source.source().contains("\r"), id + " contains a carriage return");
             LuaNodeDefinition definition =

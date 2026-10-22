@@ -30,6 +30,7 @@ because you place nodes by title.
 | `computed:cmp_approx` | Approximately equal |
 | `computed:edge_rise` / `edge_fall` | Rising / falling edge |
 | `computed:schmitt` | Schmitt trigger (hysteresis) |
+| `computed:threshold_trigger` | Threshold trigger with hysteresis (alarm above/below) |
 | `computed:mux` | Multiplexer (picks a or b) |
 
 ## State
@@ -116,8 +117,8 @@ See [Monitors](monitors.md) for layout rules.
 
 See [Speaker](speaker.md).
 
-`computed:speaker_play_note`, `speaker_play_sound`, `speaker_play_wave`, `speaker_play_disc`,
-`speaker_stop`, `speaker_eject`, `speaker_status`.
+`computed:speaker_play_note`, `speaker_play_sound`, `speaker_play_wave`, `speaker_play_sweep`,
+`speaker_play_disc`, `speaker_stop`, `speaker_eject`, `speaker_status`.
 
 ## Integrations
 
@@ -131,6 +132,6 @@ See [Integrations](integrations.md) for setup notes.
 | `computed:aeronautics_telemetry` | All 22 telemetry fields at once |
 | `computed:aeronautics_present` / `_name` / `_source` | Contraption presence, name, source |
 | `computed:aeronautics_position` / `_velocity` / `_angular_velocity` | Position and motion vectors |
-| `computed:aeronautics_speed` / `_distance` / `_heading` / `_pitch` / `_roll` | Scalars and orientation |
+| `computed:aeronautics_speed` / `_vertical_speed` / `_altitude` / `_distance` / `_heading` / `_pitch` / `_roll` | Scalars and orientation |
 | `computed:aeronautics_forward` / `_right` | Heading and right frames |
 | `computed:aeronautics_velocity_sensor` | Speed sensor with announcements |

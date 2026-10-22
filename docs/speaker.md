@@ -16,19 +16,20 @@ Every speaker node has a **Face** field (`front` by default). It selects the sid
 the speaker sits on: `front`, `back`, `left`, `right`, `up`, `down` (also `north`, `east`, `south`,
 `west`, `top`, `bottom`). The node errors if no speaker is on that side.
 
-## The seven speaker nodes
+## The eight speaker nodes
 
-Six of them are triggers: they run when their **Trigger** input turns on or an event arrives.
+Seven of them are triggers: they run when their **Trigger** input turns on or an event arrives.
 
 | Node | What it does | Extra fields |
 |---|---|---|
 | **Play Note** | Plays one note-block note | Instrument (16 choices, default `harp`), Note 0–24 (default 12) |
 | **Play Sound** | Plays any named sound | Sound ID (e.g. `block.note_block.pling`), Volume 0–4, Pitch 0.5–2 |
-| **Play Wave** | Plays a synthesized waveform | Wave (`sine`, `square`, `saw`, `triangle`, `noise`), Frequency 55–3520 Hz, Volume 0–3 |
-| **Play Disc** | Starts the inserted music disc | — |
+| **Play Wave** | Plays a synthesized waveform | Wave (`sine`, `square`, `saw`, `triangle`, `noise`), Frequency 55–3520 Hz, Volume 0–3, Attack 0–2 s, Decay 0–2 s |
+| **Play Sweep** | Glides between two frequencies | Wave, From/To 55–3520 Hz, Duration 0.2–10 s, Volume |
+| **Play Disc** | Starts the inserted music disc | Loop (restarts the disc at song end) |
 | **Stop** | Stops whatever is playing | — |
 | **Eject** | Spits the disc out | — |
-| **Speaker Status** | Reports the speaker state | Outputs: `has_disc`, `is_playing` (updates every tick) |
+| **Speaker Status** | Reports the speaker state | Outputs: `has_disc`, `is_playing`, `is_looping` (updates every tick) |
 
 Example — play a doorbell note when a button is pressed:
 
@@ -40,6 +41,20 @@ Example — an alarm that alternates two notes: drive **Trigger** from a fast
 [counter](nodes.md) or [pulse](nodes.md) node and switch the note with an
 [if branch](nodes.md).
 
+### Envelopes, sweeps, and loops
+
+- **Attack / decay** on **Play Wave** fade a tone in and out so notes do not cut off harshly.
+  The envelope restarts the tone in short slices, so keep attack/decay at a few tenths of a
+  second for the smoothest result.
+- **Play Sweep** glides linearly from one frequency to another — risers, alarms, motors.
+- **Loop** on **Play Disc** restarts the disc automatically when the song ends. Turn it off
+  (or hit **Stop**) to end playback; the **Speaker Status** node reports `is_looping`.
+
+!!! note "One tone per speaker"
+    Envelope slices and sweeps cut the previous slice before restarting, so overlapping wave
+    tones on the *same* speaker (or the same waveform on several speakers) may cut each other.
+    For polyphony, use one speaker per voice.
+
 ## Useful limits
 
 | Limit | Value |
@@ -48,6 +63,8 @@ Example — an alarm that alternates two notes: drive **Trigger** from a fast
 | Note instruments | `harp`, `basedrum`, `snare`, `hat`, `bass`, `flute`, `bell`, `guitar`, `chime`, `xylophone`, `iron_xylophone`, `cow_bell`, `didgeridoo`, `bit`, `banjo`, `pling` |
 | Wave frequencies | 55–3520 Hz |
 | Wave aliases | `sin`→sine, `sq`→square, `sawtooth`→saw, `tri`→triangle, `white`→noise |
+| Envelope range | Attack/decay 0–2 s each |
+| Sweep range | 0.2–10 s, sliced every 0.1 s |
 | Simultaneous discs | One per speaker |
 | Speakers per computer | Six (one per side) |
 

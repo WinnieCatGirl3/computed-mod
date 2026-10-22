@@ -54,21 +54,50 @@ public final class SpeakerEndpoints {
                 .method(
                         "play_wave",
                         EndpointSignature.of(
-                                List.of(EndpointType.STRING, EndpointType.NUMBER, EndpointType.NUMBER),
+                                List.of(EndpointType.STRING, EndpointType.NUMBER, EndpointType.NUMBER,
+                                        EndpointType.NUMBER, EndpointType.NUMBER),
                                 List.of()),
                         EndpointPolicy.serverThread(true, false),
                         SpeakerEndpoints::playWave,
                         null,
                         "Synthesizes a waveform tone at the speaker. "
                                 + "Wave: sine, square, saw, triangle, noise. "
-                                + "Frequency in Hz (55-3520, 440 = base pitch); volume 0-3.")
+                                + "Frequency in Hz (55-3520, 440 = base pitch); volume 0-3. "
+                                + "Attack and decay in seconds (0-2) fade the note in and out.")
+                .method(
+                        "play_sweep",
+                        EndpointSignature.of(
+                                List.of(EndpointType.STRING, EndpointType.NUMBER, EndpointType.NUMBER,
+                                        EndpointType.NUMBER, EndpointType.NUMBER),
+                                List.of()),
+                        EndpointPolicy.serverThread(true, false),
+                        SpeakerEndpoints::playSweep,
+                        null,
+                        "Glides between two frequencies over the given duration. "
+                                + "Wave: sine, square, saw, triangle, noise. "
+                                + "From/to in Hz (55-3520), duration in seconds (0.2-10), volume 0-3.")
                 .method(
                         "play",
                         EndpointSignature.of(List.of(), List.of()),
                         EndpointPolicy.serverThread(true, false),
                         SpeakerEndpoints::play,
                         null,
-                        "Starts playback of the inserted music disc.")
+                        "Starts playback of the inserted music disc. "
+                                + "With set_loop(true) the disc restarts automatically at song end.")
+                .method(
+                        "set_loop",
+                        EndpointSignature.of(List.of(EndpointType.BOOLEAN), List.of()),
+                        EndpointPolicy.serverThread(true, false),
+                        SpeakerEndpoints::setLoop,
+                        null,
+                        "Enables or disables automatic restart of the disc started with play.")
+                .method(
+                        "is_looping",
+                        EndpointSignature.of(List.of(), List.of(EndpointType.BOOLEAN)),
+                        EndpointPolicy.serverThread(false, false),
+                        SpeakerEndpoints::isLooping,
+                        null,
+                        "Returns whether disc playback is set to loop.")
                 .method(
                         "stop",
                         EndpointSignature.of(List.of(), List.of()),
@@ -121,24 +150,57 @@ public final class SpeakerEndpoints {
     /** Waveform synthesis: pitch-shift a generated base tone (440 Hz) to the requested frequency. */
     private static EndpointResult playWave(EndpointInvocation invocation) {
         SpeakerBlockEntity speaker = requireSpeaker(invocation);
-        String wave = invocation.arguments().get(0).checkjstring().toLowerCase(java.util.Locale.ROOT);
+        ResourceLocation id = waveIdByName(invocation.arguments().get(0).checkjstring());
         double frequency = Mth.clamp(invocation.arguments().get(1).checkdouble(), 55.0, 3520.0);
         float volume = (float) Mth.clamp(invocation.arguments().get(2).checkdouble(), 0.0, 3.0);
-        float pitch = (float) Mth.clamp(frequency / 440.0, 0.25, 4.0);
-        ResourceLocation id;
-        switch (wave) {
-            case "sine", "sin" -> id = waveId("sine");
-            case "square", "sq" -> id = waveId("square");
-            case "saw", "sawtooth" -> id = waveId("saw");
-            case "triangle", "tri" -> id = waveId("triangle");
-            case "noise", "white" -> id = waveId("noise");
+        int attackTicks = WaveSchedule.envelopeTicks(numberArg(invocation, 3, 0.0));
+        int decayTicks = WaveSchedule.envelopeTicks(numberArg(invocation, 4, 0.0));
+        speaker.playWave(id, volume, WaveSchedule.pitchFor(frequency), attackTicks, decayTicks);
+        return immediate();
+    }
+
+    private static EndpointResult playSweep(EndpointInvocation invocation) {
+        SpeakerBlockEntity speaker = requireSpeaker(invocation);
+        ResourceLocation id = waveIdByName(invocation.arguments().get(0).checkjstring());
+        double from = Mth.clamp(invocation.arguments().get(1).checkdouble(), 55.0, 3520.0);
+        double to = Mth.clamp(invocation.arguments().get(2).checkdouble(), 55.0, 3520.0);
+        double seconds = Mth.clamp(invocation.arguments().get(3).checkdouble(), 0.2, 10.0);
+        float volume = (float) Mth.clamp(
+                numberArg(invocation, 4, 1.0), 0.0, 3.0);
+        speaker.playSweep(id, from, to, volume, WaveSchedule.sweepTicks(seconds));
+        return immediate();
+    }
+
+    private static ResourceLocation waveIdByName(String wave) {
+        String normalized = wave.toLowerCase(java.util.Locale.ROOT);
+        switch (normalized) {
+            case "sine", "sin" -> {
+                return waveId("sine");
+            }
+            case "square", "sq" -> {
+                return waveId("square");
+            }
+            case "saw", "sawtooth" -> {
+                return waveId("saw");
+            }
+            case "triangle", "tri" -> {
+                return waveId("triangle");
+            }
+            case "noise", "white" -> {
+                return waveId("noise");
+            }
             default -> throw new IllegalArgumentException(
                     "Unknown wave: " + wave + " (use sine, square, saw, triangle, noise)");
         }
-        if (!speaker.playSound(id, volume, pitch)) {
-            throw new IllegalArgumentException("Speaker sound not available: " + id);
+    }
+
+    /** Reads an optional trailing number argument, falling back when absent or nil. */
+    private static double numberArg(EndpointInvocation invocation, int index, double fallback) {
+        var arguments = invocation.arguments();
+        if (arguments.size() <= index || arguments.get(index).isnil()) {
+            return fallback;
         }
-        return immediate();
+        return arguments.get(index).checkdouble();
     }
 
     private static ResourceLocation waveId(String wave) {
@@ -148,6 +210,15 @@ public final class SpeakerEndpoints {
     private static EndpointResult play(EndpointInvocation invocation) {
         requireSpeaker(invocation).playDisc();
         return immediate();
+    }
+
+    private static EndpointResult setLoop(EndpointInvocation invocation) {
+        requireSpeaker(invocation).setDiscLoop(invocation.arguments().get(0).checkboolean());
+        return immediate();
+    }
+
+    private static EndpointResult isLooping(EndpointInvocation invocation) {
+        return immediate(LuaValue.valueOf(requireSpeaker(invocation).isDiscLoop()));
     }
 
     private static EndpointResult stop(EndpointInvocation invocation) {

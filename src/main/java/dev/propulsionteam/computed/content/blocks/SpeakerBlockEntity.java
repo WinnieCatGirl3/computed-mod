@@ -1,6 +1,7 @@
 package dev.propulsionteam.computed.content.blocks;
 
 import dev.propulsionteam.computed.content.ComputedRegistries;
+import dev.propulsionteam.computed.content.WaveSchedule;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
@@ -26,6 +27,28 @@ public class SpeakerBlockEntity extends BlockEntity {
     private ItemStack disc = ItemStack.EMPTY;
     private boolean playing;
     private int remainingTicks;
+    private boolean discLoop;
+
+    // Active synthesized wave note (attack/decay envelope), server-side only.
+    @Nullable
+    private ResourceLocation waveSound;
+    private boolean waveActive;
+    private int waveElapsed;
+    private int waveTotal = WaveSchedule.WAVE_TICKS;
+    private int waveAttackTicks;
+    private int waveDecayTicks;
+    private float waveVolume = 1.0F;
+    private float wavePitch = 1.0F;
+
+    // Active frequency sweep, server-side only.
+    @Nullable
+    private ResourceLocation sweepSound;
+    private boolean sweepActive;
+    private int sweepElapsed;
+    private int sweepTotal;
+    private double sweepFrom;
+    private double sweepTo;
+    private float sweepVolume = 1.0F;
 
     public SpeakerBlockEntity(BlockPos pos, BlockState state) {
         super(ComputedRegistries.SPEAKER_BLOCK_ENTITY.get(), pos, state);
@@ -61,6 +84,113 @@ public class SpeakerBlockEntity extends BlockEntity {
 
     public boolean isPlaying() {
         return playing;
+    }
+
+    public void setDiscLoop(boolean loop) {
+        discLoop = loop;
+    }
+
+    public boolean isDiscLoop() {
+        return discLoop;
+    }
+
+    /**
+     * Starts a waveform note with an optional attack/decay envelope. Minecraft one-shots cannot
+     * change volume mid-play, so the envelope restarts the tone in short ramp slices.
+     */
+    public void playWave(ResourceLocation soundId, float volume, float pitch, int attackTicks, int decayTicks) {
+        if (level == null || level.isClientSide) {
+            return;
+        }
+        cutActiveSynth();
+        waveSound = soundId;
+        waveActive = true;
+        waveElapsed = 0;
+        waveTotal = WaveSchedule.WAVE_TICKS;
+        waveAttackTicks = attackTicks;
+        waveDecayTicks = decayTicks;
+        waveVolume = volume;
+        wavePitch = pitch;
+        playSound(soundId, Math.max(0.0F, volume * WaveSchedule.initialAttackFactor(attackTicks)), pitch);
+    }
+
+    /** Starts a linear frequency glide by restarting the tone in short slices. */
+    public void playSweep(ResourceLocation soundId, double fromHz, double toHz, float volume, int totalTicks) {
+        if (level == null || level.isClientSide) {
+            return;
+        }
+        cutActiveSynth();
+        sweepSound = soundId;
+        sweepActive = true;
+        sweepElapsed = 0;
+        sweepTotal = totalTicks;
+        sweepFrom = fromHz;
+        sweepTo = toHz;
+        sweepVolume = volume;
+        playSound(soundId, volume, WaveSchedule.pitchFor(fromHz));
+    }
+
+    private void cutActiveSynth() {
+        if (waveActive && waveSound != null) {
+            sendStopSound(waveSound);
+        }
+        if (sweepActive && sweepSound != null) {
+            sendStopSound(sweepSound);
+        }
+        waveActive = false;
+        sweepActive = false;
+    }
+
+    private void sendStopSound(ResourceLocation soundId) {
+        if (!(level instanceof net.minecraft.server.level.ServerLevel serverLevel)) {
+            return;
+        }
+        var packet = new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(soundId, SoundSource.RECORDS);
+        for (var player : serverLevel.players()) {
+            player.connection.send(packet);
+        }
+    }
+
+    private void tickWaveNote() {
+        if (!waveActive || waveSound == null) {
+            return;
+        }
+        int elapsed = waveElapsed;
+        float attack = WaveSchedule.attackSlice(elapsed, waveAttackTicks);
+        float decay = WaveSchedule.decaySlice(elapsed, waveTotal, waveDecayTicks);
+        if (attack >= 0.0F && elapsed > 0) {
+            sendStopSound(waveSound);
+            playSound(waveSound, Math.max(0.0F, waveVolume * attack), wavePitch);
+        } else if (decay >= 0.0F && elapsed > 0) {
+            sendStopSound(waveSound);
+            if (decay > 0.0F) {
+                playSound(waveSound, waveVolume * decay, wavePitch);
+            }
+        }
+        waveElapsed++;
+        if (WaveSchedule.noteDone(waveElapsed, waveTotal)) {
+            if (waveDecayTicks > 0) {
+                sendStopSound(waveSound);
+            }
+            waveActive = false;
+        }
+    }
+
+    private void tickSweep() {
+        if (!sweepActive || sweepSound == null) {
+            return;
+        }
+        int elapsed = sweepElapsed;
+        if (elapsed > 0 && elapsed % WaveSchedule.SWEEP_STEP_TICKS == 0) {
+            double frequency = WaveSchedule.sweepFrequency(sweepFrom, sweepTo, elapsed, sweepTotal);
+            sendStopSound(sweepSound);
+            playSound(sweepSound, sweepVolume, WaveSchedule.pitchFor(frequency));
+        }
+        sweepElapsed++;
+        if (sweepElapsed >= sweepTotal) {
+            sendStopSound(sweepSound);
+            sweepActive = false;
+        }
     }
 
     /** Inserts a music disc. Returns {@code false} if the slot is occupied or the stack is not a disc. */
@@ -122,6 +252,7 @@ public class SpeakerBlockEntity extends BlockEntity {
         }
         playing = false;
         remainingTicks = 0;
+        cutActiveSynth();
         setChanged();
     }
 
@@ -148,14 +279,15 @@ public class SpeakerBlockEntity extends BlockEntity {
         return true;
     }
 
-    /** Server ticker: counts down disc playback and stops at song end like the vanilla jukebox. */
+    /** Server ticker: counts down disc playback (restarting it in loop mode) and drives synth notes. */
     public static void serverTick(net.minecraft.world.level.Level level, BlockPos pos, BlockState state, SpeakerBlockEntity be) {
-        if (!be.playing) {
-            return;
+        if (be.playing && --be.remainingTicks <= 0) {
+            if (!(be.discLoop && be.playDisc())) {
+                be.stop();
+            }
         }
-        if (--be.remainingTicks <= 0) {
-            be.stop();
-        }
+        be.tickWaveNote();
+        be.tickSweep();
     }
 
     public static boolean isMusicDisc(net.minecraft.world.level.Level level, ItemStack stack) {

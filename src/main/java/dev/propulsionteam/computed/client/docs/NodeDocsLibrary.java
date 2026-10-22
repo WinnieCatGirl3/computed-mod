@@ -816,16 +816,23 @@ public final class NodeDocsLibrary {
 
         list.add(entry(
                 "computed:speaker_play_wave", "Play Wave", "speaker",
-                "Plays a raw waveform sample through the speaker.",
-                "ctx:endpoint(\"computed:speaker\"):call(\"play_wave\", waveId, volume)",
-                new String[] {"wave:string", "volume:number"},
+                "Plays a raw waveform tone with optional attack/decay envelope.",
+                "ctx:endpoint(\"computed:speaker\"):call(\"play_wave\", waveId, frequency, volume, attack, decay)",
+                new String[] {"wave:string", "volume:number", "attack:number", "decay:number"},
+                new String[] {}));
+
+        list.add(entry(
+                "computed:speaker_play_sweep", "Play Sweep", "speaker",
+                "Glides between two frequencies over a duration (risers, alarms, motors).",
+                "ctx:endpoint(\"computed:speaker\"):call(\"play_sweep\", waveId, fromHz, toHz, duration, volume)",
+                new String[] {"trigger:boolean", "event:event"},
                 new String[] {}));
 
         list.add(entry(
                 "computed:speaker_play_disc", "Play Disc", "speaker",
-                "Plays a music disc through the speaker.",
-                "ctx:endpoint(\"computed:speaker\"):call(\"play_disc\", discId)",
-                new String[] {"disc:string"},
+                "Plays the inserted music disc, optionally looping it.",
+                "ctx:endpoint(\"computed:speaker\"):call(\"play\")",
+                new String[] {"trigger:boolean", "event:event"},
                 new String[] {}));
 
         list.add(entry(
@@ -1147,6 +1154,28 @@ public final class NodeDocsLibrary {
                 "local source = ctx:endpoint(\"aeronautics:source\"):call(\"read\")",
                 new String[] {},
                 new String[] {"source:string"}));
+
+        list.add(entry(
+                "computed:aeronautics_vertical_speed", "Aeronautics Vertical Speed", "integration",
+                "Climb rate of the assembly in blocks/second (positive = up). Requires the Aeronautics mod.",
+                "local vertical_speed = ctx:endpoint(\"aeronautics:telemetry\"):call(\"measure\").vy",
+                new String[] {},
+                new String[] {"vertical_speed:number"}));
+
+        list.add(entry(
+                "computed:aeronautics_altitude", "Aeronautics Altitude", "integration",
+                "Altitude (Y coordinate) of the assembly in blocks. Requires the Aeronautics mod.",
+                "local altitude = ctx:endpoint(\"aeronautics:telemetry\"):call(\"measure\").y",
+                new String[] {},
+                new String[] {"altitude:number"}));
+
+        list.add(entry(
+                "computed:threshold_trigger", "Threshold Trigger", "logic",
+                "Latches true when a value crosses a threshold; hysteresis prevents chatter. "
+                        + "Typical use: altitude below X triggers an alarm.",
+                "local triggered = value >= ctx:field(\"threshold\")",
+                new String[] {"value:number"},
+                new String[] {"triggered:boolean"}));
 
         list.sort(Comparator
                 .comparing(NodeDocsEntry::folder, String.CASE_INSENSITIVE_ORDER)

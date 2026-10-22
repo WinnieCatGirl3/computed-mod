@@ -26,6 +26,8 @@ public final class IntegrationLuaLibrary {
             new Entry("computed:aeronautics_heading", "computed/lua/nodes/integration/aeronautics/heading.lua"),
             new Entry("computed:aeronautics_distance", "computed/lua/nodes/integration/aeronautics/distance.lua"),
             new Entry("computed:aeronautics_speed", "computed/lua/nodes/integration/aeronautics/speed.lua"),
+            new Entry("computed:aeronautics_vertical_speed", "computed/lua/nodes/integration/aeronautics/vertical_speed.lua"),
+            new Entry("computed:aeronautics_altitude", "computed/lua/nodes/integration/aeronautics/altitude.lua"),
             new Entry("computed:aeronautics_velocity_sensor", "computed/lua/nodes/integration/aeronautics/velocity_sensor.lua"),
             new Entry("computed:aeronautics_present", "computed/lua/nodes/integration/aeronautics/present.lua"),
             new Entry("computed:aeronautics_name", "computed/lua/nodes/integration/aeronautics/name.lua"),

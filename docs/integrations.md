@@ -22,11 +22,14 @@ All three need an adjacent Create block or an available redstone-link network.
 ## Create Aeronautics
 
 When Create Aeronautics is installed, Computed measures the nearest contraption (including flying
-structures) around the computer — 15 ready-made nodes from **Aeronautics Telemetry** (everything at
-once) down to single values like speed, heading, or pitch. Each node has a **Face** field; the
-measurement runs once per computer per tick no matter how many nodes you use.
+structures) around the computer — 17 ready-made nodes from **Aeronautics Telemetry** (everything at
+once) down to single values like speed, vertical speed, altitude, heading, or pitch. Each node has
+a **Face** field; the measurement runs once per computer per tick no matter how many nodes you
+use.
 
-The same data is available on the CC:Tweaked side as the peripheral method `measure()`.
+Combine a scalar node with the [Threshold Trigger](nodes.md) node for alarms: altitude below 50
+switches a speaker on, vertical speed above zero tells you you are climbing. The same data is
+available on the CC:Tweaked side as the peripheral method `measure()`.
 
 **Sable Companion** (optional) is supported: Create Aeronautics uses it for hidden physics
 sublevels, and Computed reads contraption positions through it automatically.
