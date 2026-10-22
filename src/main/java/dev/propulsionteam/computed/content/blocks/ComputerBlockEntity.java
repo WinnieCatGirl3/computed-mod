@@ -687,7 +687,7 @@ public class ComputerBlockEntity extends BaseContainerBlockEntity
                 widgets.add(widget);
             }
         }
-        widgets = MonitorWidgetLayout.resolve(
+        widgets = MonitorWidgetLayout.resolveFitted(
                 widgets, PortableMonitorItem.CANVAS_W, PortableMonitorItem.CANVAS_H);
         glassesHudDrawList = new WidgetDrawList(widgets);
         long hash = glassesHudDrawList.hash();

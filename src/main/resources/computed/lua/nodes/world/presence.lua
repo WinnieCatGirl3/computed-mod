@@ -4,11 +4,10 @@ node:category("world")
 node:style("source")
 node:execution("tick")
 node:field("face", "direction", { default = "front" })
-node:output("present", "boolean")
+node:output("present", "string")
 node:on_run(function(ctx)
-    ctx:output(
-        "present",
-        ctx:endpoint("computed:world"):call("block_present", ctx:field("face")))
+    local present = ctx:endpoint("computed:world"):call("block_present", ctx:field("face"))
+    ctx:output("present", present and "present" or "absent")
 end)
 
 return node

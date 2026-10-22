@@ -637,13 +637,14 @@ public final class NodeDocsLibrary {
 
         list.add(entry(
                 "computed:block_presence", "Block Presence", "world",
-                "Checks whether a block is present at a given offset relative to the computer.",
+                "Reports whether a block is present at a face of the computer as text "
+                        + "('present' or 'absent').",
                 """
-                local present = ctx:endpoint("computed:block"):call("presence", dx, dy, dz)
-                ctx:output("present", present)
+                local present = ctx:endpoint("computed:world"):call("block_present", ctx:field("face"))
+                ctx:output("present", present and "present" or "absent")
                 """,
-                new String[] {"dx:number", "dy:number", "dz:number"},
-                new String[] {"present:boolean"}));
+                new String[] {},
+                new String[] {"present:string"}));
 
         list.add(entry(
                 "computed:redstone_input", "Redstone Input", "world",

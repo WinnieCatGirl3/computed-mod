@@ -62,7 +62,7 @@ because you place nodes by title.
 | `computed:world_time` | Time of day |
 | `computed:block_location` | The computer's x/y/z |
 | `computed:block_rotation` | Yaw, pitch, roll |
-| `computed:block_presence` | Is a block on face X? |
+| `computed:block_presence` | Reports `present` / `absent` text for a block on face X |
 | `computed:redstone_input` | Read redstone level |
 | `computed:comparator_read` | Read comparator |
 | `computed:redstone_emitter` | Output redstone |

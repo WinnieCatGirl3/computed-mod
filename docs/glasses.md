@@ -22,6 +22,10 @@ inputs (`widget_1` … `widget_16`), **+** adds one, **−** removes the last. W
 into it — text, numbers, buttons, progress bars — and every player wearing glasses linked to this
 computer sees them.
 
+Line-layout widgets **hug their content** on the glasses — a short label stays a short label
+instead of stretching across the whole HUD. Set a widget's **Fit** field to `fill` when you want
+a full-width row.
+
 ## Adjusting the HUD (press K)
 
 With the glasses equipped, press **K** to enter edit mode:

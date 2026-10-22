@@ -17,11 +17,26 @@ public final class MonitorWidgetLayout {
     }
 
     /**
+     * Resolves line widgets hugging their content instead of spanning the full slot — used by
+     * the glasses HUD where full-width rows look far too wide. Widgets explicitly set to
+     * {@link LayoutManagedWidget.Fit#FILL} still span the slot.
+     */
+    public static List<Widget> resolveFitted(List<Widget> source, int screenW, int screenH) {
+        return resolve(source, screenW, screenH, LINE_HEIGHT_PX, true);
+    }
+
+    /**
      * Resolves line-managed widgets into raw pixel widgets. {@code lineHeightPx} controls how many
      * lines fit vertically (smaller lines = more rows on compact screens). Widgets whose preferred
      * line is occupied flow into the next free line instead of being dropped.
      */
     public static List<Widget> resolve(List<Widget> source, int screenW, int screenH, int lineHeightPx) {
+        return resolve(source, screenW, screenH, lineHeightPx, false);
+    }
+
+    /** Full variant: {@code fitToContent} shrinks AUTO widgets in line layout to their content. */
+    public static List<Widget> resolve(
+            List<Widget> source, int screenW, int screenH, int lineHeightPx, boolean fitToContent) {
         List<Widget> out = new ArrayList<>(source.size());
         int lineCount = Math.max(1, screenH / Math.max(1, lineHeightPx));
         boolean[] occupiedLines = new boolean[lineCount];
@@ -43,7 +58,8 @@ public final class MonitorWidgetLayout {
             for (int i = lineIndex; i < lineIndex + lineSpan; i++) {
                 occupiedLines[i] = true;
             }
-            out.add(resolveLineWidget(managed, screenW, screenH, lineCount, lineIndex, lineSpan));
+            out.add(resolveLineWidget(
+                    managed, screenW, screenH, lineCount, lineIndex, lineSpan, fitToContent));
         }
         return out;
     }
@@ -73,7 +89,8 @@ public final class MonitorWidgetLayout {
     }
 
     private static Widget resolveLineWidget(LayoutManagedWidget managed, int screenW, int screenH,
-                                            int lineCount, int lineIndex, int lineSpan) {
+                                            int lineCount, int lineIndex, int lineSpan,
+                                            boolean fitToContent) {
         int availableH = Math.max(1, screenH - MONITOR_PADDING_PX * (lineCount + 1));
         int lineH = Math.max(1, availableH / lineCount);
         int lineY = MONITOR_PADDING_PX + lineIndex * (lineH + MONITOR_PADDING_PX);
@@ -81,17 +98,61 @@ public final class MonitorWidgetLayout {
                 + (lineIndex + lineSpan - 1) * MONITOR_PADDING_PX;
         int maxLineBottom = Math.max(lineY + 1, screenH - MONITOR_PADDING_PX);
         int effectiveLineH = Math.max(1, Math.min(spannedBottom, maxLineBottom) - lineY);
-        Bounds bounds = boundsFor(managed, screenW, lineY, effectiveLineH);
+        Bounds bounds = boundsFor(managed, screenW, lineY, effectiveLineH, fitToContent);
         return withBounds(managed.raw(), bounds.x(), bounds.y(), bounds.w(), bounds.h());
     }
 
-    private static Bounds boundsFor(LayoutManagedWidget managed, int screenW, int lineY, int lineH) {
+    private static Bounds boundsFor(
+            LayoutManagedWidget managed, int screenW, int lineY, int lineH, boolean fitToContent) {
         int slotW = Math.max(1, screenW - MONITOR_PADDING_PX * 2);
         int targetW = slotW;
+        if (fitToContent && managed.fit() == LayoutManagedWidget.Fit.AUTO) {
+            int estimate = estimateContentWidth(managed.raw());
+            if (estimate >= 0) {
+                targetW = Math.min(slotW, Math.max(24, estimate));
+            }
+        }
         int targetH = Math.max(1, lineH);
         int x = MONITOR_PADDING_PX + Math.max(0, (slotW - targetW) / 2);
         int y = lineY + Math.max(0, (lineH - targetH) / 2);
         return new Bounds(x, y, targetW, targetH);
+    }
+
+    /**
+     * Content width estimate for AUTO widgets: about 8 px per glyph (default MC font worst
+     * case) plus padding, plus room for button/checkbox controls. Returns {@code -1} for
+     * widget types whose text is not known here (fills the slot instead).
+     */
+    private static int estimateContentWidth(Widget raw) {
+        String content;
+        int control = 0;
+        if (raw instanceof TextWidget text) {
+            content = text.text();
+        } else if (raw instanceof NumberWidget number) {
+            content = number.text() != null ? number.text() : String.valueOf(number.value());
+        } else if (raw instanceof ClockWidget clock) {
+            content = clock.showSeconds() ? "00:00:00" : "00:00";
+        } else if (raw instanceof ButtonWidget button) {
+            content = button.label();
+            control = 14;
+        } else if (raw instanceof CheckboxWidget checkbox) {
+            content = checkbox.label();
+            control = 16;
+        } else if (raw instanceof TextBlockWidget block) {
+            String longest = "";
+            if (block.text() != null) {
+                for (String line : block.text().split("\n")) {
+                    if (line.length() > longest.length()) {
+                        longest = line;
+                    }
+                }
+            }
+            content = longest;
+        } else {
+            return -1;
+        }
+        int glyphs = content == null ? 0 : content.length();
+        return glyphs * 8 + MONITOR_PADDING_PX * 2 + control;
     }
 
     private static Widget withBounds(Widget raw, int x, int y, int w, int h) {
