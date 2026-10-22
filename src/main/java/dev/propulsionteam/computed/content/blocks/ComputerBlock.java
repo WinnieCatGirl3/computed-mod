@@ -43,34 +43,14 @@ import org.jetbrains.annotations.Nullable;
 
 import static net.minecraft.world.level.block.state.BlockBehaviour.propertiesCodec;
 
-import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.Shapes;
-import net.minecraft.world.phys.shapes.VoxelShape;
-
-public class ComputerBlock extends Block implements EntityBlock {
-    public static final MapCodec<ComputerBlock> CODEC = RecordCodecBuilder.mapCodec(
+public class ComputerBlock extends Block implements EntityBlock {    public static final MapCodec<ComputerBlock> CODEC = RecordCodecBuilder.mapCodec(
             instance -> instance.group(propertiesCodec()).apply(instance, ComputerBlock::new));
 
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
-    /** Inset so the computer is not a full block: neighbors keep their textures, ours keep the front. */
-    private static final VoxelShape SHAPE = Shapes.box(1, 1, 1, 15, 15, 15);
-
     public ComputerBlock(BlockBehaviour.Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH));
-    }
-
-    @Override
-    protected VoxelShape getShape(
-            BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return SHAPE;
-    }
-
-    @Override
-    protected VoxelShape getCollisionShape(
-            BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return SHAPE;
     }
 
     @Override
