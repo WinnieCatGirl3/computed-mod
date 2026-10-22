@@ -136,11 +136,9 @@
   width: 96px;
   height: 96px;
   border-radius: 50%;
-  border: 3px solid var(--y2k-crt);
   box-shadow:
-    0 0 12px rgba(51, 255, 102, 0.8),
-    0 0 32px rgba(51, 255, 102, 0.4),
-    inset 0 0 8px rgba(0, 0, 0, 0.6);
+    0 3px 14px rgba(0, 0, 0, 0.7),
+    0 0 8px rgba(51, 255, 102, 0.25);
   transition: transform 0.35s ease;
   image-rendering: auto;
 }
@@ -153,18 +151,14 @@
   margin: 0.5rem 0 0;
   font-size: 2.3rem;
   color: var(--y2k-crt);
-  text-shadow:
-    0 0 6px rgba(51, 255, 102, 0.9),
-    0 0 18px rgba(51, 255, 102, 0.55),
-    0 0 42px rgba(40, 200, 90, 0.35);
+  text-shadow: 0 0 6px rgba(51, 255, 102, 0.45);
   animation: crt-flicker 6s infinite;
 }
 
 .computed-hero p {
   margin: 0 0 0.9rem;
   font-size: 0.95rem;
-  color: #9df5b8;
-  text-shadow: 0 0 8px rgba(51, 255, 102, 0.5);
+  color: #b9f7cc;
   max-width: 46rem;
 }
 
@@ -200,8 +194,7 @@
   transform: translateY(-2px);
   box-shadow:
     inset 0 1px 0 #ffffff,
-    0 4px 10px rgba(0, 0, 0, 0.4),
-    0 0 12px rgba(124, 252, 0, 0.35);
+    0 4px 10px rgba(0, 0, 0, 0.4);
 }
 
 .md-button:active {
@@ -209,21 +202,38 @@
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.35);
 }
 
+.computed-hero .md-button {
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  padding: 0.6em 1.8em;
+}
+
 .computed-hero .md-button--primary {
   background: linear-gradient(180deg, #d4ff9a 0%, #a8f542 48%, #6fd400 52%, #b8ff6e 100%);
   border-color: #3d7a00;
   color: #102a00;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.65);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
   box-shadow:
     inset 0 1px 0 #ffffff,
-    0 2px 6px rgba(0, 0, 0, 0.5),
-    0 0 14px rgba(124, 252, 0, 0.45);
+    0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.computed-hero .md-button--primary:hover {
+  box-shadow:
+    inset 0 1px 0 #ffffff,
+    0 4px 10px rgba(0, 0, 0, 0.55);
 }
 
 .computed-hero .md-button--gh {
-  background: linear-gradient(180deg, #f5f6f7 0%, #e2e5e8 48%, #c2c7cd 52%, #eceef1 100%);
-  border-color: #9aa4ae;
-  color: #1a2430;
+  background: linear-gradient(180deg, rgba(46, 62, 52, 0.9), rgba(8, 16, 12, 0.9));
+  border: 2px solid #9df5b8;
+  color: #eafff2;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.computed-hero .md-button--gh:hover {
+  background: linear-gradient(180deg, rgba(70, 96, 80, 0.95), rgba(16, 30, 22, 0.95));
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.55);
 }
 
 /* --- Header: XP Luna --------------------------------------------- */
@@ -241,7 +251,7 @@
 
 .md-header__button.md-logo:hover img {
   transform: scale(1.1);
-  box-shadow: 0 0 0 1px #0a2f7a, 0 0 12px rgba(124, 252, 0, 0.8);
+  box-shadow: 0 0 0 1px #0a2f7a, 0 2px 8px rgba(124, 252, 0, 0.45);
 }
 
 .md-tabs__link {
@@ -258,7 +268,6 @@
 
 .md-nav__link:hover {
   color: var(--y2k-lime);
-  text-shadow: 0 0 8px rgba(124, 252, 0, 0.6);
 }
 
 /* --- Guide cards: Win2k 3D panels ---------------------------------- */
@@ -280,7 +289,7 @@
 .md-typeset .grid.cards > ol > li:hover {
   transform: translateY(-4px);
   border: 2px outset var(--y2k-lime);
-  box-shadow: 0 0 14px rgba(124, 252, 0, 0.45);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
 .md-typeset .grid.cards > ul > li > hr,
@@ -405,7 +414,6 @@ details > summary {
 
 .md-typeset a:hover {
   color: var(--y2k-lime);
-  text-shadow: 0 0 6px rgba(124, 252, 0, 0.5);
 }
 
 ::selection {
