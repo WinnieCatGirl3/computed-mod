@@ -71,6 +71,7 @@ nav:
       - Speaker: speaker.md
       - Node Catalog: nodes.md
       - Integrations: integrations.md
+  - Ideas & Roadmap: ideas.md
   - Lua Reference:
       - Lua Node Authoring: lua/authoring-guide.md
       - Lua API Reference: lua/lua-api-reference.md

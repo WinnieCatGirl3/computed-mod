@@ -1,6 +1,9 @@
 # Computed — Ideen-Backlog
 
 Offene Ideen und Requests, sortiert nach Reife. Wird beim Bauen neuer Features ergänzt.
+Neue Ideen am besten im GitHub-Discussion-Thread hinterlassen
+(<https://github.com/WinnieCatGirl3/computed-mod/discussions/categories/ideas>) — diese Datei ist
+die rohe Arbeitsliste daraus.
 
 ## Offene Ideen
 
@@ -16,13 +19,10 @@ Offene Ideen und Requests, sortiert nach Reife. Wird beim Bauen neuer Features e
   als Instrumente/Wellenformen verfügbar sind.
 
 ### Widgets / Display
-- **Neue Widget-Typen** — Diagramm/Verlaufs-Widget, Fortschrittsbalken, Checkbox,
-  Texteingabe-Feld am Monitor (für Formulare/Passwörter).
+- **Verlaufs-/Diagramm-Widget** — Werte über die Zeit als Kurve auf dem Monitor
+  (Fortschrittsbalken, Checkbox und Texteingabe sind schon da).
 - **Bild-Widget** — Textur/Item-Icon auf dem Monitor anzeigen.
-- **Kanal-Management im Portable Screen** — Tab per Rechtsklick entfernen (statt am Computer).
 - **Widget-Klicks mit Rechtsbutton** — zweite Aktionsspalte für Widgets (z.B. Kontext-Menü).
-- **Name im Tab-Label** — Tabs zeigen aktuell nur Nummern; bei wenig Kanälen evtl. den
-  Anfangsbuchstaben des Computernamens.
 
 ### Computer / Welt
 - **Radar-/Sensor-Endpoint** — Entities, Lichtlevel, Wetter oder Blöcke in Radius abfragen
@@ -34,39 +34,36 @@ Offene Ideen und Requests, sortiert nach Reife. Wird beim Bauen neuer Features e
 - **Energie-Endpoint** — FE/EU lesen und entnehmen (Create/Forge-Energy-Integration).
 - **Autostart auf Disk** — Programm das beim Einschalten automatisch läuft.
 
-### Editor / Werkzeuge
-- **Undo/Redo im Graph-Editor** — Rückgängig nach Schleifenklicks.
-- **Auto-Save** — Graph periodisch oder bei Änderung speichern.
-- **Widget-Preview im Editor** — Mini-Render der Ausgabe ohne laufendes Programm.
-- **Beispiel-Disk im Creative Tab** — Demoprogramm (Radar, Uhr, Musik) zum Ausprobieren.
-
 ### Diskutiert
 - **Portable Monitor Screen-Animation** — Öffnungs-Animation (Scale/Fade) im
   `PortableMonitorScreen`; User baut sie als Lernprojekt selbst (siehe Umgesetzt).
 
 ### Integrationen
-- **Create-Integration ausbauen** — Create-Screens als Monitor, Kinetic-Speed als Sensor.
-- **Aeronautics-Integration** — Flugdaten/Höhe als Widget.
-- **Komputer-zu-Komputer-Link** — zwei Computer direkt koppeln (Datenübertragung,
-  Remote-Aufrufe über den `net`-Endpoint).
+- **Create-Screens als Monitor** — Create-Displays als Monitor-Fläche anbinden
+  (Kinetic-Speed/Stress läuft schon über den Create-Kinetic-Node).
 
 ## Umgesetzt
 
-- **GeckoLib-Item (optional)** — Portable Monitor nutzt mit GeckoLib im Modpack ein
-  keyframe-animierte Geo-Item-Modell (Rechtsklick triggert `unfold` auf dem `use`-Controller);
-  ohne GeckoLib bleibt das flache/3D-Item-Model. Platzhalter-Geo + -Animation in
-  `geo/item/` + `animations/item/`; Modell/Animation werden in Blockbench (GeckoLib-Plugin)
-  neu gebaut und über die selben Dateien exportiert.
-- **Portable Monitor 3D** — Item-Model aus Element-Boxen (Front/Back/Side-Texturen,
-  Spyglass-artige Display-Transformationen). Die Öffnungs-Animation im Screen ist als
-  Lernprojekt beim User: Einstieg in `PortableMonitorScreen.render` (openProgress 0→1,
-  Scale um Display-Zentrum + Fade-Overlay).
+- **Undo/Redo im Graph-Editor** — Ctrl+Z/Ctrl+Y, 256 History-Stände, jedes Layout-Operation
+  rückgängig machbar.
+- **Auto-Save** — Graph speichert sich ca. einmal pro Sekunde und beim Schließen; kein
+  Save-Button.
+- **Widget-Preview (Lua Live Preview)** — rechte Pane rendert den Node-Ausgang mit
+  editierbaren Sample-Inputs, ohne dass ein Programm läuft.
+- **Beispiel-Disk im Creative Tab** — `widgetDemoDisk` liegt im Haupt-Tab zum Ausprobieren.
+- **Kanal-Management am Portable Monitor** — Rechtsklick auf einen Tab entfernt den Kanal.
+- **Name im Tab-Label** — Tabs/Labels zeigen den Computernamen, sobald der gesetzt ist.
+- **Komputer-zu-Komputer-Link** — `computed:net`-Endpoint (Senden/Empfangen über
+  Computer-ID, inkl. Remote-Aufrufen).
+- **Aeronautics-Integration** — 15 Telemetry-Nodes von `Aeronautics Telemetry` bis
+  Einzelwerten (Speed, Heading, Pitch …), plus `measure()` auf der CC-Seite.
+- **Create Kinetic** — Speed/Stress/Stress-Capacity als Sensor-Node.
 - **Conditional Nodes (CC-Style)** — `BundledLuaLibrary`-Entries können eine `requiredMod`
   tragen; ohne die Mod erscheinen sie nicht im Explorer. Der Aeronautics-Telemetry-Node
   hängt an Create (ohne Create keine Contraption).
 - **Speaker-Synthese `play_wave`** — sine/square/saw/triangle/noise via Pitch-Shift
   (55–3520 Hz), Node „Speaker Play Wave".
-
-## Verworfen
-
-- **USB-Stick-Item** — Files werden bereits gespeichert (User-Entscheidung).
+- **Portable Monitor 3D** — Item-Model aus Element-Boxen (Front/Back/Side-Texturen,
+  Spyglass-artige Display-Transformationen). Die Öffnungs-Animation im Screen ist als
+  Lernprojekt beim User: Einstieg in `PortableMonitorScreen.render` (openProgress 0→1,
+  Scale um Display-Zentrum + Fade-Overlay).
