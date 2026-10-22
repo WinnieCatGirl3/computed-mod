@@ -13,8 +13,8 @@ theme:
   logo: assets/images/logo.png
   favicon: assets/images/favicon.png
   font:
-    text: Inter
-    code: JetBrains Mono
+    text: ""
+    code: VT323
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default

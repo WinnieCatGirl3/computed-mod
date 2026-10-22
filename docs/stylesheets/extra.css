@@ -1,33 +1,58 @@
 /* ================================================================
-   Winnie's Computed wiki — custom theme
-   Colours matched to the mod icon: blue panel, green status LEDs.
+   Winnie's Computed wiki — Y2K / Windows-XP era theme
+   CRT hero like the mod icon, XP Luna header, aqua-gloss buttons,
+   chrome tables, Verdana body, Orbitron titles, VT323 code.
    ================================================================ */
+
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700&display=swap");
 
 /* --- Palette -------------------------------------------------- */
 [data-md-color-scheme="default"] {
-  --md-primary-fg-color: #3576a8;
-  --md-primary-fg-color--light: #5ba1d9;
-  --md-primary-fg-color--dark: #1f4e75;
-  --md-accent-fg-color: #4caf50;
-  --md-accent-fg-color--transparent: rgba(76, 175, 80, 0.1);
-  --computed-blue: #3576a8;
-  --computed-blue-dark: #1f4e75;
-  --computed-green: #4caf50;
+  --md-primary-fg-color: #245edc;
+  --md-primary-fg-color--light: #3f8cf3;
+  --md-primary-fg-color--dark: #0054e3;
+  --md-accent-fg-color: #7cfc00;
+  --md-accent-fg-color--transparent: rgba(124, 252, 0, 0.15);
+  --md-header-bg-color: #245edc;
+  --md-header-bg: linear-gradient(180deg, #4a94f7 0%, #245edc 60%, #1a4bb8 100%);
+  --md-footer-bg-color: #1a4bb8;
+  --md-code-bg-color: #0a0f0a;
+  --md-code-fg-color: #33ff66;
+  --y2k-lime: #7cfc00;
+  --y2k-cyan: #00e5ff;
+  --y2k-crt: #33ff66;
+  --y2k-chrome-1: #f8f9fa;
+  --y2k-chrome-2: #c9d0d8;
+  --y2k-chrome-3: #98a3ad;
+  --y2k-border: #7b8794;
 }
 
 [data-md-color-scheme="slate"] {
-  --md-primary-fg-color: #2e6a96;
-  --md-primary-fg-color--light: #4a8cbf;
-  --md-primary-fg-color--dark: #173a56;
-  --md-accent-fg-color: #66bb6a;
-  --md-accent-fg-color--transparent: rgba(102, 187, 106, 0.1);
-  --computed-blue: #2e6a96;
-  --computed-blue-dark: #173a56;
-  --computed-green: #66bb6a;
+  --md-primary-fg-color: #0b2b4a;
+  --md-primary-fg-color--light: #14406b;
+  --md-primary-fg-color--dark: #061a30;
+  --md-accent-fg-color: #00e5ff;
+  --md-accent-fg-color--transparent: rgba(0, 229, 255, 0.15);
+  --md-header-bg-color: #061a30;
+  --md-header-bg: linear-gradient(180deg, #0e3a5e 0%, #061a30 100%);
+  --md-footer-bg-color: #04121f;
+  --md-code-bg-color: #050a05;
+  --md-code-fg-color: #33ff66;
+  --y2k-lime: #00e5ff;
+  --y2k-cyan: #00e5ff;
+  --y2k-crt: #33ff66;
+  --y2k-chrome-1: #3a4450;
+  --y2k-chrome-2: #2a323c;
+  --y2k-chrome-3: #1c222a;
+  --y2k-border: #4a5462;
 }
 
-/* --- Typography ------------------------------------------------ */
-@import url("https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&display=swap");
+/* --- Body font: the 2000s web font ---------------------------- */
+.md-typeset {
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  font-size: 0.78rem;
+  line-height: 1.75;
+}
 
 .md-typeset h1,
 .md-typeset h2,
@@ -35,138 +60,233 @@
 .md-typeset h4,
 .md-typeset h5,
 .md-header__title,
-.md-tabs__link {
-  font-family: "Chakra Petch", var(--md-text-font-family, "Inter"), sans-serif;
+.md-tabs__link,
+.md-button,
+.admonition-title,
+.md-typeset table:not([class]) th {
+  font-family: "Orbitron", "Verdana", sans-serif;
 }
 
-.md-typeset h1 {
+.md-typeset h1,
+.md-typeset h2 {
   font-weight: 700;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.03em;
 }
 
 .md-typeset h2 {
-  border-bottom: 1px solid color-mix(in srgb, var(--computed-blue) 35%, transparent);
-  padding-bottom: 0.2em;
+  border-bottom: 3px ridge var(--y2k-chrome-2);
+  padding-bottom: 0.25em;
 }
 
-/* --- Hero (start page) ----------------------------------------- */
+/* --- Hero: the CRT screen from the mod icon --------------------- */
 .computed-hero {
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   gap: 0.4rem;
-  padding: 2.6rem 1.5rem 2.4rem;
-  margin: 0.5rem 0 1.6rem;
-  border-radius: 16px;
+  padding: 3rem 1.5rem 2.8rem;
+  margin: 0.5rem 0 1.8rem;
+  border-radius: 14px;
+  border: 4px ridge var(--y2k-chrome-2);
   background:
-    radial-gradient(circle at 20% 15%, rgba(114, 188, 238, 0.35), transparent 45%),
-    linear-gradient(135deg, var(--computed-blue-dark) 0%, var(--computed-blue) 55%, #4a9ad4 100%);
-  box-shadow: 0 12px 32px -12px rgba(31, 78, 117, 0.55);
-  color: #fff;
+    radial-gradient(ellipse at 50% 40%, rgba(10, 40, 16, 0.55), transparent 70%),
+    #04120a;
+  box-shadow:
+    inset 0 0 60px rgba(0, 0, 0, 0.9),
+    0 0 0 1px #000,
+    0 8px 24px -8px rgba(0, 0, 0, 0.7);
+  color: var(--y2k-crt);
   position: relative;
   overflow: hidden;
 }
 
-/* faint grid lines, like the icon background */
+/* pixel grid + CRT scanlines */
 .computed-hero::before {
   content: "";
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
-  background-size: 44px 44px;
+    linear-gradient(rgba(51, 255, 102, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(51, 255, 102, 0.07) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+}
+
+.computed-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.28) 0px,
+    rgba(0, 0, 0, 0.28) 1px,
+    transparent 1px,
+    transparent 3px
+  );
   pointer-events: none;
 }
 
 .computed-hero > * {
   position: relative;
+  z-index: 1;
 }
 
 .computed-hero .hero-logo {
   width: 96px;
   height: 96px;
   border-radius: 50%;
-  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.25), 0 8px 20px -6px rgba(0, 0, 0, 0.5);
+  border: 3px solid var(--y2k-crt);
+  box-shadow:
+    0 0 12px rgba(51, 255, 102, 0.8),
+    0 0 32px rgba(51, 255, 102, 0.4),
+    inset 0 0 8px rgba(0, 0, 0, 0.6);
   transition: transform 0.35s ease;
+  image-rendering: auto;
 }
 
 .computed-hero .hero-logo:hover {
-  transform: rotate(8deg) scale(1.06);
+  transform: rotate(8deg) scale(1.08);
 }
 
 .computed-hero h1 {
-  margin: 0.4rem 0 0;
-  color: #fff;
-  font-size: 2.4rem;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+  margin: 0.5rem 0 0;
+  font-size: 2.3rem;
+  color: var(--y2k-crt);
+  text-shadow:
+    0 0 6px rgba(51, 255, 102, 0.9),
+    0 0 18px rgba(51, 255, 102, 0.55),
+    0 0 42px rgba(40, 200, 90, 0.35);
+  animation: crt-flicker 6s infinite;
 }
 
 .computed-hero p {
-  margin: 0 0 0.8rem;
-  font-size: 1.05rem;
-  color: rgba(255, 255, 255, 0.88);
+  margin: 0 0 0.9rem;
+  font-size: 0.95rem;
+  color: #9df5b8;
+  text-shadow: 0 0 8px rgba(51, 255, 102, 0.5);
   max-width: 46rem;
 }
 
-/* --- Buttons --------------------------------------------------- */
+@keyframes crt-flicker {
+  0%, 100% { opacity: 1; }
+  92% { opacity: 1; }
+  93% { opacity: 0.86; }
+  94% { opacity: 1; }
+  97% { opacity: 0.93; }
+  98% { opacity: 1; }
+}
+
+/* --- Aqua / XP buttons ------------------------------------------ */
 .md-button {
-  font-family: "Chakra Petch", var(--md-text-font-family, "Inter"), sans-serif;
   font-weight: 600;
-  letter-spacing: 0.02em;
-  border-radius: 10px;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
-}
-
-.computed-hero .md-button--primary {
-  background: var(--computed-green);
-  border-color: var(--computed-green);
-  color: #10240f;
-}
-
-.computed-hero .md-button--primary:hover {
-  background: #66c06a;
-  border-color: #66c06a;
-  box-shadow: 0 6px 18px -6px rgba(76, 175, 80, 0.7);
-}
-
-.computed-hero .md-button--gh {
-  color: #fff;
-  border-color: rgba(255, 255, 255, 0.55);
-}
-
-.computed-hero .md-button--gh:hover {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: #fff;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  border-radius: 999px;
+  padding: 0.55em 1.6em;
+  background: linear-gradient(180deg, #ffffff 0%, #eef1f5 48%, #ccd3db 52%, #f2f4f7 100%);
+  border: 1px solid #7b8794;
+  color: #14202c;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
+  box-shadow:
+    inset 0 1px 0 #ffffff,
+    inset 0 -1px 0 rgba(0, 0, 0, 0.12),
+    0 2px 5px rgba(0, 0, 0, 0.35);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 
 .md-button:hover {
   transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 #ffffff,
+    0 4px 10px rgba(0, 0, 0, 0.4),
+    0 0 12px rgba(124, 252, 0, 0.35);
 }
 
-/* --- Guide cards ----------------------------------------------- */
+.md-button:active {
+  transform: translateY(1px);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.35);
+}
+
+.computed-hero .md-button--primary {
+  background: linear-gradient(180deg, #d4ff9a 0%, #a8f542 48%, #6fd400 52%, #b8ff6e 100%);
+  border-color: #3d7a00;
+  color: #102a00;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.65);
+  box-shadow:
+    inset 0 1px 0 #ffffff,
+    0 2px 6px rgba(0, 0, 0, 0.5),
+    0 0 14px rgba(124, 252, 0, 0.45);
+}
+
+.computed-hero .md-button--gh {
+  background: linear-gradient(180deg, #f5f6f7 0%, #e2e5e8 48%, #c2c7cd 52%, #eceef1 100%);
+  border-color: #9aa4ae;
+  color: #1a2430;
+}
+
+/* --- Header: XP Luna --------------------------------------------- */
+.md-header {
+  backdrop-filter: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+}
+
+.md-header__button.md-logo img {
+  border-radius: 6px;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px #0a2f7a, 0 2px 6px rgba(0, 0, 0, 0.5);
+  transition: transform 0.3s ease;
+}
+
+.md-header__button.md-logo:hover img {
+  transform: scale(1.1);
+  box-shadow: 0 0 0 1px #0a2f7a, 0 0 12px rgba(124, 252, 0, 0.8);
+}
+
+.md-tabs__link {
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.md-tabs[data-md-color-primary] .md-tabs__indicator,
+.md-tabs__indicator {
+  background-color: var(--y2k-lime);
+  height: 3px;
+}
+
+.md-nav__link:hover {
+  color: var(--y2k-lime);
+  text-shadow: 0 0 8px rgba(124, 252, 0, 0.6);
+}
+
+/* --- Guide cards: Win2k 3D panels ---------------------------------- */
 .md-typeset .grid.cards > ul > li,
 .md-typeset .grid.cards > ol > li {
-  border: 1px solid color-mix(in srgb, var(--computed-blue) 22%, transparent);
-  border-left: 4px solid var(--computed-blue);
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--computed-blue) 4%, transparent);
+  border: 2px outset var(--y2k-chrome-2);
+  border-radius: 4px;
+  background: linear-gradient(180deg, var(--y2k-chrome-1) 0%, var(--y2k-chrome-2) 100%);
   padding: 1rem 1rem 0.9rem;
-  transition: transform 0.16s ease, box-shadow 0.16s ease, border-left-color 0.16s ease;
+  transition: transform 0.14s ease, box-shadow 0.14s ease, border-color 0.14s ease;
+}
+
+[data-md-color-scheme="slate"] .md-typeset .grid.cards > ul > li,
+[data-md-color-scheme="slate"] .md-typeset .grid.cards > ol > li {
+  background: linear-gradient(180deg, var(--y2k-chrome-1) 0%, var(--y2k-chrome-3) 100%);
 }
 
 .md-typeset .grid.cards > ul > li:hover,
 .md-typeset .grid.cards > ol > li:hover {
   transform: translateY(-4px);
-  border-left-color: var(--computed-green);
-  box-shadow: 0 10px 24px -10px rgba(31, 78, 117, 0.45);
+  border: 2px outset var(--y2k-lime);
+  box-shadow: 0 0 14px rgba(124, 252, 0, 0.45);
 }
 
 .md-typeset .grid.cards > ul > li > hr,
 .md-typeset .grid.cards > ol > li > hr {
   border: 0;
-  border-top: 1px dashed color-mix(in srgb, var(--computed-blue) 40%, transparent);
+  border-top: 1px groove var(--y2k-chrome-3);
   margin: 0.7em 0;
 }
 
@@ -174,120 +294,158 @@
   margin-top: 0.25em;
 }
 
-/* --- Header / logo --------------------------------------------- */
-.md-header__button.md-logo img {
-  border-radius: 50%;
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--computed-green) 55%, transparent);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+/* --- Tables: chrome header ----------------------------------------- */
+.md-typeset table:not([class]) {
+  border: 2px outset var(--y2k-chrome-2);
+  border-radius: 3px;
+  overflow: hidden;
 }
 
-.md-header__button.md-logo:hover img {
-  transform: rotate(10deg) scale(1.08);
-  box-shadow: 0 0 0 3px var(--computed-green);
+.md-typeset table:not([class]) th,
+.md-typeset table:not([class]) thead th {
+  background: linear-gradient(180deg, #5b9cf8 0%, #245edc 55%, #1c4fc0 100%);
+  color: #fff;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
 
-.md-header {
-  backdrop-filter: blur(10px);
+.md-typeset table:not([class]) tr:nth-child(even) td {
+  background-color: rgba(36, 94, 220, 0.06);
 }
 
-/* --- Admonitions ------------------------------------------------ */
+.md-typeset table:not([class]) tr:hover td {
+  background-color: rgba(124, 252, 0, 0.18);
+}
+
+/* --- Admonitions: 3D panels ----------------------------------------- */
 .md-typeset .admonition,
 .md-typeset details {
-  border-radius: 12px;
-  border: 1px solid transparent;
+  border-radius: 4px;
+  border: 2px outset var(--y2k-chrome-2);
+  background: color-mix(in srgb, var(--y2k-chrome-1) 60%, transparent);
+}
+
+.admonition-title,
+details > summary {
+  font-family: "Orbitron", "Verdana", sans-serif;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px groove var(--y2k-chrome-3);
 }
 
 .md-typeset .admonition.tip,
 .md-typeset details.tip {
-  border-color: color-mix(in srgb, var(--computed-green) 45%, transparent);
-}
-
-.md-typeset .admonition.note,
-.md-typeset details.note,
-.md-typeset .admonition.info,
-.md-typeset details.info {
-  border-color: color-mix(in srgb, var(--computed-blue) 45%, transparent);
+  border-color: #3d7a00;
 }
 
 .md-typeset .admonition.tip .admonition-title,
 .md-typeset details.tip > summary {
-  background: color-mix(in srgb, var(--computed-green) 85%, black);
+  background: linear-gradient(180deg, #9fe33f 0%, #5cb800 100%);
+  color: #0d2600;
+  text-shadow: none;
 }
 
 .md-typeset .admonition.note .admonition-title,
 .md-typeset details.note > summary,
 .md-typeset .admonition.info .admonition-title,
 .md-typeset details.info > summary {
-  background: color-mix(in srgb, var(--computed-blue) 88%, black);
+  background: linear-gradient(180deg, #5b9cf8 0%, #245edc 100%);
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-/* --- Tables ------------------------------------------------------ */
-.md-typeset table:not([class]) {
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.md-typeset table:not([class]) th {
-  background-color: color-mix(in srgb, var(--computed-blue) 14%, transparent);
-  font-family: "Chakra Petch", var(--md-text-font-family, "Inter"), sans-serif;
-}
-
-.md-typeset table:not([class]) tr:hover td {
-  background-color: color-mix(in srgb, var(--computed-green) 9%, transparent);
-}
-
-/* --- Code -------------------------------------------------------- */
-.md-typeset pre > code {
-  border-radius: 10px;
-  font-size: 0.82rem;
-}
-
+/* --- Code: green CRT terminal -------------------------------------- */
 .md-typeset pre {
-  border-radius: 10px;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--computed-blue) 25%, transparent);
+  border: 3px ridge var(--y2k-chrome-2);
+  border-radius: 6px;
+  box-shadow: inset 0 0 30px rgba(51, 255, 102, 0.07);
+}
+
+.md-typeset pre > code {
+  border-radius: 0;
+  font-family: "VT323", "Courier New", monospace;
+  font-size: 1.05rem;
+  line-height: 1.5;
+  color: var(--md-code-fg-color);
 }
 
 .md-typeset code {
-  border-radius: 6px;
+  font-family: "VT323", "Courier New", monospace;
+  font-size: 1.05em;
 }
 
-/* --- Links / selection / scrollbars ------------------------------ */
+.md-typeset pre[data-lang]::before {
+  background: linear-gradient(180deg, #5b9cf8, #245edc);
+  color: #fff;
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-radius: 4px 0 6px 0;
+}
+
+.md-typeset .highlight:hover {
+  background: rgba(124, 252, 0, 0.25);
+  box-shadow: 0 0 8px rgba(124, 252, 0, 0.5);
+  border-radius: 4px;
+}
+
+/* --- Links, selection, scrollbars ---------------------------------- */
 .md-typeset a {
+  color: #0055dd;
   text-underline-offset: 3px;
 }
 
+[data-md-color-scheme="slate"] .md-typeset a {
+  color: var(--y2k-cyan);
+}
+
+.md-typeset a:hover {
+  color: var(--y2k-lime);
+  text-shadow: 0 0 6px rgba(124, 252, 0, 0.5);
+}
+
 ::selection {
-  background: color-mix(in srgb, var(--computed-blue) 45%, transparent);
+  background: #7cfc00;
+  color: #06210a;
 }
 
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 14px;
+  height: 14px;
+}
+
+::-webkit-scrollbar-track {
+  background: repeating-linear-gradient(
+    45deg,
+    #d8dde3,
+    #d8dde3 2px,
+    #e9edf1 2px,
+    #e9edf1 4px
+  );
+  border-left: 1px solid #9aa4ae;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--computed-blue) 55%, transparent);
-  border-radius: 8px;
-  border: 2px solid transparent;
-  background-clip: content-box;
+  background: linear-gradient(90deg, #fbfcfd 0%, #dfe4e9 45%, #b9c1c9 55%, #eef1f4 100%);
+  border: 2px outset #cdd4db;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: color-mix(in srgb, var(--computed-green) 65%, transparent);
-  background-clip: content-box;
+  background: linear-gradient(90deg, #e2ffb8 0%, #b8f566 50%, #8fdc20 100%);
 }
 
-/* --- Sidebar ------------------------------------------------------ */
-.md-sidebar__scrollwrap::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--computed-blue) 40%, transparent);
-  background-clip: content-box;
-}
-
-.md-nav__link:hover {
-  color: var(--computed-blue);
-}
-
-/* --- Footer -------------------------------------------------------- */
+/* --- Footer --------------------------------------------------------- */
 .md-footer {
-  border-top: 3px solid var(--computed-green);
+  background: linear-gradient(180deg, #245edc 0%, #1a4bb8 100%);
+  border-top: 3px ridge #6aa4ff;
+}
+
+.md-footer__copyright {
+  font-family: "VT323", monospace;
+  font-size: 1rem;
 }
