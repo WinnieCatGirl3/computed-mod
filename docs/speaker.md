@@ -18,7 +18,7 @@ the speaker sits on: `front`, `back`, `left`, `right`, `up`, `down` (also `north
 
 ## The seven speaker nodes
 
-Six of them are triggers: they fire when the **Trigger** input turns on or an event arrives.
+Six of them are triggers: they run when their **Trigger** input turns on or an event arrives.
 
 | Node | What it does | Extra fields |
 |---|---|---|

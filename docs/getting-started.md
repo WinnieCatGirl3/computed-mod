@@ -9,7 +9,7 @@ minutes and needs no Lua knowledge.
 
     ![Computer recipe](assets/images/recipe/Computer.png){ width=420 }
 
-- A **Monitor** block in front of the computer (you already needed one to craft the computer).
+- A **Monitor** block in front of the computer (the computer recipe needs one anyway).
 
 Place the monitor first, then place the computer directly behind it so the monitor touches one of
 the computer's sides.
