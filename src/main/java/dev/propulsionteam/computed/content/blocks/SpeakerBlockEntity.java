@@ -2,14 +2,19 @@ package dev.propulsionteam.computed.content.blocks;
 
 import dev.propulsionteam.computed.content.ComputedRegistries;
 import dev.propulsionteam.computed.content.WaveSchedule;
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.JukeboxSong;
@@ -23,8 +28,13 @@ public class SpeakerBlockEntity extends BlockEntity {
     public static final String DISC_TAG = "Disc";
     public static final String PLAYING_TAG = "Playing";
     public static final String REMAINING_TAG = "Remaining";
+    public static final String QUEUE_TAG = "DiscQueue";
+    /** Playlist capacity: how many discs wait behind the inserted one. */
+    public static final int MAX_QUEUE_SIZE = 8;
 
     private ItemStack disc = ItemStack.EMPTY;
+    /** Playlist discs waiting after the inserted one; play advances through them in order. */
+    private final List<ItemStack> queue = new ArrayList<>();
     private boolean playing;
     private int remainingTicks;
     private boolean discLoop;
@@ -50,6 +60,16 @@ public class SpeakerBlockEntity extends BlockEntity {
     private double sweepTo;
     private float sweepVolume = 1.0F;
 
+    /**
+     * Scheduled note-sequence steps, server-side only: the head plays after its delay, then the
+     * countdown moves to the next step. Not persisted — a sequence stops on chunk reload.
+     */
+    private final List<SequenceNote> sequence = new ArrayList<>();
+    private int sequenceCountdown;
+
+    /** One scheduled note: ticks to wait after the previous note, then pitch data. */
+    public record SequenceNote(int delayTicks, NoteBlockInstrument instrument, int note) {}
+
     public SpeakerBlockEntity(BlockPos pos, BlockState state) {
         super(ComputedRegistries.SPEAKER_BLOCK_ENTITY.get(), pos, state);
     }
@@ -64,6 +84,11 @@ public class SpeakerBlockEntity extends BlockEntity {
             tag.putBoolean(PLAYING_TAG, true);
             tag.putInt(REMAINING_TAG, remainingTicks);
         }
+        if (!queue.isEmpty()) {
+            ListTag queued = new ListTag();
+            queue.forEach(item -> queued.add(item.save(lookup)));
+            tag.put(QUEUE_TAG, queued);
+        }
     }
 
     @Override
@@ -72,6 +97,16 @@ public class SpeakerBlockEntity extends BlockEntity {
         disc = tag.contains(DISC_TAG) ? ItemStack.parseOptional(lookup, tag.getCompound(DISC_TAG)) : ItemStack.EMPTY;
         playing = tag.getBoolean(PLAYING_TAG);
         remainingTicks = tag.getInt(REMAINING_TAG);
+        queue.clear();
+        if (tag.contains(QUEUE_TAG, Tag.TAG_LIST)) {
+            ListTag queued = tag.getList(QUEUE_TAG, Tag.TAG_COMPOUND);
+            for (int i = 0; i < queued.size() && i < MAX_QUEUE_SIZE; i++) {
+                ItemStack item = ItemStack.parseOptional(lookup, queued.getCompound(i));
+                if (!item.isEmpty()) {
+                    queue.add(item);
+                }
+            }
+        }
     }
 
     public ItemStack getDisc() {
@@ -193,19 +228,43 @@ public class SpeakerBlockEntity extends BlockEntity {
         }
     }
 
-    /** Inserts a music disc. Returns {@code false} if the slot is occupied or the stack is not a disc. */
+    /** Inserts a music disc. An empty slot takes the disc; a filled one queues it for the playlist. */
     public boolean tryInsertDisc(ItemStack stack, @Nullable Player player) {
-        if (level == null || level.isClientSide || !disc.isEmpty() || !isMusicDisc(level, stack)) {
+        if (level == null || level.isClientSide || !isMusicDisc(level, stack)) {
             return false;
         }
-        stop();
-        disc = stack.copyWithCount(1);
+        if (!disc.isEmpty()) {
+            if (queue.size() >= MAX_QUEUE_SIZE) {
+                return false;
+            }
+            queue.add(stack.copyWithCount(1));
+        } else {
+            stop();
+            disc = stack.copyWithCount(1);
+        }
         if (player != null && !player.hasInfiniteMaterials()) {
             stack.shrink(1);
         }
         setChanged();
         syncToClient();
         return true;
+    }
+
+    /** Number of discs waiting behind the inserted one (playlist capacity 8). */
+    public int queueSize() {
+        return queue.size();
+    }
+
+    /** Drops a finished disc onto the ground at the speaker, like a vanilla jukebox. */
+    private void dropDiscToGround(ItemStack finished) {
+        if (level == null || finished.isEmpty()) {
+            return;
+        }
+        ItemEntity item = new ItemEntity(
+                level, worldPosition.getX() + 0.5, worldPosition.getY() + 0.5,
+                worldPosition.getZ() + 0.5, finished);
+        item.setDefaultPickUpDelay();
+        level.addFreshEntity(item);
     }
 
     /** Removes and returns the inserted disc (empty stack if none). Stops playback first. */
@@ -223,7 +282,15 @@ public class SpeakerBlockEntity extends BlockEntity {
 
     /** Starts playback of the inserted disc via the vanilla jukebox level event. */
     public boolean playDisc() {
-        if (level == null || level.isClientSide || disc.isEmpty()) {
+        if (level == null || level.isClientSide) {
+            return false;
+        }
+        if (disc.isEmpty() && !queue.isEmpty()) {
+            disc = queue.removeFirst();
+            setChanged();
+            syncToClient();
+        }
+        if (disc.isEmpty()) {
             return false;
         }
         var song = JukeboxSong.fromStack(level.registryAccess(), disc);
@@ -247,6 +314,17 @@ public class SpeakerBlockEntity extends BlockEntity {
         if (level == null || level.isClientSide) {
             return;
         }
+        stopDiscPlayback();
+        sequence.clear();
+        sequenceCountdown = 0;
+        setChanged();
+    }
+
+    /** Ends disc playback and active synth notes; a running note sequence is left untouched. */
+    private void stopDiscPlayback() {
+        if (level == null || level.isClientSide) {
+            return;
+        }
         if (playing) {
             level.levelEvent(null, LevelEvent.SOUND_STOP_JUKEBOX_SONG, worldPosition, 0);
         }
@@ -265,6 +343,36 @@ public class SpeakerBlockEntity extends BlockEntity {
         level.playSound(null, worldPosition, instrument.getSoundEvent().value(), SoundSource.RECORDS, 3.0F, pitch);
     }
 
+    /**
+     * Schedules a timed note sequence, replacing any sequence already running. Each step carries
+     * the gap since the previous note; {@code stop()} cancels the sequence.
+     */
+    public void playSequence(List<SequenceNote> notes) {
+        if (level == null || level.isClientSide) {
+            return;
+        }
+        sequence.clear();
+        if (notes.isEmpty()) {
+            sequenceCountdown = 0;
+            return;
+        }
+        sequence.addAll(notes);
+        sequenceCountdown = notes.getFirst().delayTicks();
+    }
+
+    /** Plays due sequence notes: the head fires once its countdown runs out, then the next waits. */
+    private void tickSequence() {
+        if (sequence.isEmpty()) {
+            return;
+        }
+        if (--sequenceCountdown > 0) {
+            return;
+        }
+        SequenceNote note = sequence.removeFirst();
+        playNote(note.instrument(), note.note());
+        sequenceCountdown = sequence.isEmpty() ? 0 : sequence.getFirst().delayTicks();
+    }
+
     /** Plays any registered sound event. Returns {@code false} if the id is unknown. */
     public boolean playSound(ResourceLocation soundId, float volume, float pitch) {
         if (level == null || level.isClientSide) {
@@ -279,13 +387,41 @@ public class SpeakerBlockEntity extends BlockEntity {
         return true;
     }
 
-    /** Server ticker: counts down disc playback (restarting it in loop mode) and drives synth notes. */
+    /**
+     * Song-end continuation for the playlist: with loop on, discs cycle (inserted disc joins the
+     * queue end, the next one starts); with loop off, the finished disc is dropped and the next
+     * queued disc starts. Returns {@code false} when playback should stop.
+     */
+    private boolean continuePlayback() {
+        if (discLoop) {
+            if (!queue.isEmpty()) {
+                queue.add(disc);
+                disc = queue.removeFirst();
+                setChanged();
+                syncToClient();
+            }
+            return playDisc();
+        }
+        if (!queue.isEmpty()) {
+            if (!disc.isEmpty()) {
+                dropDiscToGround(disc);
+            }
+            disc = queue.removeFirst();
+            setChanged();
+            syncToClient();
+            return playDisc();
+        }
+        return false;
+    }
+
+    /** Server ticker: counts down disc playback (advancing the playlist or restarting in loop mode) and drives synth notes. */
     public static void serverTick(net.minecraft.world.level.Level level, BlockPos pos, BlockState state, SpeakerBlockEntity be) {
         if (be.playing && --be.remainingTicks <= 0) {
-            if (!(be.discLoop && be.playDisc())) {
-                be.stop();
+            if (!be.continuePlayback()) {
+                be.stopDiscPlayback();
             }
         }
+        be.tickSequence();
         be.tickWaveNote();
         be.tickSweep();
     }

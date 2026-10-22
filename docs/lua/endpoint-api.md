@@ -143,6 +143,10 @@ Signature: `(columns: string, rows: table, headerFg: number, headerBg: number, c
 
 Signature: `(widgets: table) -> ()`. Runs on the server thread, refreshes an adjacent monitor, performs a world side effect, and is unavailable in previews. The endpoint target selects the computer-relative face. Invalid widget records are ignored. Example: `ctx:endpoint("computed:monitor", "front"):call("show", widgets)`.
 
+## computed:monitor/has_display
+
+Signature: `() -> boolean`. Reports whether a display answers this computer: a formed monitor multiblock at the endpoint target face, or a player carrying a portable monitor paired with this computer — so programs can check before showing widgets. Example: `ctx:endpoint("computed:monitor", "front"):call("has_display")`.
+
 ## computed:glasses/show
 
 Signature: `(widgets: table) -> ()`. Runs on the server thread, performs a world side effect, and is unavailable in previews. Shows widget values on the glasses HUD of every player whose link card points at this computer: widgets keep their own x/y and size like on a monitor, resolved onto the fixed glasses canvas, while HUD element positions and scale stay in the K designer. Invalid widget records are ignored. Example: `ctx:endpoint("computed:glasses"):call("show", widgets)`.

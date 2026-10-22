@@ -37,6 +37,9 @@ import dev.propulsionteam.computed.menu.ComputerPeripheralMenu;
 import dev.propulsionteam.computed.network.ComputerEditPolicy;
 import dev.propulsionteam.computed.network.ComputedNetworking;
 import dev.propulsionteam.computed.network.GlassesHudWidgetsPayload;
+import dev.propulsionteam.computed.persistence.ComputedPackageStorage;
+import dev.propulsionteam.computed.persistence.ComputedProgramPackage;
+import dev.propulsionteam.computed.persistence.PackageTransferService;
 import dev.propulsionteam.computed.persistence.ProgramDiskData;
 import dev.propulsionteam.computed.persistence.ProgramV3Codec;
 import java.io.ByteArrayOutputStream;
@@ -105,6 +108,8 @@ public class ComputerBlockEntity extends BaseContainerBlockEntity
     private String customName = "";
     private long programRevision;
     private transient boolean dropsHandled;
+    /** One-shot gate: the autostart disk check runs on the first server tick after load. */
+    private transient boolean autostartChecked;
     private transient String lastGraphDiagnostics = "";
     private transient String lastWidgetWarning = "";
     private transient List<Widget> lastPortableWidgets = List.of();
@@ -123,6 +128,10 @@ public class ComputerBlockEntity extends BaseContainerBlockEntity
     public static void tick(Level level, BlockPos pos, BlockState state, ComputerBlockEntity computer) {
         if (level.isClientSide || computer.isRemoved()) {
             return;
+        }
+        if (!computer.autostartChecked) {
+            computer.autostartChecked = true;
+            computer.tryAutostart();
         }
         LuaGraphScheduler active = computer.ensureScheduler();
         ComputedProgramV3 before = computer.program;
@@ -273,10 +282,52 @@ public class ComputerBlockEntity extends BaseContainerBlockEntity
         scheduler = nextScheduler;
         unreadableProgramData = null;
         setChanged();
-        return ApplyGraphResult.accepted(programRevision);
-    }
+            return ApplyGraphResult.accepted(programRevision);
+        }
 
-    private String validateProgram(ComputedProgramV3 candidate) {
+        /**
+         * One-shot boot step: when the computer starts with an empty program and its drive holds
+         * an autostart-flagged graph disk, loads that disk through the regular apply path (full
+         * validation) so the program runs immediately. An existing program always wins.
+         */
+        private void tryAutostart() {
+            if (level == null || level.isClientSide || !program.rootGraph().nodes().isEmpty()) {
+                return;
+            }
+            ItemStack disk = diskInSlot();
+            if (disk == null || !ProgramDiskItem.isAutostart(disk)) {
+                return;
+            }
+            ProgramDiskData data = ProgramDiskItem.read(disk);
+            if (data == null || data.kind() != PackageTransferService.id(ComputedPackageStorage.Kind.GRAPHS)) {
+                return;
+            }
+            try {
+                ComputedProgramV3 imported = ComputedProgramPackage.importArchive(data.content());
+                CompoundTag envelope = new CompoundTag();
+                envelope.put(PROGRAM_TAG, ProgramV3Codec.encode(imported));
+                ApplyGraphResult result = applyGraphFromNetwork(envelope, programRevision);
+                if (result.accepted()) {
+                    Computed.LOGGER.info(
+                            "Computer at {} autostarted program from disk '{}'",
+                            worldPosition,
+                            data.name());
+                } else {
+                    Computed.LOGGER.warn(
+                            "Autostart disk '{}' rejected at {}: {}",
+                            data.name(),
+                            worldPosition,
+                            result.message());
+                }
+            } catch (RuntimeException exception) {
+                Computed.LOGGER.warn(
+                        "Autostart disk at {} could not be loaded: {}",
+                        worldPosition,
+                        exception.getMessage());
+            }
+        }
+
+        private String validateProgram(ComputedProgramV3 candidate) {
         String shapeError = ComputerEditPolicy.programShape(candidate);
         return shapeError != null
                 ? shapeError
@@ -591,6 +642,31 @@ public class ComputerBlockEntity extends BaseContainerBlockEntity
         Direction worldFace = worldFace(face);
         return worldFace != null
                 && !serverLevel.getBlockState(worldPosition.relative(worldFace)).isAir();
+    }
+
+    /**
+     * Whether a display answers this computer: a formed monitor multiblock at the given face, or
+     * any player in this dimension carrying a portable monitor paired with this computer.
+     */
+    @Override
+    public boolean hasDisplay(String face) {
+        if (!(level instanceof ServerLevel serverLevel) || isRemoved()) {
+            return false;
+        }
+        requireServerThread(serverLevel);
+        Direction worldFace = worldFace(face);
+        if (worldFace != null
+                && serverLevel.getBlockEntity(worldPosition.relative(worldFace))
+                        instanceof MonitorBlockEntity monitor
+                && monitor.findOrigin() != null) {
+            return true;
+        }
+        for (net.minecraft.server.level.ServerPlayer player : serverLevel.players()) {
+            if (ComputedNetworking.playerCarriesPortableLinkTo(player, worldPosition)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

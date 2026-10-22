@@ -77,13 +77,26 @@ public final class SpeakerEndpoints {
                                 + "Wave: sine, square, saw, triangle, noise. "
                                 + "From/to in Hz (55-3520), duration in seconds (0.2-10), volume 0-3.")
                 .method(
+                        "play_sequence",
+                        EndpointSignature.of(List.of(EndpointType.STRING), List.of()),
+                        EndpointPolicy.serverThread(true, false),
+                        SpeakerEndpoints::playSequence,
+                        null,
+                        "Plays a timed note sequence at the speaker (no disc needed). The spec is "
+                                + "instrument:note:seconds tokens separated by spaces or commas: each "
+                                + "seconds value is the gap until the next note. Instruments and note "
+                                + "range as in play_note; 0-10 seconds per gap, up to 64 notes. "
+                                + "stop() cancels a running sequence.")
+                .method(
                         "play",
                         EndpointSignature.of(List.of(), List.of()),
                         EndpointPolicy.serverThread(true, false),
                         SpeakerEndpoints::play,
                         null,
-                        "Starts playback of the inserted music disc. "
-                                + "With set_loop(true) the disc restarts automatically at song end.")
+                        "Starts playback of the inserted music disc (pulling the first playlist "
+                                + "disc when the slot is empty). When discs are queued behind it, "
+                                + "the song ends by dropping the finished disc and starting the "
+                                + "next; with set_loop(true) the playlist cycles instead.")
                 .method(
                         "set_loop",
                         EndpointSignature.of(List.of(EndpointType.BOOLEAN), List.of()),
@@ -119,6 +132,14 @@ public final class SpeakerEndpoints {
                         SpeakerEndpoints::hasDisc,
                         null,
                         "Returns whether a music disc is inserted.")
+                .method(
+                        "queue_size",
+                        EndpointSignature.of(List.of(), List.of(EndpointType.NUMBER)),
+                        EndpointPolicy.serverThread(false, false),
+                        SpeakerEndpoints::queueSize,
+                        null,
+                        "Returns how many discs wait in the playlist behind the inserted one "
+                                + "(up to 8; right-click a speaker with a disc to queue it).")
                 .method(
                         "eject",
                         EndpointSignature.of(List.of(), List.of()),
@@ -212,6 +233,24 @@ public final class SpeakerEndpoints {
         return immediate();
     }
 
+    /** Parses the sequence spec, resolves instruments, and schedules the notes on the speaker. */
+    private static EndpointResult playSequence(EndpointInvocation invocation) {
+        SpeakerBlockEntity speaker = requireSpeaker(invocation);
+        List<SpeakerSequence.Step> steps =
+                SpeakerSequence.parse(invocation.arguments().get(0).checkjstring());
+        List<SpeakerBlockEntity.SequenceNote> notes = new java.util.ArrayList<>(steps.size());
+        int previousStart = 0;
+        for (SpeakerSequence.Step step : steps) {
+            notes.add(new SpeakerBlockEntity.SequenceNote(
+                    step.startTick() - previousStart,
+                    instrumentByName(step.instrument()),
+                    step.note()));
+            previousStart = step.startTick();
+        }
+        speaker.playSequence(notes);
+        return immediate();
+    }
+
     private static EndpointResult setLoop(EndpointInvocation invocation) {
         requireSpeaker(invocation).setDiscLoop(invocation.arguments().get(0).checkboolean());
         return immediate();
@@ -232,6 +271,10 @@ public final class SpeakerEndpoints {
 
     private static EndpointResult hasDisc(EndpointInvocation invocation) {
         return immediate(LuaValue.valueOf(requireSpeaker(invocation).hasDisc()));
+    }
+
+    private static EndpointResult queueSize(EndpointInvocation invocation) {
+        return immediate(LuaValue.valueOf(requireSpeaker(invocation).queueSize()));
     }
 
     private static EndpointResult eject(EndpointInvocation invocation) {

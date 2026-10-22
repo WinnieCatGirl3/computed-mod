@@ -649,6 +649,19 @@ public final class NodeDocsLibrary {
                 new String[] {"present:string", "block:string"}));
 
         list.add(entry(
+                "computed:display_present", "Display Present", "world",
+                "Reports whether a display answers the computer — a monitor multiblock at the face "
+                        + "or a paired portable monitor someone carries: attached plus "
+                        + "'present' / 'absent' as text.",
+                """
+                local attached = ctx:endpoint("computed:monitor", ctx:field("face")):call("has_display")
+                ctx:output("attached", attached)
+                ctx:output("present", attached and "present" or "absent")
+                """,
+                new String[] {},
+                new String[] {"attached:boolean", "present:string"}));
+
+        list.add(entry(
                 "computed:redstone_input", "Redstone Input", "world",
                 "Reads the redstone signal strength arriving at the computer from a side.",
                 "local strength = ctx:endpoint(\"computed:redstone\"):call(\"input\", \"front\")",
@@ -835,6 +848,14 @@ public final class NodeDocsLibrary {
                 "computed:speaker_play_disc", "Play Disc", "speaker",
                 "Plays the inserted music disc, optionally looping it.",
                 "ctx:endpoint(\"computed:speaker\"):call(\"play\")",
+                new String[] {"trigger:boolean", "event:event"},
+                new String[] {}));
+
+        list.add(entry(
+                "computed:speaker_play_sequence", "Play Sequence", "speaker",
+                "Plays timed notes through the speaker without a disc: a sequence of "
+                        + "instrument:note:seconds steps, each gap measured until the next note.",
+                "ctx:endpoint(\"computed:speaker\"):call(\"play_sequence\", \"harp:12:0.5 bell:18:0.5\")",
                 new String[] {"trigger:boolean", "event:event"},
                 new String[] {}));
 

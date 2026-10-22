@@ -15,9 +15,6 @@ want to comment on one.
 
 ### Speaker and audio
 
-- **`play_sequence`** — play a list of notes with timing (little melodies without external
-  clock data).
-- **Disc playlist** — queue several discs; `play` advances through them.
 - **Custom instrument samples** — drop your own `.ogg` files into the speaker folder to use
   them as instruments and waveforms.
 
@@ -33,12 +30,7 @@ want to comment on one.
 
 - **Radar / sensor endpoint** — query entities, light level, weather, or blocks in a radius
   (`scan(radius)` returns a table).
-- **Redstone endpoint** — read and write the redstone signal at the computer's face, so graphs
-  can switch the world.
-- **`has_display()` endpoint** — for programs that need to know whether a monitor block is
-  present; both portable and wall monitors answer.
 - **Energy endpoint** — read and extract FE/EU (Create / Forge Energy integration).
-- **Autostart disk** — a program that runs as soon as the computer turns on.
 
 ### Integrations
 
@@ -49,6 +41,15 @@ want to comment on one.
 
 A short look at what the thread already produced:
 
+- Speaker: **Play Sequence** (timed `instrument:note:seconds` melodies without clock nodes) and a
+  **disc playlist** — queue up to 8 discs with right-click, `play` advances through them, loop
+  cycles the whole queue.
+- **Autostart disk** — right-click a written Program Disk to flag it; the computer loads and runs
+  the program at startup (through the regular validation, an existing program always wins).
+- **`has_display()`** — `computed:monitor/has_display` and the **Display Present** node answer
+  whether a wall monitor is attached at a face or a player carries a paired portable monitor.
+- **Redstone endpoints** — `computed:redstone` reads input/comparator levels and writes output at
+  the computer's faces (Redstone Input, Comparator Read, Redstone Emitter nodes).
 - Speaker: **Play Sweep** (frequency glide), **attack/decay envelopes** on Play Wave, and
   **disc loop** for endless playback.
 - Aeronautics: **vertical speed** and **altitude** nodes, plus the **Threshold Trigger** node

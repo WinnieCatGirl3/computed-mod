@@ -8,9 +8,6 @@ die rohe Arbeitsliste daraus.
 ## Offene Ideen
 
 ### Speaker / Audio
-- **`play_sequence`** — Node/Endpoint der eine Liste von Noten mit Timing abspielt
-  (kleine Melodien ohne externe Taktdaten).
-- **Disc-Playlist** — mehrere Discs in die Warteschlange legen, `play` spielt der Reihe nach.
 - **Custom-Instrument-Samples** — Nutzer legen eigene .ogg ins Speaker-Mod-Ordner, die dann
   als Instrumente/Wellenformen verfügbar sind.
 
@@ -23,12 +20,7 @@ die rohe Arbeitsliste daraus.
 ### Computer / Welt
 - **Radar-/Sensor-Endpoint** — Entities, Lichtlevel, Wetter oder Blöcke in Radius abfragen
   (`scan(radius)` → Tabelle) — passt direkt zum Create-Radar des Users.
-- **Redstone-Endpoint** — Signal am Computer-Face lesen/schreiben (`get_redstone`,
-  `set_redstone`), damit Graphen mit der Welt schalten.
-- **Monitor-Endpoint `has_display()`** — für Programme, die prüfen ob ein Monitor-Block
-  existiert; Portable Monitor und Monitor-Blöcke antworten beide.
 - **Energie-Endpoint** — FE/EU lesen und entnehmen (Create/Forge-Energy-Integration).
-- **Autostart auf Disk** — Programm das beim Einschalten automatisch läuft.
 
 ### Diskutiert
 - **Portable Monitor Screen-Animation** — Öffnungs-Animation (Scale/Fade) im
@@ -40,6 +32,20 @@ die rohe Arbeitsliste daraus.
 
 ## Umgesetzt
 
+- **`play_sequence` + Disc-Playlist** — `play_sequence(spec)`-Endpoint und **Speaker Play
+  Sequence**-Node spielen getaktete Noten (`instrument:note:seconds`, max 64 Notes, Lücken
+  0–10 s, `stop()` bricht ab); rechtsklick mit Disc füllt die Warteschlange (max 8),
+  `play` spielt der Reihe nach (fertige Disc wird wie bei der Jukebox fallen gelassen),
+  Loop zirkuliert die Queue, `queue_size` + Status-Ausgang `queued` melden den Stand.
+- **Autostart-Disk** — Rechtsklick auf beschriebene Program Disk toggelt das Autostart-Flag
+  (Tooltip + Glint); der Computer lädt das Disk-Programm beim ersten Tick automatisch über den
+  üblichen Apply-Pfad (volle Validierung, bestehendes Programm hat Vorrang).
+- **`has_display()`-Endpoint** — `computed:monitor/has_display` + **Display Present**-Node:
+  true wenn ein gebildeter Monitor am Ziel-Face hängt oder ein Spieler einen gekoppelten
+  Portable Monitor trägt (Link-Card zählt nicht).
+- **Redstone-Endpoint** (veraltet — längst eingebaut) — `computed:redstone` liest
+  `input`/`comparator` und schreibt `output` am Computer-Face; Nodes: Redstone Input,
+  Comparator Read, Redstone Emitter.
 - **Speaker Envelope/Sweep/Loop** — `play_wave` mit Attack/Decay (0–2 s, Slice-Restarts),
   neuer `play_sweep(wave, f1, f2, seconds, volume)`-Endpoint + Node, Disc-Loop via
   `set_loop(true)` (Ticker startet die Platte neu), Status meldet `is_looping`.

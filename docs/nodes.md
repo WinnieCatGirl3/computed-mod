@@ -63,6 +63,7 @@ because you place nodes by title.
 | `computed:block_location` | The computer's x/y/z |
 | `computed:block_rotation` | Yaw, pitch, roll |
 | `computed:block_presence` | Reports `present` / `absent` plus the block's id (e.g. `minecraft:stone`) for face X |
+| `computed:display_present` | Whether a display answers: monitor at face X or a paired portable (`attached` boolean, `present` / `absent` text) |
 | `computed:redstone_input` | Read redstone level |
 | `computed:comparator_read` | Read comparator |
 | `computed:redstone_emitter` | Output redstone |
@@ -118,7 +119,7 @@ See [Monitors](monitors.md) for layout rules.
 See [Speaker](speaker.md).
 
 `computed:speaker_play_note`, `speaker_play_sound`, `speaker_play_wave`, `speaker_play_sweep`,
-`speaker_play_disc`, `speaker_stop`, `speaker_eject`, `speaker_status`.
+`speaker_play_disc`, `speaker_play_sequence`, `speaker_stop`, `speaker_eject`, `speaker_status`.
 
 ## Integrations
 

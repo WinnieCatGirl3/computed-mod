@@ -766,11 +766,35 @@ public final class ComputedNetworking {
         return false;
     }
 
+    /** True when the player carries a portable monitor (any channel) paired with {@code pos}. */
+    public static boolean playerCarriesPortableLinkTo(ServerPlayer player, BlockPos pos) {
+        for (ItemStack stack : player.getInventory().items) {
+            if (stackCarriesPortableLink(stack, pos)) {
+                return true;
+            }
+        }
+        for (ItemStack stack : player.getInventory().offhand) {
+            if (stackCarriesPortableLink(stack, pos)) {
+                return true;
+            }
+        }
+        for (ItemStack stack : CuriosIntegration.stacks(player)) {
+            if (stackCarriesPortableLink(stack, pos)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static boolean stackLinksTo(ItemStack stack, BlockPos pos) {
         if (stack.getItem() instanceof LinkCardItem) {
             PortableLinkData link = LinkCardItem.read(stack);
             return link != null && link.blockPos().equals(pos);
         }
+        return stackCarriesPortableLink(stack, pos);
+    }
+
+    private static boolean stackCarriesPortableLink(ItemStack stack, BlockPos pos) {
         if (stack.getItem() instanceof PortableMonitorItem) {
             // Any stored channel counts, not just the active one, so switching tabs stays authorized.
             for (PortableLinkData link : PortableMonitorItem.readLinks(stack)) {

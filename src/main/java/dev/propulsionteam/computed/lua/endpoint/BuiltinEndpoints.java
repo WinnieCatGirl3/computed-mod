@@ -292,7 +292,18 @@ public final class BuiltinEndpoints {
                     return EndpointResult.immediate();
                 },
                 null,
-                "Shows widget values on the monitor at the endpoint target."));
+                "Shows widget values on the monitor at the endpoint target.")
+                .method(
+                        "has_display",
+                        EndpointSignature.of(List.of(), List.of(EndpointType.BOOLEAN)),
+                        EndpointPolicy.serverThread(false, false),
+                        invocation -> EndpointResult.immediate(LuaValue.valueOf(
+                                requireHost(invocation).hasDisplay(invocation.target()))),
+                        null,
+                        "Reports whether a display answers this computer: a formed monitor "
+                                + "multiblock at the endpoint target face, or a player carrying a "
+                                + "portable monitor paired with this computer — so programs can "
+                                + "check before showing widgets."));
         ComputedEndpoints.register("computed:glasses", endpoint -> endpoint.method(
                 "show",
                 EndpointSignature.of(List.of(EndpointType.TABLE), List.of()),

@@ -34,6 +34,14 @@ public interface BuiltinEndpointHost {
     }
 
     /**
+     * Whether a formed monitor multiblock is attached at the endpoint target face of the host
+     * ({@code computed:monitor/has_display}); {@code false} when no display answers.
+     */
+    default boolean hasDisplay(String face) {
+        return false;
+    }
+
+    /**
      * Namespaced id of the block at a relative face ({@code minecraft:stone}), or
      * {@code minecraft:air} when the face is empty or unknown.
      */
