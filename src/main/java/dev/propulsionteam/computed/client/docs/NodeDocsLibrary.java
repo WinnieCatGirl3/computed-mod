@@ -853,10 +853,20 @@ public final class NodeDocsLibrary {
 
         list.add(entry(
                 "computed:speaker_play_sequence", "Play Sequence", "speaker",
-                "Plays timed notes through the speaker without a disc: a sequence of "
-                        + "instrument:note:seconds steps, each gap measured until the next note.",
-                "ctx:endpoint(\"computed:speaker\"):call(\"play_sequence\", \"harp:12:0.5 bell:18:0.5\")",
-                new String[] {"trigger:boolean", "event:event"},
+                "Plays timed notes through the speaker without a disc: fill the note inputs "
+                        + "with instrument:note:seconds steps (top to bottom, empty ones are "
+                        + "skipped); each seconds value is the gap until the next note.",
+                """
+                local steps = { "harp:12:0.5", "bell:18:0.5" }
+                ctx:endpoint("computed:speaker"):call("play_sequence", table.concat(steps, " "))
+                """,
+                new String[] {
+                    "trigger:boolean", "event:event",
+                    "note_1:string", "note_2:string", "note_3:string", "note_4:string",
+                    "note_5:string", "note_6:string", "note_7:string", "note_8:string",
+                    "note_9:string", "note_10:string", "note_11:string", "note_12:string",
+                    "note_13:string", "note_14:string", "note_15:string", "note_16:string"
+                },
                 new String[] {}));
 
         list.add(entry(

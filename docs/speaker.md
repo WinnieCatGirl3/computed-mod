@@ -27,7 +27,7 @@ Eight of them are triggers: they run when their **Trigger** input turns on or an
 | **Play Wave** | Plays a synthesized waveform | Wave (`sine`, `square`, `saw`, `triangle`, `noise`), Frequency 55–3520 Hz, Volume 0–3, Attack 0–2 s, Decay 0–2 s |
 | **Play Sweep** | Glides between two frequencies | Wave, From/To 55–3520 Hz, Duration 0.2–10 s, Volume |
 | **Play Disc** | Starts the inserted music disc | Loop (restarts the disc at song end) |
-| **Play Sequence** | Plays timed notes without a disc | Sequence (e.g. `harp:12:0.5 bell:18:0.5`) |
+| **Play Sequence** | Plays timed notes without a disc | Notes 1–16 (text steps like `harp:12:0.5`) |
 | **Stop** | Stops whatever is playing | — |
 | **Eject** | Spits the disc out | — |
 | **Speaker Status** | Reports the speaker state | Outputs: `has_disc`, `is_playing`, `is_looping`, `queued` (updates every tick) |
@@ -56,16 +56,19 @@ wait in the playlist (`Speaker Status` reports them as `queued`).
 
 ### Note sequences
 
-**Play Sequence** plays a little melody with its own timing — no disc, no clock nodes. The
-sequence field takes `instrument:note:seconds` steps separated by spaces or commas; the seconds
-value after a note is the gap until the next one:
+**Play Sequence** plays a little melody with its own timing — no disc, no clock nodes. Fill the
+**Notes** inputs with `instrument:note:seconds` steps, top to bottom; empty inputs are skipped.
+The seconds value after a note is the gap until the next one:
 
 ```
-harp:12:0.5 bell:18:0.5 pling:15:0.5
+note_1: harp:12:0.5
+note_2: bell:18:0.5
+note_3: pling:15:0.5
 ```
 
-plays three notes, half a second apart. **Stop** cancels a running sequence. Instruments and
-note range are the same as **Play Note**; each gap is 0–10 s and a sequence holds up to 64 notes.
+plays three notes, half a second apart. **Trigger** (or an event) starts the sequence;
+**Stop** cancels a running one. Instruments and note range are the same as **Play Note**;
+each gap is 0–10 s. The underlying endpoint accepts up to 64 notes for custom node setups.
 
 ### Envelopes, sweeps, and loops
 
@@ -93,7 +96,7 @@ note range are the same as **Play Note**; each gap is 0–10 s and a sequence ho
 | Envelope range | Attack/decay 0–2 s each |
 | Sweep range | 0.2–10 s, sliced every 0.1 s |
 | Simultaneous discs | One inserted + 8 queued (playlist) |
-| Sequence | Up to 64 notes, gaps 0–10 s each |
+| Sequence | Node: 16 note inputs; endpoint: up to 64 notes, gaps 0–10 s each |
 | Speakers per computer | Six (one per side) |
 
 Timing is up to your graph: speaker nodes have no built-in wait — use a **Delay** node, drive
