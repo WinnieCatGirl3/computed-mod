@@ -1,0 +1,7 @@
+ComputedEndpoints.register("example:storage", endpoint -> endpoint.method(
+        "stored",
+        EndpointSignature.of(List.of(), List.of(EndpointType.NUMBER)),
+        EndpointPolicy.computerThread(false, true),
+        invocation -> EndpointResult.immediate(LuaValue.valueOf(readStored(invocation.host()))),
+        invocation -> EndpointResult.immediate(LuaValue.valueOf(1000)),
+        "Returns stored units."));

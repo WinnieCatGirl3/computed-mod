@@ -1,0 +1,479 @@
+/* ================================================================
+   Winnie's Computed wiki — Y2K / Windows-XP era theme
+   CRT hero like the mod icon, XP Luna header, aqua-gloss buttons,
+   chrome tables, Verdana body, Orbitron titles, VT323 code.
+   ================================================================ */
+
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700&display=swap");
+
+/* --- Palette -------------------------------------------------- */
+[data-md-color-scheme="default"] {
+  --md-primary-fg-color: #245edc;
+  --md-primary-fg-color--light: #3f8cf3;
+  --md-primary-fg-color--dark: #0054e3;
+  --md-accent-fg-color: #7cfc00;
+  --md-accent-fg-color--transparent: rgba(124, 252, 0, 0.15);
+  --md-header-bg-color: #1a4bb8;
+  --md-header-bg: linear-gradient(180deg, #245edc 0%, #1a4bb8 100%);
+  --md-footer-bg-color: #000000de;
+  --md-code-bg-color: #0a0f0a;
+  --md-code-fg-color: #33ff66;
+  --y2k-lime: #7cfc00;
+  --y2k-cyan: #00e5ff;
+  --y2k-crt: #33ff66;
+  --y2k-chrome-1: #f8f9fa;
+  --y2k-chrome-2: #c9d0d8;
+  --y2k-chrome-3: #98a3ad;
+  --y2k-border: #7b8794;
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #00e5ff;
+  --md-primary-fg-color--light: #7df0ff;
+  --md-primary-fg-color--dark: #00a8c4;
+  --md-accent-fg-color: #00e5ff;
+  --md-accent-fg-color--transparent: rgba(0, 229, 255, 0.15);
+  --md-header-bg-color: #04121f;
+  --md-header-bg: #04121f;
+  --md-footer-bg-color: #000000de;
+  --md-code-bg-color: #050a05;
+  --md-code-fg-color: #33ff66;
+  --y2k-lime: #00e5ff;
+  --y2k-cyan: #00e5ff;
+  --y2k-crt: #33ff66;
+  --y2k-chrome-1: #3a4450;
+  --y2k-chrome-2: #2a323c;
+  --y2k-chrome-3: #1c222a;
+  --y2k-border: #4a5462;
+}
+
+/* --- Body font: the 2000s web font ---------------------------- */
+article.md-content__inner:has(> .computed-hero) > a.md-content__button {
+  display: none;
+}
+
+.md-typeset {
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  font-size: 0.78rem;
+  line-height: 1.75;
+}
+
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3,
+.md-typeset h4,
+.md-typeset h5,
+.md-header__title,
+.md-tabs__link,
+.md-button,
+.admonition-title,
+.md-typeset table:not([class]) th {
+  font-family: "Orbitron", "Verdana", sans-serif;
+}
+
+.md-typeset h1,
+.md-typeset h2 {
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.md-typeset h2 {
+  border-bottom: 3px ridge var(--y2k-chrome-2);
+  padding-bottom: 0.25em;
+}
+
+/* --- Hero: the CRT screen from the mod icon --------------------- */
+.computed-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.4rem;
+  padding: 3rem 1.5rem 2.8rem;
+  margin: 0.5rem 0 1.8rem;
+  border-radius: 14px;
+  border: 4px ridge var(--y2k-chrome-2);
+  background:
+    radial-gradient(ellipse at 50% 40%, rgba(10, 40, 16, 0.55), transparent 70%),
+    #04120a;
+  box-shadow:
+    inset 0 0 60px rgba(0, 0, 0, 0.9),
+    0 0 0 1px #000,
+    0 8px 24px -8px rgba(0, 0, 0, 0.7);
+  color: var(--y2k-crt);
+  position: relative;
+  overflow: hidden;
+}
+
+/* pixel grid + CRT scanlines */
+.computed-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(51, 255, 102, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(51, 255, 102, 0.07) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+}
+
+.computed-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.28) 0px,
+    rgba(0, 0, 0, 0.28) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  pointer-events: none;
+}
+
+.computed-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+.computed-hero .hero-logo {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  box-shadow:
+    0 3px 14px rgba(0, 0, 0, 0.7),
+    0 0 8px rgba(51, 255, 102, 0.25);
+  transition: transform 0.35s ease;
+  image-rendering: auto;
+}
+
+.computed-hero .hero-logo:hover {
+  transform: rotate(8deg) scale(1.08);
+}
+
+.computed-hero h1 {
+  margin: 0.5rem 0 0;
+  font-size: 2.3rem;
+  color: var(--y2k-crt);
+  text-shadow: 0 0 6px rgba(51, 255, 102, 0.45);
+  animation: crt-flicker 6s infinite;
+}
+
+.computed-hero p {
+  margin: 0 0 0.9rem;
+  font-size: 0.95rem;
+  color: #b9f7cc;
+  max-width: 46rem;
+}
+
+@keyframes crt-flicker {
+  0%, 100% { opacity: 1; }
+  92% { opacity: 1; }
+  93% { opacity: 0.86; }
+  94% { opacity: 1; }
+  97% { opacity: 0.93; }
+  98% { opacity: 1; }
+}
+
+/* --- Aqua / XP buttons ------------------------------------------ */
+.md-button {
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  border-radius: 999px;
+  padding: 0.55em 1.6em;
+  background: linear-gradient(180deg, #ffffff 0%, #eef1f5 48%, #ccd3db 52%, #f2f4f7 100%);
+  border: 1px solid #7b8794;
+  color: #14202c;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
+  box-shadow:
+    inset 0 1px 0 #ffffff,
+    inset 0 -1px 0 rgba(0, 0, 0, 0.12),
+    0 2px 5px rgba(0, 0, 0, 0.35);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.md-button:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 #ffffff,
+    0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+.md-button:active {
+  transform: translateY(1px);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.35);
+}
+
+.computed-hero .md-button {
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  padding: 0.6em 1.8em;
+}
+
+.computed-hero .md-button--primary {
+  background: linear-gradient(180deg, #cfe3a8 0%, #a4c376 48%, #7ba344 52%, #b5d189 100%);
+  border-color: #4a6a1e;
+  color: #17220a;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
+  box-shadow:
+    inset 0 1px 0 #ffffff,
+    0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.computed-hero .md-button--primary:hover {
+  box-shadow:
+    inset 0 1px 0 #ffffff,
+    0 4px 10px rgba(0, 0, 0, 0.55);
+}
+
+.computed-hero .md-button--gh {
+  background: linear-gradient(180deg, rgba(46, 62, 52, 0.9), rgba(8, 16, 12, 0.9));
+  border: 2px solid #9df5b8;
+  color: #eafff2;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.computed-hero .md-button--gh:hover {
+  background: linear-gradient(180deg, rgba(70, 96, 80, 0.95), rgba(16, 30, 22, 0.95));
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.55);
+}
+
+/* --- Header: XP Luna --------------------------------------------- */
+.md-header {
+  backdrop-filter: none;
+  background: linear-gradient(180deg, #245edc 0%, #1a4bb8 100%);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+}
+
+[data-md-color-scheme="slate"] .md-header {
+  background: #04121f;
+}
+
+.md-tabs {
+  background: linear-gradient(180deg, #245edc 0%, #1a4bb8 100%);
+}
+
+[data-md-color-scheme="slate"] .md-tabs {
+  background: #04121f;
+}
+
+.md-header__button.md-logo img {
+  border-radius: 6px;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px #0a2f7a, 0 2px 6px rgba(0, 0, 0, 0.5);
+  transition: transform 0.3s ease;
+}
+
+.md-header__button.md-logo:hover img {
+  transform: scale(1.1);
+  box-shadow: 0 0 0 1px #0a2f7a, 0 2px 8px rgba(124, 252, 0, 0.45);
+}
+
+.md-tabs__link {
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.md-tabs[data-md-color-primary] .md-tabs__indicator,
+.md-tabs__indicator {
+  background-color: var(--y2k-lime);
+  height: 3px;
+}
+
+.md-nav__link:hover {
+  color: var(--y2k-lime);
+}
+
+/* --- Guide cards: Win2k 3D panels ---------------------------------- */
+.md-typeset .grid.cards > ul > li,
+.md-typeset .grid.cards > ol > li {
+  border: 2px outset var(--y2k-chrome-2);
+  border-radius: 4px;
+  background: linear-gradient(180deg, var(--y2k-chrome-1) 0%, var(--y2k-chrome-2) 100%);
+  padding: 1rem 1rem 0.9rem;
+  transition: transform 0.14s ease, box-shadow 0.14s ease, border-color 0.14s ease;
+}
+
+[data-md-color-scheme="slate"] .md-typeset .grid.cards > ul > li,
+[data-md-color-scheme="slate"] .md-typeset .grid.cards > ol > li {
+  background: linear-gradient(180deg, var(--y2k-chrome-1) 0%, var(--y2k-chrome-3) 100%);
+}
+
+.md-typeset .grid.cards > ul > li:hover,
+.md-typeset .grid.cards > ol > li:hover {
+  transform: translateY(-4px);
+  border: 2px outset var(--y2k-lime);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.md-typeset .grid.cards > ul > li > hr,
+.md-typeset .grid.cards > ol > li > hr {
+  border: 0;
+  border-top: 1px groove var(--y2k-chrome-3);
+  margin: 0.7em 0;
+}
+
+.md-typeset .grid.cards p {
+  margin-top: 0.25em;
+}
+
+/* --- Tables: chrome header ----------------------------------------- */
+.md-typeset table:not([class]) {
+  border: 2px outset var(--y2k-chrome-2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.md-typeset table:not([class]) th,
+.md-typeset table:not([class]) thead th {
+  background: linear-gradient(180deg, #5b9cf8 0%, #245edc 55%, #1c4fc0 100%);
+  color: #fff;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.md-typeset table:not([class]) tr:nth-child(even) td {
+  background-color: rgba(36, 94, 220, 0.06);
+}
+
+.md-typeset table:not([class]) tr:hover td {
+  background-color: rgba(124, 252, 0, 0.18);
+}
+
+/* --- Admonitions: 3D panels ----------------------------------------- */
+.md-typeset .admonition,
+.md-typeset details {
+  border-radius: 4px;
+  border: 2px outset var(--y2k-chrome-2);
+  background: color-mix(in srgb, var(--y2k-chrome-1) 60%, transparent);
+}
+
+.admonition-title,
+details > summary {
+  font-family: "Orbitron", "Verdana", sans-serif;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px groove var(--y2k-chrome-3);
+}
+
+.md-typeset .admonition.tip,
+.md-typeset details.tip {
+  border-color: #3d7a00;
+}
+
+.md-typeset .admonition.tip .admonition-title,
+.md-typeset details.tip > summary {
+  background: linear-gradient(180deg, #9fe33f 0%, #5cb800 100%);
+  color: #0d2600;
+  text-shadow: none;
+}
+
+.md-typeset .admonition.note .admonition-title,
+.md-typeset details.note > summary,
+.md-typeset .admonition.info .admonition-title,
+.md-typeset details.info > summary {
+  background: linear-gradient(180deg, #5b9cf8 0%, #245edc 100%);
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* --- Code: green CRT terminal -------------------------------------- */
+.md-typeset pre {
+  border: 3px ridge var(--y2k-chrome-2);
+  border-radius: 6px;
+  box-shadow: inset 0 0 30px rgba(51, 255, 102, 0.07);
+}
+
+.md-typeset pre > code {
+  border-radius: 0;
+  font-family: "VT323", "Courier New", monospace;
+  font-size: 1.05rem;
+  line-height: 1.5;
+  color: var(--md-code-fg-color);
+}
+
+.md-typeset code {
+  font-family: "VT323", "Courier New", monospace;
+  font-size: 1.05em;
+}
+
+.md-typeset pre[data-lang]::before {
+  background: linear-gradient(180deg, #5b9cf8, #245edc);
+  color: #fff;
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-radius: 4px 0 6px 0;
+}
+
+.md-typeset .highlight:hover {
+  background: rgba(124, 252, 0, 0.25);
+  box-shadow: 0 0 8px rgba(124, 252, 0, 0.5);
+  border-radius: 4px;
+}
+
+/* --- Links, selection, scrollbars ---------------------------------- */
+.md-typeset a {
+  color: #0055dd;
+  text-underline-offset: 3px;
+}
+
+[data-md-color-scheme="slate"] .md-typeset a {
+  color: var(--y2k-cyan);
+}
+
+.md-typeset a:hover {
+  color: var(--y2k-lime);
+}
+
+::selection {
+  background: #7cfc00;
+  color: #06210a;
+}
+
+::-webkit-scrollbar {
+  width: 14px;
+  height: 14px;
+}
+
+::-webkit-scrollbar-track {
+  background: repeating-linear-gradient(
+    45deg,
+    #d8dde3,
+    #d8dde3 2px,
+    #e9edf1 2px,
+    #e9edf1 4px
+  );
+  border-left: 1px solid #9aa4ae;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, #fbfcfd 0%, #dfe4e9 45%, #b9c1c9 55%, #eef1f4 100%);
+  border: 2px outset #cdd4db;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(90deg, #e2ffb8 0%, #b8f566 50%, #8fdc20 100%);
+}
+
+/* --- Footer --------------------------------------------------------- */
+.md-footer {
+  background: #000000de;
+}
+
+[data-md-color-scheme="slate"] .md-footer {
+  background: #000000de;
+}
+
+.md-footer__copyright {
+  font-family: "VT323", monospace;
+  font-size: 1rem;
+}

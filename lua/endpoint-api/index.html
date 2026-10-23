@@ -1,0 +1,2896 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Wiki and documentation for Winnie's Computed, a NeoForge 1.21.1 Lua node-graph mod.">
+      
+      
+      
+        <link rel="canonical" href="https://winniecatgirl3.github.io/computed-mod/lua/endpoint-api/">
+      
+      
+        <link rel="prev" href="../live-preview/">
+      
+      
+        <link rel="next" href="../computercraft/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Java Endpoint API - Winnie's Computed</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CVT323:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"VT323"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#java-endpoint-api" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Winnie&#39;s Computed" class="md-header__button md-logo" aria-label="Winnie's Computed" data-md-component="logo">
+      
+  <img src="../../assets/images/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Winnie's Computed
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Java Endpoint API
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="custom"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/WinnieCatGirl3/computed-mod" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    WinnieCatGirl3/computed-mod
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../editor/" class="md-tabs__link">
+          
+  
+  
+  Guides
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../ideas/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Ideas & Roadmap
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../authoring-guide/" class="md-tabs__link">
+          
+  
+  
+  Lua Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Java Endpoint API
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../computercraft/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  CC Tweaked
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../architecture/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Winnie&#39;s Computed" class="md-nav__button md-logo" aria-label="Winnie's Computed" data-md-component="logo">
+      
+  <img src="../../assets/images/logo.png" alt="logo">
+
+    </a>
+    Winnie's Computed
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/WinnieCatGirl3/computed-mod" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    WinnieCatGirl3/computed-mod
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../editor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Using the Editor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../in-game-docs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    In-Game Documentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../monitors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monitors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../portable-monitor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Portable Monitor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../glasses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glasses
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../speaker/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Speaker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../nodes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Node Catalog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../integrations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Integrations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ideas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ideas & Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lua Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Lua Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../authoring-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lua Node Authoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lua-api-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lua API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../types-and-state/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types and State
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../graph-events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Graph Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sandbox-and-budgets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sandbox and Budgets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Filesystem
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../import-export/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Import and Export
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../live-preview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Live Preview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Java Endpoint API
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Java Endpoint API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#computedendpointsregisterid-registration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ComputedEndpoints.register(id, registration)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#endpointbuildermethodmethodid-signature-policy-handler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EndpointBuilder.method(methodId, signature, policy, handler)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#endpointbuildermethodmethodid-signature-policy-handler-previewfixture-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EndpointBuilder.method(methodId, signature, policy, handler, previewFixture, documentation)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedendpointsfindid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ComputedEndpoints.find(id)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedendpointsdefinitions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ComputedEndpoints.definitions()
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#endpointsignatureofarguments-returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EndpointSignature.of(arguments, returns)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#endpointpolicycomputerthreadsideeffect-previewavailable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EndpointPolicy.computerThread(sideEffect, previewAvailable)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#endpointresultimmediatevalues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EndpointResult.immediate(values...)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#endpointresultyieldedcontinuation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EndpointResult.yielded(continuation)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#endpointresultunavailablereason" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EndpointResult.unavailable(reason)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#endpointruntimelifecycleregisterlistener" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EndpointRuntimeLifecycle.register(listener)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedworldtime" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:world/time
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedworldposition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:world/position
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedworldrotation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:world/rotation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedworldblock_present" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:world/block_present
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedworldblock_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:world/block_id
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedredstoneinput" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:redstone/input
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedredstonecomparator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:redstone/comparator
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedredstoneoutput" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:redstone/output
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedcommandrun" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:command/run
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedwidgettext" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:widget/text
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedwidgetnumber" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:widget/number
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedwidgetclock" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:widget/clock
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedwidgetbutton" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:widget/button
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedwidgetcheckbox" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:widget/checkbox
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedwidgettext_input" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:widget/text_input
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedwidgetslider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:widget/slider
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedwidgetprogress" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:widget/progress
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedwidgetterminal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:widget/terminal
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedwidgetline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:widget/line
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedwidgetpanel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:widget/panel
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedwidgettext_block" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:widget/text_block
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedwidgettable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:widget/table
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedmonitorshow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:monitor/show
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedmonitorhas_display" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:monitor/has_display
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedglassesshow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:glasses/show
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedfslist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:fs/list
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedfsexists" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:fs/exists
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedfsis_dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:fs/is_dir
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedfsis_read_only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:fs/is_read_only
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedfsget_size" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:fs/get_size
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedfsget_free_space" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:fs/get_free_space
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedfsmake_dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:fs/make_dir
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedfsmove" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:fs/move
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedfscopy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:fs/copy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedfsdelete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:fs/delete
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedfscombine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:fs/combine
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedfsget_dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:fs/get_dir
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedfsget_name" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:fs/get_name
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedfsget_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:fs/get_id
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedfsopen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:fs/open
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computednetsend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:net/send
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computednetbroadcast" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:net/broadcast
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computednetreceive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:net/receive
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#createkineticspeed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        create:kinetic/speed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#createkineticstress" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        create:kinetic/stress
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#createkineticcapacity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        create:kinetic/capacity
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#createredstone_linkreceive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        create:redstone_link/receive
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#createredstone_linktransmit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        create:redstone_link/transmit
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computercraftchannelread" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computercraft:channel/read
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computercraftchannelpublish" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computercraft:channel/publish
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computercraftperipheralmethods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computercraft:peripheral/methods
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computercraftperipheralcall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computercraft:peripheral/call
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aeronauticstelemetrymeasure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        aeronautics:telemetry/measure
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../computercraft/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CC Tweaked
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#computedendpointsregisterid-registration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ComputedEndpoints.register(id, registration)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#endpointbuildermethodmethodid-signature-policy-handler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EndpointBuilder.method(methodId, signature, policy, handler)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#endpointbuildermethodmethodid-signature-policy-handler-previewfixture-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EndpointBuilder.method(methodId, signature, policy, handler, previewFixture, documentation)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedendpointsfindid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ComputedEndpoints.find(id)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedendpointsdefinitions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ComputedEndpoints.definitions()
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#endpointsignatureofarguments-returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EndpointSignature.of(arguments, returns)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#endpointpolicycomputerthreadsideeffect-previewavailable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EndpointPolicy.computerThread(sideEffect, previewAvailable)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#endpointresultimmediatevalues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EndpointResult.immediate(values...)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#endpointresultyieldedcontinuation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EndpointResult.yielded(continuation)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#endpointresultunavailablereason" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EndpointResult.unavailable(reason)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#endpointruntimelifecycleregisterlistener" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EndpointRuntimeLifecycle.register(listener)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedworldtime" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:world/time
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedworldposition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:world/position
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedworldrotation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:world/rotation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedworldblock_present" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:world/block_present
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedworldblock_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:world/block_id
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedredstoneinput" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:redstone/input
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedredstonecomparator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:redstone/comparator
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedredstoneoutput" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:redstone/output
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedcommandrun" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:command/run
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedwidgettext" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:widget/text
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedwidgetnumber" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:widget/number
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedwidgetclock" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:widget/clock
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedwidgetbutton" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:widget/button
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedwidgetcheckbox" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:widget/checkbox
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedwidgettext_input" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:widget/text_input
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedwidgetslider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:widget/slider
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedwidgetprogress" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:widget/progress
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedwidgetterminal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:widget/terminal
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedwidgetline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:widget/line
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedwidgetpanel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:widget/panel
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedwidgettext_block" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:widget/text_block
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedwidgettable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:widget/table
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedmonitorshow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:monitor/show
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedmonitorhas_display" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:monitor/has_display
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedglassesshow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:glasses/show
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedfslist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:fs/list
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedfsexists" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:fs/exists
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedfsis_dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:fs/is_dir
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedfsis_read_only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:fs/is_read_only
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedfsget_size" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:fs/get_size
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedfsget_free_space" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:fs/get_free_space
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedfsmake_dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:fs/make_dir
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedfsmove" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:fs/move
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedfscopy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:fs/copy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedfsdelete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:fs/delete
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedfscombine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:fs/combine
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedfsget_dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:fs/get_dir
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedfsget_name" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:fs/get_name
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedfsget_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:fs/get_id
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computedfsopen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:fs/open
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computednetsend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:net/send
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computednetbroadcast" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:net/broadcast
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computednetreceive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computed:net/receive
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#createkineticspeed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        create:kinetic/speed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#createkineticstress" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        create:kinetic/stress
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#createkineticcapacity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        create:kinetic/capacity
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#createredstone_linkreceive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        create:redstone_link/receive
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#createredstone_linktransmit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        create:redstone_link/transmit
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computercraftchannelread" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computercraft:channel/read
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computercraftchannelpublish" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computercraft:channel/publish
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computercraftperipheralmethods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computercraft:peripheral/methods
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#computercraftperipheralcall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        computercraft:peripheral/call
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aeronauticstelemetrymeasure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        aeronautics:telemetry/measure
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/WinnieCatGirl3/computed-mod/edit/main/docs/lua/endpoint-api.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="java-endpoint-api">Java Endpoint API<a class="headerlink" href="#java-endpoint-api" title="Permanent link">&para;</a></h1>
+<p>Endpoints are the only bridge from Lua to Minecraft and addons. Handlers receive the host object; Lua receives only validated values.</p>
+<h2 id="computedendpointsregisterid-registration">ComputedEndpoints.register(id, registration)<a class="headerlink" href="#computedendpointsregisterid-registration" title="Permanent link">&para;</a></h2>
+<p>Registers one stable namespaced endpoint during mod setup and returns its immutable definition. The registration callback receives an <code>EndpointBuilder</code>. It runs on the registration thread, is unavailable to Lua previews, and has the side effect of adding a global API entry. It throws on invalid or duplicate endpoint IDs.</p>
+<div class="highlight"><pre><span></span><code><span class="n">ComputedEndpoints</span><span class="p">.</span><span class="na">register</span><span class="p">(</span><span class="s">"addon:storage"</span><span class="p">,</span><span class="w"> </span><span class="n">endpoint</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">endpoint</span>
+<span class="w">        </span><span class="p">.</span><span class="na">method</span><span class="p">(</span><span class="s">"stored"</span><span class="p">,</span><span class="w"> </span><span class="n">signature</span><span class="p">,</span><span class="w"> </span><span class="n">policy</span><span class="p">,</span><span class="w"> </span><span class="n">handler</span><span class="p">,</span><span class="w"> </span><span class="n">previewFixture</span><span class="p">,</span><span class="w"> </span><span class="s">"Returns stored units."</span><span class="p">));</span>
+</code></pre></div>
+<h2 id="endpointbuildermethodmethodid-signature-policy-handler">EndpointBuilder.method(methodId, signature, policy, handler)<a class="headerlink" href="#endpointbuildermethodmethodid-signature-policy-handler" title="Permanent link">&para;</a></h2>
+<p>Adds a method and returns the builder. Parameters declare stable ID, argument/return schema, execution/yield/side-effect/preview policy, and handler. The short overload marks preview unavailable. It throws on duplicate IDs or incomplete preview policy.</p>
+<h2 id="endpointbuildermethodmethodid-signature-policy-handler-previewfixture-documentation">EndpointBuilder.method(methodId, signature, policy, handler, previewFixture, documentation)<a class="headerlink" href="#endpointbuildermethodmethodid-signature-policy-handler-previewfixture-documentation" title="Permanent link">&para;</a></h2>
+<p>Adds a fully described method and returns the builder. <code>previewFixture</code> must be deterministic when preview is enabled. The documentation string feeds completion/signature help. Handler side effects must match the policy.</p>
+<h2 id="computedendpointsfindid">ComputedEndpoints.find(id)<a class="headerlink" href="#computedendpointsfindid" title="Permanent link">&para;</a></h2>
+<p>Returns an optional immutable endpoint definition. It has no side effects and may be called on either side for metadata lookup.</p>
+<h2 id="computedendpointsdefinitions">ComputedEndpoints.definitions()<a class="headerlink" href="#computedendpointsdefinitions" title="Permanent link">&para;</a></h2>
+<p>Returns all definitions sorted by stable ID. It has no side effects and powers documentation/completion checks.</p>
+<h2 id="endpointsignatureofarguments-returns">EndpointSignature.of(arguments, returns)<a class="headerlink" href="#endpointsignatureofarguments-returns" title="Permanent link">&para;</a></h2>
+<p>Creates a fixed-arity signature from ordered argument and return type lists. Empty lists mean no arguments or no returns. It returns an immutable signature, runs during registration on either side, has no preview behavior or side effects, and rejects no values beyond null lists becoming empty. Use the three-argument <code>EndpointSignature</code> constructor with <code>variadic = true</code> when trailing values are allowed. Example: <code>EndpointSignature.of(List.of(EndpointType.STRING), List.of(EndpointType.NUMBER))</code>.</p>
+<h2 id="endpointpolicycomputerthreadsideeffect-previewavailable">EndpointPolicy.computerThread(sideEffect, previewAvailable)<a class="headerlink" href="#endpointpolicycomputerthreadsideeffect-previewavailable" title="Permanent link">&para;</a></h2>
+<p>Creates a non-yielding computer-thread policy. <code>sideEffect</code> declares production mutation and <code>previewAvailable</code> requires a deterministic fixture. It returns an immutable policy, runs during registration, and has no side effect itself. Use the record constructor for server-thread or yielding methods. Example: <code>EndpointPolicy.computerThread(false, true)</code>.</p>
+<h2 id="endpointresultimmediatevalues">EndpointResult.immediate(values...)<a class="headerlink" href="#endpointresultimmediatevalues" title="Permanent link">&para;</a></h2>
+<p>Returns validated Lua values without suspending the node. Parameters are zero or more LuaJ values; the default is no values. It can be returned on either execution side, has no side effect itself, and is used unchanged by preview fixtures. Return-schema mismatches become runtime errors. Example: <code>return EndpointResult.immediate(LuaValue.valueOf(12));</code>.</p>
+<h2 id="endpointresultyieldedcontinuation">EndpointResult.yielded(continuation)<a class="headerlink" href="#endpointresultyieldedcontinuation" title="Permanent link">&para;</a></h2>
+<p>Suspends the current node until the completion stage supplies an immediate result. The continuation is required and the endpoint policy must declare yielding. It is unavailable in preview unless a separate immediate fixture exists. Cancellation, exceptional completion, unload, definition replacement, or detach fails the invocation while retaining prior committed outputs. Example: <code>return EndpointResult.yielded(future);</code>.</p>
+<h2 id="endpointresultunavailablereason">EndpointResult.unavailable(reason)<a class="headerlink" href="#endpointresultunavailablereason" title="Permanent link">&para;</a></h2>
+<p>Returns an explicit unavailable result with a nonblank reason. Calling Lua receives a runtime error; no values or side effects are produced. It is suitable for optional integrations and blocked preview behavior. Example: <code>return EndpointResult.unavailable("machine is not loaded");</code>.</p>
+<h2 id="endpointruntimelifecycleregisterlistener">EndpointRuntimeLifecycle.register(listener)<a class="headerlink" href="#endpointruntimelifecycleregisterlistener" title="Permanent link">&para;</a></h2>
+<p>Registers tick and unload callbacks for endpoint-owned external state. The listener is required for useful behavior and is called with the computer ID and host. Registration mutates the global lifecycle list, runs during mod setup, and has no preview callback. Listeners must cancel pending work and release addon objects on unload. Example: <code>EndpointRuntimeLifecycle.register(listener);</code>.</p>
+<h2 id="computedworldtime">computed:world/time<a class="headerlink" href="#computedworldtime" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>() -&gt; number</code>. Runs on the server thread, does not yield, has no side effects, and returns fixture <code>6000</code> in preview. Errors when the computer host cannot expose world time. Example: <code>ctx:endpoint("computed:world"):call("time")</code>.</p>
+<h2 id="computedworldposition">computed:world/position<a class="headerlink" href="#computedworldposition" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>() -&gt; number, number, number</code>. Runs on the server thread, has no side effects, and is available in previews with a fixed position fixture. Errors when host world access is unavailable. Example: <code>local x, y, z = ctx:endpoint("computed:world"):call("position")</code>.</p>
+<h2 id="computedworldrotation">computed:world/rotation<a class="headerlink" href="#computedworldrotation" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>() -&gt; number, number, number</code>. Runs on the server thread, has no side effects, and is available in previews with a fixed rotation fixture. Errors when host world access is unavailable. Example: <code>local yaw, pitch, roll = ctx:endpoint("computed:world"):call("rotation")</code>.</p>
+<h2 id="computedworldblock_present">computed:world/block_present<a class="headerlink" href="#computedworldblock_present" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(face: string) -&gt; boolean</code>. Runs on the server thread, has no side effects, and returns <code>false</code> in previews. Unknown face names return <code>false</code>; invalid argument types are errors. Example: <code>ctx:endpoint("computed:world"):call("block_present", "front")</code>.</p>
+<h2 id="computedworldblock_id">computed:world/block_id<a class="headerlink" href="#computedworldblock_id" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(face: string) -&gt; string</code>. Runs on the server thread, has no side effects, and returns <code>minecraft:air</code> in previews. Unknown face names return <code>minecraft:air</code>; invalid argument types are errors. Example: <code>ctx:endpoint("computed:world"):call("block_id", "front")</code>.</p>
+<h2 id="computedredstoneinput">computed:redstone/input<a class="headerlink" href="#computedredstoneinput" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(face: string) -&gt; number</code>. Runs on the server thread, has no side effects, and returns zero in previews. Unknown face names return zero. Example: <code>ctx:endpoint("computed:redstone"):call("input", "left")</code>.</p>
+<h2 id="computedredstonecomparator">computed:redstone/comparator<a class="headerlink" href="#computedredstonecomparator" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(face: string) -&gt; number</code>. Runs on the server thread, has no side effects, and returns zero in previews. Unknown face names return zero. Example: <code>ctx:endpoint("computed:redstone"):call("comparator", "front")</code>.</p>
+<h2 id="computedredstoneoutput">computed:redstone/output<a class="headerlink" href="#computedredstoneoutput" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(face: string, level: number) -&gt; ()</code>. Runs on the server thread, clamps power to 0–15, performs a world side effect, and is unavailable in previews. Unknown face names are ignored. Example: <code>ctx:endpoint("computed:redstone"):call("output", "back", 15)</code>.</p>
+<h2 id="computedcommandrun">computed:command/run<a class="headerlink" href="#computedcommandrun" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(string) -&gt; ()</code>. Runs on the server thread, performs a command side effect, and is unavailable in preview. The Creative Computer type no longer exists, so this endpoint currently errors on every computer; it stays registered for compatibility. Example: <code>ctx:endpoint("computed:command"):call("run", "say hello")</code>.</p>
+<h2 id="computedwidgettext">computed:widget/text<a class="headerlink" href="#computedwidgettext" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(text: string, color: number) -&gt; table</code>. Runs on the computer thread, does not yield, has no world side effect, and uses the same deterministic fixture in preview. Returns a full text widget table. Example: <code>ctx:output("widget", ctx:endpoint("computed:widget"):call("text", "Ready", 0xffffffff))</code>.</p>
+<h2 id="computedwidgetnumber">computed:widget/number<a class="headerlink" href="#computedwidgetnumber" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(value: number, text: string, color: number) -&gt; table</code>. Runs on the computer thread, has no side effects, and has a deterministic preview fixture. Renders the preformatted text right-aligned; <code>value</code> is carried for semantics. Format the text node-side with <code>string.format</code>. Example: <code>ctx:output("widget", ctx:endpoint("computed:widget"):call("number", 3.14159, "3.1416", 0xffffffff))</code>.</p>
+<h2 id="computedwidgetclock">computed:widget/clock<a class="headerlink" href="#computedwidgetclock" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(color: number, showSeconds: boolean) -&gt; table</code>. Runs on the computer thread, has no side effects, and has a deterministic preview fixture. Errors on invalid argument types. Example: <code>ctx:endpoint("computed:widget"):call("clock", 0xffffffff, true)</code>.</p>
+<h2 id="computedwidgetbutton">computed:widget/button<a class="headerlink" href="#computedwidgetbutton" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(label: string, color: number) -&gt; table</code>. Runs on the computer thread, has no side effects, and has a deterministic preview fixture. The returned table carries the node instance ID for targeted input events. Example: <code>ctx:endpoint("computed:widget"):call("button", "Run", 0xffffffff)</code>.</p>
+<h2 id="computedwidgetcheckbox">computed:widget/checkbox<a class="headerlink" href="#computedwidgetcheckbox" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(label: string, color: number, checked: boolean) -&gt; table</code>. Runs on the computer thread, has no side effects, and has a deterministic preview fixture. Clicks on the rendered widget deliver a toggle <code>input</code> event to the originating node; the node owns the checked state. Example: <code>ctx:endpoint("computed:widget"):call("checkbox", "Enabled", 0xffffffff, false)</code>.</p>
+<h2 id="computedwidgettext_input">computed:widget/text_input<a class="headerlink" href="#computedwidgettext_input" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(placeholder: string, color: number, value: string) -&gt; table</code>. Runs on the computer thread, has no side effects, and has a deterministic preview fixture. Clicking the widget opens a client-side text dialog; the submitted string is routed to the node's <code>input</code> event. Example: <code>ctx:endpoint("computed:widget"):call("text_input", "Name…", 0xffffffff, "")</code>.</p>
+<h2 id="computedwidgetslider">computed:widget/slider<a class="headerlink" href="#computedwidgetslider" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(value: number, minimum: number, maximum: number, color: number, step: number) -&gt; table</code>. Runs on the computer thread, has no side effects, and has a deterministic preview fixture. Errors on invalid argument types. Example: <code>ctx:endpoint("computed:widget"):call("slider", 0.5, 0, 1, 0xffffffff, 0.01)</code>.</p>
+<h2 id="computedwidgetprogress">computed:widget/progress<a class="headerlink" href="#computedwidgetprogress" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(value: number, maximum: number, color: number, segments: number) -&gt; table</code>. Runs on the computer thread, has no side effects, and has a deterministic preview fixture. Errors on invalid argument types. Example: <code>ctx:endpoint("computed:widget"):call("progress", 5, 10, 0xffffffff, 10)</code>.</p>
+<h2 id="computedwidgetterminal">computed:widget/terminal<a class="headerlink" href="#computedwidgetterminal" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(rows: table, fg: number, bg: number, scale: number, cursorX: number, cursorY: number) -&gt; table</code>. Runs on the computer thread, has no side effects, and has a deterministic preview fixture. <code>rows</code> is an array of strings or styled row tables from <code>computed:widget/line</code>; at most 64 rows are kept and each row is clipped to 256 characters. <code>fg</code>/<code>bg</code> are default ARGB colors, <code>scale</code> is clamped to 0.5–2, and <code>cursorX</code>/<code>cursorY</code> hide the cursor when negative. Example: <code>ctx:endpoint("computed:widget"):call("terminal", {"Ready"}, 0xffffffff, 0xff000000, 1, -1, -1)</code>.</p>
+<h2 id="computedwidgetline">computed:widget/line<a class="headerlink" href="#computedwidgetline" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(text: string, fg: number, bg: number) -&gt; table</code>. Runs on the computer thread, has no side effects, and has a deterministic preview fixture. Returns a styled terminal row table usable in a <code>computed:widget/terminal</code> rows array. Example: <code>ctx:endpoint("computed:widget"):call("line", "OK", 0xff00ff00, 0xff000000)</code>.</p>
+<h2 id="computedwidgetpanel">computed:widget/panel<a class="headerlink" href="#computedwidgetpanel" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(color: number, border: number) -&gt; table</code>. Runs on the computer thread, has no side effects, and has a deterministic preview fixture. Returns a panel widget; <code>border</code> of <code>0</code> draws no border. Example: <code>ctx:endpoint("computed:widget"):call("panel", 0xff3c3c3c, 0)</code>.</p>
+<h2 id="computedwidgettext_block">computed:widget/text_block<a class="headerlink" href="#computedwidgettext_block" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(text: string, fg: number, bg: number, alignment: string) -&gt; table</code>. Runs on the computer thread, has no side effects, and has a deterministic preview fixture. Returns a multiline text block widget; lines are separated by <code>\n</code> and <code>bg</code> of <code>0</code> is transparent. Example: <code>ctx:endpoint("computed:widget"):call("text_block", "line 1\nline 2", 0xffffffff, 0, "left")</code>.</p>
+<h2 id="computedwidgettable">computed:widget/table<a class="headerlink" href="#computedwidgettable" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(columns: string, rows: table, headerFg: number, headerBg: number, cellFg: number, cellBg: number) -&gt; table</code>. Runs on the computer thread, has no side effects, and has a deterministic preview fixture. <code>columns</code> is a comma-separated header list; <code>rows</code> is an array of comma-separated strings or arrays of cell strings. At most 16 columns and 64 rows of 64 characters are kept. Example: <code>ctx:endpoint("computed:widget"):call("table", "Name,Value", {"a,1", "b,2"}, 0xffffffff, 0xff202020, 0xffffffff, 0xff000000)</code>.</p>
+<h2 id="computedmonitorshow">computed:monitor/show<a class="headerlink" href="#computedmonitorshow" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(widgets: table) -&gt; ()</code>. Runs on the server thread, refreshes an adjacent monitor, performs a world side effect, and is unavailable in previews. The endpoint target selects the computer-relative face. Invalid widget records are ignored. Example: <code>ctx:endpoint("computed:monitor", "front"):call("show", widgets)</code>.</p>
+<h2 id="computedmonitorhas_display">computed:monitor/has_display<a class="headerlink" href="#computedmonitorhas_display" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>() -&gt; boolean</code>. Reports whether a display answers this computer: a formed monitor multiblock at the endpoint target face, or a player carrying a portable monitor paired with this computer — so programs can check before showing widgets. Example: <code>ctx:endpoint("computed:monitor", "front"):call("has_display")</code>.</p>
+<h2 id="computedglassesshow">computed:glasses/show<a class="headerlink" href="#computedglassesshow" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(widgets: table) -&gt; ()</code>. Runs on the server thread, performs a world side effect, and is unavailable in previews. Shows widget values on the glasses HUD of every player whose link card points at this computer: widgets keep their own x/y and size like on a monitor, resolved onto the fixed glasses canvas, while HUD element positions and scale stay in the K designer. Invalid widget records are ignored. Example: <code>ctx:endpoint("computed:glasses"):call("show", widgets)</code>.</p>
+<h2 id="computedfslist">computed:fs/list<a class="headerlink" href="#computedfslist" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(path: string) -&gt; table</code>. Lists entry names inside a directory on the per-computer isolated filesystem (rooted under the world save). Runs on the computer thread with a filesystem side effect and is unavailable in preview. Errors when the filesystem is not attached or the path is not a directory. Example: <code>local names = ctx:endpoint("computed:fs"):call("list", "/")</code>.</p>
+<h2 id="computedfsexists">computed:fs/exists<a class="headerlink" href="#computedfsexists" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(path: string) -&gt; boolean</code>. Reports whether a path exists on the computer filesystem. Runs on the computer thread, does not yield, and is unavailable in preview. Errors when the filesystem is not attached. Example: <code>local present = ctx:endpoint("computed:fs"):call("exists", "/config.txt")</code>.</p>
+<h2 id="computedfsis_dir">computed:fs/is_dir<a class="headerlink" href="#computedfsis_dir" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(path: string) -&gt; boolean</code>. Reports whether a path is a directory. Runs on the computer thread, does not yield, and is unavailable in preview. Errors when the filesystem is not attached. Example: <code>local isFolder = ctx:endpoint("computed:fs"):call("is_dir", "/logs")</code>.</p>
+<h2 id="computedfsis_read_only">computed:fs/is_read_only<a class="headerlink" href="#computedfsis_read_only" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(path: string) -&gt; boolean</code>. Always returns <code>false</code>; the computer filesystem is writable within its quota. Runs on the computer thread and is unavailable in preview. Example: <code>local locked = ctx:endpoint("computed:fs"):call("is_read_only", "/data.txt")</code>.</p>
+<h2 id="computedfsget_size">computed:fs/get_size<a class="headerlink" href="#computedfsget_size" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(path: string) -&gt; number</code>. Returns the size of a file in bytes. Runs on the computer thread and is unavailable in preview. Errors when the filesystem is not attached, the path is missing, or the path is a directory. Example: <code>local bytes = ctx:endpoint("computed:fs"):call("get_size", "/data.txt")</code>.</p>
+<h2 id="computedfsget_free_space">computed:fs/get_free_space<a class="headerlink" href="#computedfsget_free_space" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(path: string) -&gt; number</code>. Returns remaining quota bytes for the computer filesystem (path is accepted for CraftOS compatibility and ignored). Runs on the computer thread and is unavailable in preview. Example: <code>local free = ctx:endpoint("computed:fs"):call("get_free_space", "/")</code>.</p>
+<h2 id="computedfsmake_dir">computed:fs/make_dir<a class="headerlink" href="#computedfsmake_dir" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(path: string) -&gt; boolean</code>. Creates a directory and parents; succeeds when the directory already exists. Runs on the computer thread with a filesystem side effect and is unavailable in preview. Errors when the filesystem is not attached or the path is invalid. Example: <code>ctx:endpoint("computed:fs"):call("make_dir", "/logs")</code>.</p>
+<h2 id="computedfsmove">computed:fs/move<a class="headerlink" href="#computedfsmove" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(from: string, to: string) -&gt; boolean</code>. Moves or renames a file within the computer filesystem. Runs on the computer thread with a filesystem side effect and is unavailable in preview. Errors when the source is missing, a directory, or the quota would be exceeded. Example: <code>ctx:endpoint("computed:fs"):call("move", "/old.txt", "/new.txt")</code>.</p>
+<h2 id="computedfscopy">computed:fs/copy<a class="headerlink" href="#computedfscopy" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(from: string, to: string) -&gt; boolean</code>. Copies a file within the computer filesystem. Runs on the computer thread with a filesystem side effect and is unavailable in preview. Errors when the source is missing, a directory, or the quota would be exceeded. Example: <code>ctx:endpoint("computed:fs"):call("copy", "/data.txt", "/backup.txt")</code>.</p>
+<h2 id="computedfsdelete">computed:fs/delete<a class="headerlink" href="#computedfsdelete" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(path: string) -&gt; boolean</code>. Deletes a file or directory tree. Missing paths succeed. Runs on the computer thread with a filesystem side effect and is unavailable in preview. Errors when the filesystem is not attached or the path is invalid. Example: <code>ctx:endpoint("computed:fs"):call("delete", "/tmp.txt")</code>.</p>
+<h2 id="computedfscombine">computed:fs/combine<a class="headerlink" href="#computedfscombine" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(...) -&gt; string</code>. Joins path segments into a normalized computer path (variadic). Runs on the computer thread, has no side effects, and is unavailable in preview. Example: <code>local path = ctx:endpoint("computed:fs"):call("combine", "/", "logs", "run.txt")</code>.</p>
+<h2 id="computedfsget_dir">computed:fs/get_dir<a class="headerlink" href="#computedfsget_dir" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(path: string) -&gt; string</code>. Returns the parent directory of a path. Runs on the computer thread, has no side effects, and is unavailable in preview. Example: <code>local parent = ctx:endpoint("computed:fs"):call("get_dir", "/logs/run.txt")</code>.</p>
+<h2 id="computedfsget_name">computed:fs/get_name<a class="headerlink" href="#computedfsget_name" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(path: string) -&gt; string</code>. Returns the final segment of a path. Runs on the computer thread, has no side effects, and is unavailable in preview. Example: <code>local name = ctx:endpoint("computed:fs"):call("get_name", "/logs/run.txt")</code>.</p>
+<h2 id="computedfsget_id">computed:fs/get_id<a class="headerlink" href="#computedfsget_id" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>() -&gt; number</code>. Returns this computer's numeric id — the folder name under <code>&lt;world&gt;/computed/computer/</code>. Runs on the computer thread, has no side effects, and is unavailable in preview. Example: <code>local id = ctx:endpoint("computed:fs"):call("get_id")</code>.</p>
+<h2 id="computedfsopen">computed:fs/open<a class="headerlink" href="#computedfsopen" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(path: string, mode: string) -&gt; table</code>. Opens a file with mode <code>r</code>, <code>w</code>, <code>a</code>, <code>rb</code>, <code>wb</code>, or <code>ab</code> and returns a handle table. Handle methods: <code>read_line()</code>, <code>read_all()</code>, <code>read(count)</code>, <code>read_bytes(count)</code>, <code>write(text)</code>, <code>write_line(text)</code>, <code>seek(whence, offset)</code>, <code>flush()</code>, <code>close()</code>. Reads return <code>nil</code> at EOF. Runs on the computer thread with a filesystem side effect and is unavailable in preview. Errors on unsupported modes, missing read targets, closed handles, mode mismatches, or quota exhaustion. Example: <code>local handle = ctx:endpoint("computed:fs"):call("open", "/note.txt", "w"); handle:write_line("hi"); handle:close()</code>.</p>
+<h2 id="computednetsend">computed:net/send<a class="headerlink" href="#computednetsend" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(target: number, message: string) -&gt; boolean</code>. Queues a message for the computer with that numeric ID (computers sharing an ID share the inbox). Messages are at most 1024 characters; 64 messages are kept per computer and the oldest are dropped when the queue is full. Returns <code>true</code> when the target computer was online, <code>false</code> when the message was only queued. Runs on the server thread with a side effect and is unavailable in preview. Errors on a negative target or an oversized message. Example: <code>ctx:endpoint("computed:net"):call("send", 3, "ready")</code>.</p>
+<h2 id="computednetbroadcast">computed:net/broadcast<a class="headerlink" href="#computednetbroadcast" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(message: string) -&gt; number</code>. Queues the message for every online computer except the sender and returns how many were reached. The same size and queue limits as <code>send</code> apply. Runs on the server thread with a side effect and is unavailable in preview. Errors on an oversized message. Example: <code>local reached = ctx:endpoint("computed:net"):call("broadcast", "ping")</code>.</p>
+<h2 id="computednetreceive">computed:net/receive<a class="headerlink" href="#computednetreceive" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(timeout: number) -&gt; sender: number?, message: string?</code>. Waits for the next queued message and returns the sender ID and the message, or <code>nil</code> values when the timeout in seconds elapses first (<code>0</code> waits indefinitely). The node yields while waiting, so other nodes keep ticking. Messages are held for up to two minutes for computers that are offline or not listening. Runs on the server thread with a side effect and is unavailable in preview. Errors when the timeout is negative or above 600 seconds. Example: <code>local sender, message = ctx:endpoint("computed:net"):call("receive", 5)</code>.</p>
+<h2 id="createkineticspeed">create:kinetic/speed<a class="headerlink" href="#createkineticspeed" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>() -&gt; number</code>. The target is a computer-relative face. It runs on the computer/server tick thread, does not yield or mutate the world, and returns zero in preview. Production errors when Create is absent or the target is invalid; a non-kinetic block returns zero. Example: <code>ctx:endpoint("create:kinetic", "front"):call("speed")</code>.</p>
+<h2 id="createkineticstress">create:kinetic/stress<a class="headerlink" href="#createkineticstress" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>() -&gt; number</code>. It returns the adjacent Create block's applied stress units, runs on the computer/server tick thread, does not yield or mutate, and returns zero in preview. Missing Create and invalid targets are errors; non-kinetic blocks return zero. Example: <code>ctx:endpoint("create:kinetic", "left"):call("stress")</code>.</p>
+<h2 id="createkineticcapacity">create:kinetic/capacity<a class="headerlink" href="#createkineticcapacity" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>() -&gt; number</code>. It returns the adjacent Create block's generated stress capacity, runs on the computer/server tick thread, does not yield or mutate, and returns zero in preview. Missing Create and invalid targets are errors; non-kinetic blocks return zero. Example: <code>ctx:endpoint("create:kinetic", "right"):call("capacity")</code>.</p>
+<h2 id="createredstone_linkreceive">create:redstone_link/receive<a class="headerlink" href="#createredstone_linkreceive" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(firstItemId: string, secondItemId: string) -&gt; number</code>. It registers a virtual Create redstone-link listener owned by the node and returns power from 0 through 15. It runs on the server tick thread, does not yield, retains an external network actor, and is unavailable in preview. Invalid item IDs, absent Create, or unavailable network APIs are errors or return zero. Actors are removed on definition replacement and unload. Example: <code>ctx:endpoint("create:redstone_link"):call("receive", "minecraft:iron_ingot", "minecraft:redstone")</code>.</p>
+<h2 id="createredstone_linktransmit">create:redstone_link/transmit<a class="headerlink" href="#createredstone_linktransmit" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(firstItemId: string, secondItemId: string, strength: number) -&gt; ()</code>. It registers or updates a virtual Create transmitter, clamps strength to 0 through 15, performs a network side effect, runs on the server tick thread, does not yield, and is unavailable in preview. Invalid items or absent Create fail the invocation. Actors are removed on definition replacement and unload. Example: <code>ctx:endpoint("create:redstone_link"):call("transmit", "minecraft:iron_ingot", "minecraft:redstone", 15)</code>.</p>
+<h2 id="computercraftchannelread">computercraft:channel/read<a class="headerlink" href="#computercraftchannelread" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(channel: string) -&gt; table</code>. It returns <code>{ value = ... }</code> for the named value written by an attached CC computer. Names contain 1 through 64 characters. It runs on the computer thread, does not yield or mutate the world, and returns an empty table fixture in preview. It errors when CC is absent or the host is not a server computer. Example: <code>ctx:endpoint("computercraft:channel"):call("read", "control")</code>.</p>
+<h2 id="computercraftchannelpublish">computercraft:channel/publish<a class="headerlink" href="#computercraftchannelpublish" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(channel: string, value: table) -&gt; ()</code>. It publishes a named graph value and queues <code>computed_output_changed</code> on attached CC computers when the value changes. It runs on the computer thread, performs an integration side effect, does not yield, and is unavailable in preview. Unsupported or cyclic values and invalid channel names are errors. Example: <code>ctx:endpoint("computercraft:channel"):call("publish", "status", { ready = true })</code>.</p>
+<h2 id="computercraftperipheralmethods">computercraft:peripheral/methods<a class="headerlink" href="#computercraftperipheralmethods" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>() -&gt; table</code>. The endpoint target is a computer-relative side. It returns the adjacent peripheral's sorted public method names, runs on the server tick thread, does not yield or mutate, and is unavailable in preview. Missing CC, invalid sides, and detached peripherals are errors. Call it through the bound shorthand: <code>ctx:endpoint("computercraft:peripheral", "left"):methods()</code>.</p>
+<h2 id="computercraftperipheralcall">computercraft:peripheral/call<a class="headerlink" href="#computercraftperipheralcall" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>(methodName: string, ...) -&gt; table</code>. It invokes a public CC API method and returns all results as an integer-keyed table. It runs on the server tick thread, may perform peripheral side effects, and may yield for main-thread tasks, <code>MethodResult</code> continuations, or queued events. It is unavailable in preview. Missing methods, unsupported values, detach, unload, and failed continuations are errors; prior outputs remain committed while suspended. Example: <code>local result = ctx:endpoint("computercraft:peripheral", "left"):call("getEnergy")</code>.</p>
+<h2 id="aeronauticstelemetrymeasure">aeronautics:telemetry/measure<a class="headerlink" href="#aeronauticstelemetrymeasure" title="Permanent link">&para;</a></h2>
+<p>Signature: <code>() -&gt; table</code>. It returns telemetry for the nearest Create contraption (including Create Aeronautics structures) around the computer. The table has <code>present</code> (boolean), <code>name</code> and <code>source</code> (strings), <code>x</code>/<code>y</code>/<code>z</code> (contraption position), <code>vx</code>/<code>vy</code>/<code>vz</code> (contraption velocity), <code>speed</code>, <code>distance</code>, <code>heading</code>, <code>pitch</code>, <code>roll</code>, the heading frame <code>hx</code>/<code>hy</code>/<code>hz</code>, the right frame <code>rx</code>/<code>ry</code>/<code>rz</code>, and the angular velocity <code>wx</code>/<code>wy</code>/<code>wz</code>. It runs on the server tick thread, does not yield or mutate the world, and returns <code>present = false</code> with zeroed fields in preview. Missing Create Aeronautics is an error; when no contraption is within range <code>present</code> is <code>false</code>. Example: <code>local telemetry = ctx:endpoint("aeronautics:telemetry"):call("measure")</code>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../live-preview/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Live Preview">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Live Preview
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../computercraft/" class="md-footer__link md-footer__link--next" aria-label="Next: CC Tweaked">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                CC Tweaked
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.instant.progress", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.footer", "content.code.copy", "content.action.edit", "search.highlight", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
