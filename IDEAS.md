@@ -38,8 +38,9 @@ die rohe Arbeitsliste daraus.
   `play` spielt der Reihe nach (fertige Disc wird wie bei der Jukebox fallen gelassen),
   Loop zirkuliert die Queue, `queue_size` + Status-Ausgang `queued` melden den Stand.
 - **Autostart-Disk** — Rechtsklick auf beschriebene Program Disk toggelt das Autostart-Flag
-  (Tooltip + Glint); der Computer lädt das Disk-Programm beim ersten Tick automatisch über den
-  üblichen Apply-Pfad (volle Validierung, bestehendes Programm hat Vorrang).
+  (Tooltip + Glint); der Computer lädt das Disk-Programm automatisch, sobald die beschriebene
+  Disk eingesetzt ist (beim ersten Tick oder später beim Einsetzen), über den üblichen Apply-Pfad
+  (volle Validierung, bestehendes Programm hat Vorrang).
 - **`has_display()`-Endpoint** — `computed:monitor/has_display` + **Display Present**-Node:
   true wenn ein gebildeter Monitor am Ziel-Face hängt oder ein Spieler einen gekoppelten
   Portable Monitor trägt (Link-Card zählt nicht).

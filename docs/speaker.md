@@ -8,7 +8,8 @@ to six speakers around one computer — one per side.
 ![Speaker recipe](assets/images/recipe/Speaker.png){ width=420 }
 
 The speaker faces you when you place it. Right-click it with a music disc to insert the disc;
-right-click it empty-handed to take the disc back.
+right-click it empty-handed to take discs back — the inserted one first, then one queued disc per
+click. Breaking the speaker drops the inserted disc and the whole queue.
 
 ## Addressing a speaker
 
@@ -52,7 +53,8 @@ wait in the playlist (`Speaker Status` reports them as `queued`).
   jukebox and the next queued disc starts.
 - With **Loop** on, the playlist *cycles*: the finished disc joins the queue's end and the next
   one starts, forever.
-- Empty-hand click or **Eject** removes only the inserted disc; the queue stays for next time.
+- Empty-hand clicks and **Eject** remove the inserted disc first, then one queued disc per click —
+  every disc stays reachable without playing the playlist through.
 
 ### Note sequences
 
@@ -77,7 +79,8 @@ each gap is 0–10 s. The underlying endpoint accepts up to 64 notes for custom 
   second for the smoothest result.
 - **Play Sweep** glides linearly from one frequency to another — risers, alarms, motors.
 - **Loop** on **Play Disc** restarts the disc automatically when the song ends — with a
-  playlist queued, it cycles through the discs instead. Turn it off (or hit **Stop**) to end
+  playlist queued, it cycles through the discs instead. The toggle applies immediately, even
+  while a song is playing, and survives world saves. Turn it off (or hit **Stop**) to end
   playback; the **Speaker Status** node reports `is_looping`.
 
 !!! note "One tone per speaker"

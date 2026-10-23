@@ -108,7 +108,7 @@ public class ComputerBlockEntity extends BaseContainerBlockEntity
     private String customName = "";
     private long programRevision;
     private transient boolean dropsHandled;
-    /** One-shot gate: the autostart disk check runs on the first server tick after load. */
+    /** One-shot per disk insertion: set when an autostart attempt ran, re-armed when the drive changes. */
     private transient boolean autostartChecked;
     private transient String lastGraphDiagnostics = "";
     private transient String lastWidgetWarning = "";
@@ -129,9 +129,15 @@ public class ComputerBlockEntity extends BaseContainerBlockEntity
         if (level.isClientSide || computer.isRemoved()) {
             return;
         }
-        if (!computer.autostartChecked) {
+        ItemStack autostartDisk = computer.diskInSlot();
+        boolean autostartEligible = autostartDisk != null
+                && ProgramDiskItem.isAutostart(autostartDisk)
+                && computer.program.rootGraph().nodes().isEmpty();
+        if (autostartEligible && !computer.autostartChecked) {
             computer.autostartChecked = true;
             computer.tryAutostart();
+        } else if (!autostartEligible) {
+            computer.autostartChecked = false;
         }
         LuaGraphScheduler active = computer.ensureScheduler();
         ComputedProgramV3 before = computer.program;

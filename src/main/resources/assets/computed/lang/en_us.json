@@ -7,7 +7,7 @@
   "item.computed.computer.id": "Computer ID: %s",
   "item.computed.program_disk": "Program Disk",
   "item.computed.program_disk.stored": "Program: %s",
-  "item.computed.program_disk.hint": "Hold while exporting, or insert into a computer's drive slot",
+  "item.computed.program_disk.hint": "Hold while exporting; sneak + right-click a computer to insert",
   "item.computed.program_disk.autostart_hint": "Right-click to toggle autostart",
   "item.computed.program_disk.autostart": "Autostart: runs when a computer starts",
   "item.computed.program_disk.autostart.on": "Disk autostart: on",

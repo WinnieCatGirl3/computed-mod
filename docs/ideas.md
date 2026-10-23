@@ -45,7 +45,8 @@ A short look at what the thread already produced:
   **disc playlist** — queue up to 8 discs with right-click, `play` advances through them, loop
   cycles the whole queue.
 - **Autostart disk** — right-click a written Program Disk to flag it; the computer loads and runs
-  the program at startup (through the regular validation, an existing program always wins).
+  the program at startup or as soon as the flagged disk is inserted (through the regular
+  validation, an existing program always wins).
 - **`has_display()`** — `computed:monitor/has_display` and the **Display Present** node answer
   whether a wall monitor is attached at a face or a player carries a paired portable monitor.
 - **Redstone endpoints** — `computed:redstone` reads input/comparator levels and writes output at

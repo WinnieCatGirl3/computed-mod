@@ -146,7 +146,8 @@ public final class SpeakerEndpoints {
                         EndpointPolicy.serverThread(true, false),
                         SpeakerEndpoints::eject,
                         null,
-                        "Ejects the inserted music disc onto the ground in front of the speaker."));
+                        "Ejects the inserted music disc onto the ground in front of the speaker; "
+                                + "with an empty slot it pops the next queued disc."));
     }
 
     private static EndpointResult playNote(EndpointInvocation invocation) {

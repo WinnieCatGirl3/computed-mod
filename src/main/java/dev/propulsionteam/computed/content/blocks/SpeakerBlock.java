@@ -109,7 +109,8 @@ public class SpeakerBlock extends BaseEntityBlock {
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
                                                BlockHitResult hit) {
-        if (!(level.getBlockEntity(pos) instanceof SpeakerBlockEntity speaker) || !speaker.hasDisc()) {
+        if (!(level.getBlockEntity(pos) instanceof SpeakerBlockEntity speaker)
+                || (!speaker.hasDisc() && speaker.queueSize() == 0)) {
             return InteractionResult.PASS;
         }
         if (level.isClientSide) {
@@ -120,5 +121,15 @@ public class SpeakerBlock extends BaseEntityBlock {
             popResource(level, pos, disc);
         }
         return InteractionResult.CONSUME;
+    }
+
+    @Override
+    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
+        if (!state.is(newState.getBlock()) && !level.isClientSide
+                && level.getBlockEntity(pos) instanceof SpeakerBlockEntity speaker) {
+            speaker.stop();
+            speaker.detachContents().forEach(item -> popResource(level, pos, item));
+        }
+        super.onRemove(state, level, pos, newState, movedByPiston);
     }
 }

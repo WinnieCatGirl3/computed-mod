@@ -1,5 +1,6 @@
 package dev.propulsionteam.computed.content.blocks;
 
+import dev.propulsionteam.computed.Computed;
 import dev.propulsionteam.computed.content.ComputedRegistries;
 import dev.propulsionteam.computed.content.WaveSchedule;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ public class SpeakerBlockEntity extends BlockEntity {
     public static final String PLAYING_TAG = "Playing";
     public static final String REMAINING_TAG = "Remaining";
     public static final String QUEUE_TAG = "DiscQueue";
+    public static final String LOOP_TAG = "DiscLoop";
     /** Playlist capacity: how many discs wait behind the inserted one. */
     public static final int MAX_QUEUE_SIZE = 8;
 
@@ -89,6 +91,9 @@ public class SpeakerBlockEntity extends BlockEntity {
             queue.forEach(item -> queued.add(item.save(lookup)));
             tag.put(QUEUE_TAG, queued);
         }
+        if (discLoop) {
+            tag.putBoolean(LOOP_TAG, true);
+        }
     }
 
     @Override
@@ -97,6 +102,7 @@ public class SpeakerBlockEntity extends BlockEntity {
         disc = tag.contains(DISC_TAG) ? ItemStack.parseOptional(lookup, tag.getCompound(DISC_TAG)) : ItemStack.EMPTY;
         playing = tag.getBoolean(PLAYING_TAG);
         remainingTicks = tag.getInt(REMAINING_TAG);
+        discLoop = tag.getBoolean(LOOP_TAG);
         queue.clear();
         if (tag.contains(QUEUE_TAG, Tag.TAG_LIST)) {
             ListTag queued = tag.getList(QUEUE_TAG, Tag.TAG_COMPOUND);
@@ -122,7 +128,13 @@ public class SpeakerBlockEntity extends BlockEntity {
     }
 
     public void setDiscLoop(boolean loop) {
+        if (discLoop == loop) {
+            return;
+        }
         discLoop = loop;
+        Computed.LOGGER.info("Speaker at {} disc loop {}", worldPosition, loop ? "enabled" : "disabled");
+        setChanged();
+        syncToClient();
     }
 
     public boolean isDiscLoop() {
@@ -267,17 +279,39 @@ public class SpeakerBlockEntity extends BlockEntity {
         level.addFreshEntity(item);
     }
 
-    /** Removes and returns the inserted disc (empty stack if none). Stops playback first. */
+    /**
+     * Removes and returns the inserted disc (empty stack if none), falling back to the head of the
+     * playlist queue so queued discs stay reachable. Stops playback first.
+     */
     public ItemStack ejectDisc() {
-        if (level == null || level.isClientSide || disc.isEmpty()) {
+        if (level == null || level.isClientSide) {
             return ItemStack.EMPTY;
         }
-        stop();
-        ItemStack result = disc;
-        disc = ItemStack.EMPTY;
+        ItemStack result;
+        if (!disc.isEmpty()) {
+            stop();
+            result = disc;
+            disc = ItemStack.EMPTY;
+        } else if (!queue.isEmpty()) {
+            result = queue.removeFirst();
+        } else {
+            return ItemStack.EMPTY;
+        }
         setChanged();
         syncToClient();
         return result;
+    }
+
+    /** Clears and returns every held disc (inserted one plus queue) so the block can drop them. */
+    public List<ItemStack> detachContents() {
+        List<ItemStack> contents = new ArrayList<>();
+        if (!disc.isEmpty()) {
+            contents.add(disc);
+        }
+        contents.addAll(queue);
+        disc = ItemStack.EMPTY;
+        queue.clear();
+        return contents;
     }
 
     /** Starts playback of the inserted disc via the vanilla jukebox level event. */
@@ -417,6 +451,11 @@ public class SpeakerBlockEntity extends BlockEntity {
     /** Server ticker: counts down disc playback (advancing the playlist or restarting in loop mode) and drives synth notes. */
     public static void serverTick(net.minecraft.world.level.Level level, BlockPos pos, BlockState state, SpeakerBlockEntity be) {
         if (be.playing && --be.remainingTicks <= 0) {
+            Computed.LOGGER.info(
+                    "Speaker at {}: song end (loop={}, queued={})",
+                    be.worldPosition,
+                    be.discLoop,
+                    be.queue.size());
             if (!be.continuePlayback()) {
                 be.stopDiscPlayback();
             }
