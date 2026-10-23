@@ -367,6 +367,105 @@ class LuaGraphSchedulerTest {
                 .anyMatch(diagnostic -> diagnostic.code().equals("definition_load_failed")));
     }
 
+    @Test
+    void usesCurrentBundledSourceOverStaleProgramSnapshot() {
+        LuaDefinitionSource current = BundledLuaLibrary.load().get("computed:constant");
+        LuaDefinitionSource staleSnapshot = new LuaDefinitionSource(
+                current.apiVersion(),
+                current.id(),
+                """
+                        local node = computed.node(1, "computed:constant", "Constant")
+                        node:field("value", "number", { default = 0 })
+                        node:output("value", "number")
+                        node:on_run(function(ctx)
+                            ctx:output("value", 99)
+                        end)
+                        return node
+                        """,
+                "",
+                LuaDefinitionSource.Origin.BUNDLED);
+        UUID nodeId = uuid(40);
+        GraphNode node = new GraphNode(
+                nodeId,
+                current.id(),
+                current.hash(),
+                0,
+                0,
+                List.of(port("value", PortDirection.OUTPUT, ConnectionType.NUMBER)),
+                Map.of());
+        ComputedProgramV3 program = new ComputedProgramV3(
+                0,
+                new ComputedGraph(uuid(140), List.of(node), List.of()),
+                Map.of(current.id(), staleSnapshot),
+                Map.of(),
+                null);
+
+        LuaGraphTickResult result = new LuaGraphScheduler(program, uuid(240), null).tick(false);
+
+        assertTrue(result.diagnostics().isEmpty(), result.diagnostics().toString());
+        assertEquals(10, result.outputs().get(nodeId).get("value").toint());
+    }
+
+    @Test
+    void keepsEmbeddedOverridesAndRemovedBundledFallbacksFromProgramLibrary() {
+        LuaDefinitionSource current = BundledLuaLibrary.load().get("computed:constant");
+        LuaDefinitionSource embedded = LuaDefinitionSource.embedded(
+                current.apiVersion(),
+                current.id(),
+                """
+                        local node = computed.node(1, "computed:constant", "Constant")
+                        node:field("value", "number", { default = 0 })
+                        node:output("value", "number")
+                        node:on_run(function(ctx)
+                            ctx:output("value", 42)
+                        end)
+                        return node
+                        """);
+        LuaDefinitionSource removed = new LuaDefinitionSource(
+                1,
+                "computed:removed_node",
+                """
+                        local node = computed.node(1, "computed:removed_node", "Removed")
+                        node:output("value", "number")
+                        node:on_run(function(ctx)
+                            ctx:output("value", 7)
+                        end)
+                        return node
+                        """,
+                "",
+                LuaDefinitionSource.Origin.BUNDLED);
+        UUID shadowId = uuid(41);
+        UUID removedId = uuid(42);
+        GraphNode shadow = new GraphNode(
+                shadowId,
+                embedded.id(),
+                embedded.hash(),
+                0,
+                0,
+                List.of(port("value", PortDirection.OUTPUT, ConnectionType.NUMBER)),
+                Map.of());
+        GraphNode gone = new GraphNode(
+                removedId,
+                removed.id(),
+                removed.hash(),
+                80,
+                0,
+                List.of(port("value", PortDirection.OUTPUT, ConnectionType.NUMBER)),
+                Map.of());
+        ComputedProgramV3 program = new ComputedProgramV3(
+                0,
+                new ComputedGraph(uuid(141), List.of(shadow, gone), List.of()),
+                Map.of(embedded.id(), embedded, removed.id(), removed),
+                Map.of(),
+                null);
+
+        LuaGraphTickResult result = new LuaGraphScheduler(program, uuid(241), null).tick(false);
+
+        assertTrue(result.diagnostics().isEmpty(), result.diagnostics().toString());
+        assertEquals(42, result.outputs().get(shadowId).get("value").toint());
+        assertEquals(7, result.outputs().get(removedId).get("value").toint());
+    }
+
     private static PortSnapshot port(String id, PortDirection direction, ConnectionType type) {
         return new PortSnapshot(id, direction, type, id);
     }

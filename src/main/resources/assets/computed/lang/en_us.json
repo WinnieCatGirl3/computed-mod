@@ -1,6 +1,8 @@
 {
   "itemGroup.computed": "Winnie's Computed",
   "block.computed.computer": "Computer",
+  "block.computed.computer.disk_inserted": "Disk inserted",
+  "block.computed.computer.disk_inserted.autostart": "Disk inserted — autostart armed",
   "block.computed.monitor": "Monitor",
   "block.computed.speaker": "Speaker",
   "item.computed.computer.stored": "Stored Program - %s nodes, %s Lua definitions",

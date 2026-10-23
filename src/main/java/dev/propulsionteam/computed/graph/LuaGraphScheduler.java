@@ -172,7 +172,12 @@ public final class LuaGraphScheduler {
     private void instantiateNodes() {
         Map<String, LuaDefinitionSource> definitions = new LinkedHashMap<>(BundledLuaLibrary.load());
         definitions.putAll(IntegrationLuaLibrary.load());
-        definitions.putAll(program.library());
+        for (Map.Entry<String, LuaDefinitionSource> entry : program.library().entrySet()) {
+            if (entry.getValue().origin() == LuaDefinitionSource.Origin.EMBEDDED
+                    || !definitions.containsKey(entry.getKey())) {
+                definitions.put(entry.getKey(), entry.getValue());
+            }
+        }
         for (GraphNode node : program.rootGraph().nodes()) {
             if (EditorOnlyNodes.isEditorOnly(node.definitionId())) {
                 continue;

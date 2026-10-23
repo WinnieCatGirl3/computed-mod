@@ -134,7 +134,8 @@ public class ComputerBlock extends Block implements EntityBlock {    public stat
                 if (level.isClientSide) {
                     return ItemInteractionResult.sidedSuccess(level.isClientSide);
                 }
-                if (level.getBlockEntity(pos) instanceof ComputerBlockEntity computer && computer.tryInsertDiskFromHand(stack)) {
+                if (level.getBlockEntity(pos) instanceof ComputerBlockEntity computer
+                        && computer.tryInsertDiskFromHand(stack, player)) {
                     return ItemInteractionResult.CONSUME;
                 }
                 return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;

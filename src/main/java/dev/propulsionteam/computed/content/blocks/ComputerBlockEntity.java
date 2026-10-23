@@ -70,6 +70,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -305,7 +306,17 @@ public class ComputerBlockEntity extends BaseContainerBlockEntity
                 return;
             }
             ProgramDiskData data = ProgramDiskItem.read(disk);
-            if (data == null || data.kind() != PackageTransferService.id(ComputedPackageStorage.Kind.GRAPHS)) {
+            if (data == null) {
+                Computed.LOGGER.warn(
+                        "Autostart requested at {} but the drive disk holds no readable program",
+                        worldPosition);
+                return;
+            }
+            if (data.kind() != PackageTransferService.id(ComputedPackageStorage.Kind.GRAPHS)) {
+                Computed.LOGGER.warn(
+                        "Autostart disk '{}' at {} is not a graph package",
+                        data.name(),
+                        worldPosition);
                 return;
             }
             try {
@@ -399,11 +410,18 @@ public class ComputerBlockEntity extends BaseContainerBlockEntity
     }
 
     /** Moves one program disk from the hand into an empty drive slot. */
-    public boolean tryInsertDiskFromHand(ItemStack stack) {
+    public boolean tryInsertDiskFromHand(ItemStack stack, @Nullable Player player) {
         if (!(stack.getItem() instanceof ProgramDiskItem) || !getItem(DISK_SLOT_INDEX).isEmpty()) {
             return false;
         }
-        setItem(DISK_SLOT_INDEX, stack.split(1));
+        ItemStack inserted = stack.split(1);
+        setItem(DISK_SLOT_INDEX, inserted);
+        if (player != null) {
+            player.displayClientMessage(Component.translatable(
+                    ProgramDiskItem.isAutostart(inserted)
+                            ? "block.computed.computer.disk_inserted.autostart"
+                            : "block.computed.computer.disk_inserted"), true);
+        }
         return true;
     }
 

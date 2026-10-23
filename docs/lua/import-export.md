@@ -12,6 +12,13 @@ The export dialog offers a **Disk** button beside **Save**, and **Export Selecte
 
 Blank disks stack up to 16. A written disk glows and always stacks alone, and writing to a held stack writes exactly one disk while the rest stay blank. To wipe a written disk, craft it by itself in any crafting grid — the result is a blank disk again.
 
+Right-click a **written** disk in your hand to toggle **autostart**: the action bar confirms
+`Disk autostart: on`, the tooltip gains an aqua `Autostart: on` line, and inserting the disk
+announces `Disk inserted — autostart armed`. The flagged disk loads and runs its graph as soon as
+it sits in the drive of a computer with an empty program — at insertion time or at the first tick
+after startup. A program already loaded on the computer always wins; eject it first to let the
+disk start.
+
 Node source files use the computer's `nodes/` folder and the `.lua` extension. **Import Node** is in the toolbar menu, while **Export Selected Node** is available there and in a user node's right-click menu. Import opens the selected Lua file in the Lua editor; export writes the source directly using the selected user node's title. Bundled and integration nodes cannot be exported, edited, or deleted.
 
 Selected canvas nodes support Ctrl+C, Ctrl+X, and Ctrl+V. Pasted nodes are placed at the cursor and retain connections between nodes in the copied selection. Ctrl+D immediately clones the selection 24 pixels right and down; repeated presses continue from the latest clone to form a ladder.
